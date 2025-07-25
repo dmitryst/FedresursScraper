@@ -6,6 +6,11 @@ namespace FedResursScraper
     class LotInfo
     {
         /// <summary>
+        /// Вид торгов
+        /// </summary>
+        public string BiddingType  { get; set; }
+
+        /// <summary>
         /// Категории
         /// </summary>
         public List<string> Categories { get; set; }

@@ -47,7 +47,22 @@ namespace FedResursScraper
                     var pageSource = driver.PageSource;
                     // File.WriteAllText("debug.html", pageSource);
 
-                    // 0. Категория
+                    // Вид торгов
+                    string biddingType = "не найдено";
+                    try
+                    {
+                        // Ищем элемент с текстом "Вид торгов"
+                        var nameElement = driver.FindElement(By.XPath("//div[contains(text(),'Вид торгов')]"));
+                        // Находим следующий за ним элемент, который содержит значение
+                        var valueElement = nameElement.FindElement(By.XPath("./following-sibling::div"));
+                        biddingType = valueElement.Text.Trim();
+                    }
+                    catch
+                    {
+                        // Оставляем "не найдено", если поле отсутствует на странице
+                    }
+
+                    // Категория
                     List<string> categories = new List<string>();
                     try
                     {
@@ -64,7 +79,7 @@ namespace FedResursScraper
                         // Если блок полностью отсутствует — categories останется пустым
                     }
 
-                    // 1. Начальная цена
+                    // Начальная цена
                     string startPrice = "не найдено";
                     try
                     {
@@ -74,7 +89,7 @@ namespace FedResursScraper
                     }
                     catch { }
 
-                    // 2. Шаг аукциона
+                    // Шаг аукциона
                     string step = "не найдено";
                     try
                     {
@@ -84,7 +99,7 @@ namespace FedResursScraper
                     }
                     catch { }
 
-                    // 3. Задаток
+                    // Задаток
                     string deposit = "не найдено";
                     try
                     {
@@ -94,7 +109,7 @@ namespace FedResursScraper
                     }
                     catch { }
 
-                    // 4. Описание объекта
+                    // Описание объекта
                     string description = "не найдено";
                     try
                     {
@@ -118,7 +133,7 @@ namespace FedResursScraper
                     }
                     catch { }
 
-                    // 5. Порядок ознакомления с имуществом должника – гибкая логика по двум маркерам
+                    // Порядок ознакомления с имуществом должника – гибкая логика по двум маркерам
                     var viewingProcedure = "";
                     string rawDesc = description;
                     try
@@ -157,6 +172,7 @@ namespace FedResursScraper
 
                     allLots.Add(new LotInfo
                     {
+                        BiddingType = biddingType,
                         Categories = categories,
                         Description = description,
                         StartPrice = startPrice,
@@ -196,6 +212,7 @@ namespace FedResursScraper
                 {
                     var lot = new Lot
                     {
+                        BiddingType = lotInfo.BiddingType,
                         Url = lotInfo.Url,
                         StartPrice = lotInfo.StartPrice,
                         Step = lotInfo.Step,
