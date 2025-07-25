@@ -1,6 +1,8 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using Lots.Data.Entities;
+using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace FedResursScraper
 {
@@ -80,34 +82,37 @@ namespace FedResursScraper
                     }
 
                     // Начальная цена
-                    string startPrice = "не найдено";
+                    string startPriceText = "не найдено";
                     try
                     {
                         var nameElement = driver.FindElement(By.XPath("//div[contains(text(),'Начальная цена')]"));
                         var valueElement = nameElement.FindElement(By.XPath("./following-sibling::div"));
-                        startPrice = valueElement.Text.Trim();
+                        startPriceText = valueElement.Text.Trim();
                     }
                     catch { }
+                    decimal? startPrice = ParsePrice(startPriceText);
 
-                    // Шаг аукциона
-                    string step = "не найдено";
+                    // Шаг цены
+                    string stepText = "не найдено";
                     try
                     {
                         var nameElement2 = driver.FindElement(By.XPath("//div[contains(text(),'Шаг аукциона')]"));
                         var valueElement2 = nameElement2.FindElement(By.XPath("./following-sibling::div"));
-                        step = valueElement2.Text.Trim();
+                        stepText = valueElement2.Text.Trim();
                     }
                     catch { }
+                    decimal? step = ParsePrice(stepText);
 
                     // Задаток
-                    string deposit = "не найдено";
+                    string depositText = "не найдено";
                     try
                     {
                         var depositName = driver.FindElement(By.XPath("//div[contains(text(),'Задаток')]"));
                         var depositValue = depositName.FindElement(By.XPath("./following-sibling::div"));
-                        deposit = depositValue.Text.Trim();
+                        depositText = depositValue.Text.Trim();
                     }
                     catch { }
+                    decimal? deposit = ParsePrice(depositText);
 
                     // Описание объекта
                     string description = "не найдено";
@@ -193,15 +198,40 @@ namespace FedResursScraper
             {
                 Console.WriteLine($"Категория:      {string.Join("; ", lot.Categories)}");
                 Console.WriteLine($"Наименование:   {lot.Description}");
-                Console.WriteLine($"Цена:           {lot.StartPrice}");
-                Console.WriteLine($"Шаг цены:       {lot.Step}");
-                Console.WriteLine($"Задаток:        {lot.Deposit}");
+                Console.WriteLine($"Начальная цена: {lot.StartPrice} ₽");
+                Console.WriteLine($"Шаг цены:       {lot.Step} ₽");
+                Console.WriteLine($"Задаток:        {lot.Deposit} ₽");
                 Console.WriteLine($"Ознакомление:   {lot.ViewingProcedure}");
                 Console.WriteLine($"Источник:       {lot.Url}");
                 Console.WriteLine(new string('-', 40));
             }
 
             await SaveToDatabase(allLots);
+        }
+
+        private static decimal? ParsePrice(string priceText)
+{
+            if (string.IsNullOrWhiteSpace(priceText) || priceText.Equals("не найдено", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            // 1. Убираем символ валюты и лишние пробелы в начале/конце
+            var cleanedString = priceText.Replace("₽", "").Trim();
+
+            // 2. Убираем пробелы-разделители тысяч
+            cleanedString = Regex.Replace(cleanedString, @"\s+", "");
+
+            // 3. Заменяем запятую на точку для универсального парсинга
+            cleanedString = cleanedString.Replace(',', '.');
+
+            // 4. Безопасно парсим, используя инвариантную культуру
+            if (decimal.TryParse(cleanedString, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal result))
+            {
+                return result;
+            }
+
+            return null; // Возвращаем null, если парсинг не удался
         }
 
         private static async Task SaveToDatabase(List<LotInfo> allLots)

@@ -24,3 +24,6 @@ public class LotsDbContext : DbContext
 // == run command from Lots.Data project ==
 // dotnet ef migrations add InitialCreate --project Lots.Data.csproj --startup-project ../FedresursScraper
 // dotnet ef database update --project Lots.Data.csproj --startup-project ../FedresursScraper
+
+// -- удаление БД (Выполните эту команду из корневой папки вашего проекта (B:\Т\FedresursScraper)
+// dotnet ef database drop --project Lots.Data --startup-project FedresursScraper

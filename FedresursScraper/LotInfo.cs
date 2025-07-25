@@ -23,12 +23,12 @@ namespace FedResursScraper
         /// <summary>
         /// Начальная цена
         /// </summary>
-        public string StartPrice { get; set; }
+        public decimal? StartPrice { get; set; }
 
         /// <summary>
         /// Шаг цены
         /// </summary>
-        public string Step { get; set; }
+        public decimal? Step { get; set; }
 
         /// <summary>
         /// Ссылка на источник
@@ -38,7 +38,7 @@ namespace FedResursScraper
         /// <summary>
         /// Задаток
         /// </summary>
-        public string Deposit { get; set; }
+        public decimal? Deposit { get; set; }
 
         /// <summary>
         /// Порядок ознакомления с имуществом

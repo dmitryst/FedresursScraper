@@ -31,21 +31,18 @@ namespace Lots.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Deposit")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<decimal?>("Deposit")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("StartPrice")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<decimal?>("StartPrice")
+                        .HasColumnType("numeric");
 
-                    b.Property<string>("Step")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<decimal?>("Step")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Url")
                         .IsRequired()

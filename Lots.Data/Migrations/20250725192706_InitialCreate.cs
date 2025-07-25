@@ -17,10 +17,11 @@ namespace Lots.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    BiddingType = table.Column<string>(type: "text", nullable: false),
                     Url = table.Column<string>(type: "text", nullable: false),
-                    StartPrice = table.Column<string>(type: "text", nullable: false),
-                    Step = table.Column<string>(type: "text", nullable: false),
-                    Deposit = table.Column<string>(type: "text", nullable: false),
+                    StartPrice = table.Column<decimal>(type: "numeric", nullable: true),
+                    Step = table.Column<decimal>(type: "numeric", nullable: true),
+                    Deposit = table.Column<decimal>(type: "numeric", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: false),
                     ViewingProcedure = table.Column<string>(type: "text", nullable: false)
                 },
