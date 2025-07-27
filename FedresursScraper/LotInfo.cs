@@ -3,7 +3,7 @@ namespace FedResursScraper
     /// <summary>
     /// Лот
     /// </summary>
-    class LotInfo
+    public class LotInfo
     {
         /// <summary>
         /// Вид торгов
