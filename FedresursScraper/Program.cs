@@ -3,13 +3,28 @@ using OpenQA.Selenium.Chrome;
 using Lots.Data.Entities;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace FedResursScraper
 {
     public class Program
     {
-        public static async Task Main()
+        public static async Task Main(string[] args)
         {
+            var host = Host.CreateDefaultBuilder(args)
+            .ConfigureServices((hostContext, services) =>
+            {
+                IConfiguration configuration = hostContext.Configuration;
+
+                services.AddDbContext<LotsDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+            })
+            .Build();
+
+            await ApplyMigrations(host);
+
             // Путь к файлу со ссылками
             var filePath = "B:\\Т\\FedresursScraper\\FedresursScraper\\data.txt";
 
@@ -206,11 +221,34 @@ namespace FedResursScraper
                 Console.WriteLine(new string('-', 40));
             }
 
-            await SaveToDatabase(allLots);
+            using (var scope = host.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
+                await SaveToDatabase(allLots, dbContext);
+            }
+        }
+
+        private static async Task ApplyMigrations(IHost host)
+        {
+            using (var scope = host.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var context = services.GetRequiredService<LotsDbContext>();
+                    await context.Database.MigrateAsync();
+                    Console.WriteLine("Миграции успешно применены.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Произошла ошибка при применении миграций: {ex.Message}");
+                    return;
+                }
+            }
         }
 
         private static decimal? ParsePrice(string priceText)
-{
+        {
             if (string.IsNullOrWhiteSpace(priceText) || priceText.Equals("не найдено", StringComparison.OrdinalIgnoreCase))
             {
                 return null;
@@ -234,34 +272,32 @@ namespace FedResursScraper
             return null; // Возвращаем null, если парсинг не удался
         }
 
-        private static async Task SaveToDatabase(List<LotInfo> allLots)
+        private static async Task SaveToDatabase(List<LotInfo> allLots, LotsDbContext db)
         {
-            using (var db = new LotsDbContext())
+            foreach (var lotInfo in allLots)
             {
-                foreach (var lotInfo in allLots)
+                var lot = new Lot
                 {
-                    var lot = new Lot
-                    {
-                        BiddingType = lotInfo.BiddingType,
-                        Url = lotInfo.Url,
-                        StartPrice = lotInfo.StartPrice,
-                        Step = lotInfo.Step,
-                        Deposit = lotInfo.Deposit,
-                        Description = lotInfo.Description,
-                        ViewingProcedure = lotInfo.ViewingProcedure
-                    };
+                    BiddingType = lotInfo.BiddingType,
+                    Url = lotInfo.Url,
+                    StartPrice = lotInfo.StartPrice,
+                    Step = lotInfo.Step,
+                    Deposit = lotInfo.Deposit,
+                    Description = lotInfo.Description,
+                    ViewingProcedure = lotInfo.ViewingProcedure
+                };
 
-                    // Записываем все категории, исключая пустые
-                    foreach (var cat in lotInfo.Categories)
-                    {
-                        if (!string.IsNullOrWhiteSpace(cat))
-                            lot.Categories.Add(new LotCategory { Name = cat });
-                    }
-
-                    db.Lots.Add(lot);
+                // Записываем все категории, исключая пустые
+                foreach (var cat in lotInfo.Categories)
+                {
+                    if (!string.IsNullOrWhiteSpace(cat))
+                        lot.Categories.Add(new LotCategory { Name = cat });
                 }
-                await db.SaveChangesAsync();
+
+                db.Lots.Add(lot);
             }
+            await db.SaveChangesAsync();
+            Console.WriteLine($"\nУспешно сохранено {allLots.Count} лотов в базу данных.");
         }
     }
 }

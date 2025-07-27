@@ -3,13 +3,12 @@ using Microsoft.EntityFrameworkCore;
 
 public class LotsDbContext : DbContext
 {
+    public LotsDbContext(DbContextOptions<LotsDbContext> options) : base(options)
+    {
+    }
+
     public DbSet<Lot> Lots { get; set; }
     public DbSet<LotCategory> LotCategories { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=lot_db;Username=postgres;Password=postgres");
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
