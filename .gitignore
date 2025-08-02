@@ -1,4 +1,3 @@
 # Исключаем каталоги сборки
 bin/
 obj/
-FedresursScraper/appsettings.json
