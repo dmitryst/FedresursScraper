@@ -1,6 +1,11 @@
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 
+# ---ЗАМЕНА РЕПОЗИТОРИЕВ НА ЗЕРКАЛО ЯНДЕКСА ---
+RUN echo "deb http://mirror.yandex.ru/debian/ bookworm main" > /etc/apt/sources.list && \
+    echo "deb http://mirror.yandex.ru/debian/ bookworm-updates main" >> /etc/apt/sources.list && \
+    echo "deb http://security.debian.org/debian-security/ bookworm-security main" >> /etc/apt/sources.list
+
 # --- УСТАНОВКА GOOGLE CHROME И ВСЕХ ЗАВИСИМОСТЕЙ ---
 # Обновляем пакеты и ставим утилиты для добавления репозитория
 RUN apt-get update && apt-get install -y --no-install-recommends \
