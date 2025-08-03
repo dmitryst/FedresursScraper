@@ -27,6 +27,7 @@ namespace FedResursScraper
 
                 services.AddTransient<ScraperService>();
                 services.AddSingleton<ILotIdsCache, InMemoryLotIdsCache>();
+                services.AddSingleton<IWebDriverFactory, WebDriverFactory>();
                 services.AddHostedService<LotIdsParser>();
                 services.AddHostedService<LotInfoParser>();
             })

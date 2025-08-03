@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace FedResursScraper
 {
-    public class ScraperService
+    public class ScraperService : IScraperService
     {
         public async Task<LotInfo> ScrapeLotData(IWebDriver driver, string lotUrl)
         {
@@ -15,7 +15,7 @@ namespace FedResursScraper
             await Task.Delay(3000 + random.Next(1500));
 
             // Выводим HTML страницы для анализа
-            var pageSource = driver.PageSource;
+            // var pageSource = driver.PageSource;
             // File.WriteAllText("debug.html", pageSource);
 
             // Парсинг всех полей с помощью универсального метода
