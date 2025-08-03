@@ -25,7 +25,7 @@ namespace FedResursScraper
                 services.AddDbContext<LotsDbContext>(options =>
                     options.UseNpgsql(connectionString));
 
-                services.AddTransient<ScraperService>();
+                services.AddSingleton<IScraperService, ScraperService>();
                 services.AddSingleton<ILotIdsCache, InMemoryLotIdsCache>();
                 services.AddSingleton<IWebDriverFactory, WebDriverFactory>();
                 services.AddHostedService<LotIdsParser>();
