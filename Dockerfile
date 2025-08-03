@@ -19,9 +19,12 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearm
 # Добавляем официальный репозиторий Google Chrome
 RUN echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
 
-# Обновляем пакеты еще раз и ставим сам браузер и все нужные ему библиотеки
+# Обновляем пакеты еще раз и ставим браузер google-chrome и все нужные ему библиотеки
 RUN apt-get update && apt-get install -y --no-install-recommends \
     google-chrome-stable \
+    wget \
+    unzip \
+    jq \
     libglib2.0-0 \
     libnss3 \
     libgconf-2-4 \
@@ -46,6 +49,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
+# Скачиваем и устанавливаем chromedriver последней стабильной версии
+RUN wget -q --continue -P /tmp https://storage.googleapis.com/chrome-for-testing-public/138.0.7204.183/linux64/chromedriver-linux64.zip && \
+    unzip -q /tmp/chromedriver-linux64.zip -d /tmp && \
+    mv /tmp/chromedriver-linux64/chromedriver /usr/bin/chromedriver && \
+    chmod +x /usr/bin/chromedriver
+
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
@@ -63,6 +72,7 @@ COPY . .
 # Запускаем публикацию (указывая главный проект)
 RUN dotnet publish "FedresursScraper/FedresursScraper.csproj" -c Release -o /app/publish
 
+# Копируем результат сборки в рабочий образ
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
