@@ -79,7 +79,9 @@ public class LotInfoParser : BackgroundService
             Step = lotInfo.Step,
             Deposit = lotInfo.Deposit,
             Description = lotInfo.Description,
-            ViewingProcedure = lotInfo.ViewingProcedure
+            ViewingProcedure = lotInfo.ViewingProcedure,
+            BiddingAnnouncementDate = lotInfo.BiddingAnnouncementDate,
+            CreatedAt = DateTime.UtcNow
         };
 
         // Записываем все категории, исключая пустые

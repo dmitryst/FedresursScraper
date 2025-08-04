@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -6,6 +8,13 @@ namespace FedResursScraper
 {
     public class ScraperService : IScraperService
     {
+        private readonly ILogger<IScraperService> _logger;
+
+        public ScraperService(ILogger<IScraperService> logger)
+        {
+            _logger = logger;
+        }
+
         public async Task<LotInfo> ScrapeLotData(IWebDriver driver, string lotUrl)
         {
             driver.Navigate().GoToUrl(lotUrl);
@@ -24,6 +33,9 @@ namespace FedResursScraper
             string stepText = ParseField(driver, "Шаг аукциона");
             string depositText = ParseField(driver, "Задаток");
 
+            string announcementRawText = ParseField(driver, "Объявление о торгах");
+            DateTime? announcementDate = ParseBiddingAnnouncementDate(announcementRawText);
+
             var categories = ParseCategories(driver);
             var (description, viewingProcedure) = ParseAndSplitDescription(driver);
 
@@ -31,6 +43,7 @@ namespace FedResursScraper
             {
                 Url = lotUrl,
                 BiddingType = biddingType,
+                BiddingAnnouncementDate = announcementDate,
                 Categories = categories,
                 StartPrice = ParsePrice(startPriceText),
                 Step = ParsePrice(stepText),
@@ -38,6 +51,47 @@ namespace FedResursScraper
                 Description = description,
                 ViewingProcedure = viewingProcedure
             };
+        }
+
+        private DateTime? ParseBiddingAnnouncementDate(string rawText)
+        {
+            if (string.IsNullOrWhiteSpace(rawText) || rawText.Equals("не найдено", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            // Ищем паттерн "ДД.ММ.ГГГГ ЧЧ:ММ" с помощью регулярного выражения
+            var match = Regex.Match(rawText, @"\d{2}\.\d{2}\.\d{4}\s\d{2}:\d{2}");
+
+            if (match.Success)
+            {
+                // Пытаемся распарсить найденную дату, указывая точный формат
+                if (DateTime.TryParseExact(match.Value, "dd.MM.yyyy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime unspecifiedTime))
+                {
+                    try
+                    {
+                        TimeZoneInfo moscowTimeZone;
+                        try
+                        {
+                            moscowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow");
+                        }
+                        catch (TimeZoneNotFoundException)
+                        {
+                            moscowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
+                        }
+
+                        // 2. Конвертируем "неопределенное" время в UTC, считая, что исходник был в MSK.
+                        return TimeZoneInfo.ConvertTimeToUtc(unspecifiedTime, moscowTimeZone);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogInformation($"Не удалось найти часовой пояс для Москвы: {ex.Message}");
+                        return null;
+                    }
+                }
+            }
+
+            return null;
         }
 
         // Универсальный метод для парсинга полей "ключ-значение"
