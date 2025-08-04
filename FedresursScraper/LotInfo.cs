@@ -4,6 +4,11 @@
 public class LotInfo
 {
     /// <summary>
+    /// Дата объявления торгов
+    /// </summary>
+    public DateTime? BiddingAnnouncementDate { get; set; }
+
+    /// <summary>
     /// Вид торгов
     /// </summary>
     public string BiddingType { get; set; }
