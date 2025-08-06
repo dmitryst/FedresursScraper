@@ -1,6 +1,6 @@
-﻿using FedresursScraper.Services;
-using Lots.Data;
+﻿using Lots.Data;
 using Microsoft.EntityFrameworkCore;
+using FedresursScraper.Services;
 
 // 1. Используем WebApplicationBuilder для создания веб-приложения
 var builder = WebApplication.CreateBuilder(args);
@@ -21,17 +21,20 @@ builder.Services.AddDbContext<LotsDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 // Регистрация фабрики для создания ChromeDriver
-builder.Services.AddSingleton<IWebDriverFactory, ChromeDriverFactory>();
-
-// Регистрация кэша для ID лотов
-builder.Services.AddSingleton<ILotIdsCache, InMemoryLotIdsCache>();
+builder.Services.AddSingleton<IWebDriverFactory, WebDriverFactory>();
 
 // Регистрация сервиса для парсинга
 builder.Services.AddTransient<IScraperService, ScraperService>();
 
 // Регистрация фоновых сервисов
-builder.Services.AddHostedService<LotIdsParser>();
-builder.Services.AddHostedService<LotInfoParser>();
+bool parsersEnabled = builder.Configuration.GetValue<bool>("BackgroundParsers:Enabled");
+
+if (parsersEnabled)
+{
+    builder.Services.AddSingleton<ILotIdsCache, InMemoryLotIdsCache>();
+    builder.Services.AddHostedService<LotIdsParser>();
+    builder.Services.AddHostedService<LotInfoParser>();
+}
 
 // 3. Сборка приложения
 var app = builder.Build();

@@ -1,4 +1,3 @@
-using FedresursScraper.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FedresursScraper.Controllers
