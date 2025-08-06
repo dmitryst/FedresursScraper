@@ -16,11 +16,12 @@ namespace FedResursScraper
                 IConfiguration configuration = hostContext.Configuration;
 
                 var host = configuration["POSTGRES_HOST"];
+                var port = configuration["POSTGRES_PORT"];
                 var user = configuration["POSTGRES_USER"];
                 var password = configuration["POSTGRES_PASSWORD"];
                 var db = configuration["POSTGRES_DB"];
 
-                var connectionString = $"Host={host};Port=5432;Database={db};Username={user};Password={password}";
+                var connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={password}";
 
                 services.AddDbContext<LotsDbContext>(options =>
                     options.UseNpgsql(connectionString));
