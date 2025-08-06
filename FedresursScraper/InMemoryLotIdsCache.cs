@@ -1,55 +1,43 @@
+using System.Collections.Concurrent;
+
 public class InMemoryLotIdsCache : ILotIdsCache
 {
-    private readonly HashSet<string> _lotIds = new();
-    private readonly object _lock = new();
-
-    public IReadOnlyCollection<string> GetAllLotIds()
-    {
-        lock (_lock)
-        {
-            return _lotIds.ToList().AsReadOnly();
-        }
-    }
-
-    public void ReplaceAll(IEnumerable<string> newIds)
-    {
-        lock (_lock)
-        {
-            _lotIds.Clear();
-            foreach (var id in newIds)
-                _lotIds.Add(id);
-        }
-    }
-
-    public bool TryAdd(string lotId)
-    {
-        if (string.IsNullOrWhiteSpace(lotId)) return false;
-        lock (_lock)
-        {
-            return _lotIds.Add(lotId); // вернёт true, если добавлен, false если уже есть
-        }
-    }
-
-    public bool Remove(string lotId)
-    {
-        if (string.IsNullOrWhiteSpace(lotId)) return false;
-        lock (_lock)
-        {
-            return _lotIds.Remove(lotId);
-        }
-    }
+    private readonly ConcurrentDictionary<string, ParsingStatus> _lotStatuses = new();
 
     public int AddMany(IEnumerable<string> lotIds)
     {
         int countAdded = 0;
-        lock (_lock)
+        foreach (var id in lotIds)
         {
-            foreach (var id in lotIds)
+            if (!string.IsNullOrWhiteSpace(id))
             {
-                if (!string.IsNullOrWhiteSpace(id) && _lotIds.Add(id))
+                // TryAdd атомарно добавляет элемент, только если ключа еще нет.
+                // Это гарантирует, что мы не перезапишем статус 'Completed' на 'New'.
+                if (_lotStatuses.TryAdd(id, ParsingStatus.New))
+                {
                     countAdded++;
+                }
             }
         }
         return countAdded;
+    }
+
+    public IReadOnlyCollection<string> GetIdsToParse()
+    {
+        // Выбираем только те ID, у которых статус New
+        return _lotStatuses
+            .Where(pair => pair.Value == ParsingStatus.New)
+            .Select(pair => pair.Key)
+            .ToList()
+            .AsReadOnly();
+    }
+
+    public void MarkAsCompleted(string lotId)
+    {
+        if (!string.IsNullOrWhiteSpace(lotId))
+        {
+            // Обновляем статус существующего ID на Completed
+            _lotStatuses.TryUpdate(lotId, ParsingStatus.Completed, ParsingStatus.New);
+        }
     }
 }

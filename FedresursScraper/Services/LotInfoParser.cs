@@ -29,21 +29,23 @@ public class LotInfoParser : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var lotIds = _cache.GetAllLotIds().ToList();
-            if (lotIds.Count == 0)
-            {
-                _logger.LogInformation("Нет новых ID");
+            var lotIdsToParse = _cache.GetIdsToParse();
 
+            if (lotIdsToParse.Count == 0)
+            {
+                _logger.LogInformation("Нет новых ID для парсинга.");
                 await Task.Delay(_interval, stoppingToken);
                 continue;
             }
+
+            _logger.LogInformation("В очереди на парсинг {Count} лотов.", lotIdsToParse.Count);
 
             using var driver = _webDriverFactory.CreateDriver();
             using var scope = _serviceProvider.CreateScope();
             var scraperService = scope.ServiceProvider.GetRequiredService<IScraperService>();
             var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
 
-            foreach (var lotId in lotIds)
+            foreach (var lotId in lotIdsToParse)
             {
                 if (string.IsNullOrWhiteSpace(lotId)) continue;
 
@@ -57,11 +59,12 @@ public class LotInfoParser : BackgroundService
 
                     await SaveToDatabase(lotInfo, dbContext, _logger);
 
-                    _cache.Remove(lotId);
+                    _cache.MarkAsCompleted(lotId);
+                    _logger.LogInformation("Лот {LotId} успешно обработан и помечен как 'Completed'.", lotId);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Ошибка при обработке и сохранении лота {LotUrl}", lotUrl);
+                    _logger.LogError(ex, "Ошибка при обработке лота {LotId}. Статус останется 'New' для повторной попытки.", lotId);
                 }
             }
 

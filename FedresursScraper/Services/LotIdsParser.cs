@@ -47,7 +47,7 @@ public class LotIdsParser : BackgroundService
 
     private async Task<int> UpdateLotIdsAsync()
     {
-        _logger.LogInformation("Начинаем обновлять список Id лотов с сайта.");
+        _logger.LogInformation("Получаем ID торгов и добавляем их в кэш.");
 
         using var driver = _webDriverFactory.CreateDriver();
 
@@ -58,7 +58,7 @@ public class LotIdsParser : BackgroundService
         await Task.Delay(5000); // дождаться загрузки страницы
 
         var elements = driver.FindElements(By.CssSelector("a[title='Полная информация о торгах']"))
-            .Take(5)
+            .Take(20)
             .ToList();
 
         var newIds = new List<string>();
@@ -79,7 +79,7 @@ public class LotIdsParser : BackgroundService
 
         var addedCount = _cache.AddMany(newIds);
 
-        _logger.LogInformation("Добавлено {Count} новых уникальных ID в память.", addedCount);
+        _logger.LogInformation("Добавлено {Count} новых ID лотов в очередь на парсинг.", addedCount);
 
         return addedCount;
     }
