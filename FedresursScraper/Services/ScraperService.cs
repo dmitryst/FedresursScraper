@@ -4,7 +4,7 @@ using OpenQA.Selenium;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace FedResursScraper
+namespace FedresursScraper.Services
 {
     public class ScraperService : IScraperService
     {

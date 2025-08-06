@@ -24,16 +24,4 @@
     <ProjectReference Include="..\Lots.Data\Lots.Data.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-  <Content Include="appsettings.json">
-    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-  </Content>
-</ItemGroup>
-
-<ItemGroup>
-  <None Update="data.txt">
-    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-  </None>
-</ItemGroup>
-
 </Project>

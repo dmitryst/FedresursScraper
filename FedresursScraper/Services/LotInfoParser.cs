@@ -1,101 +1,103 @@
-using FedResursScraper;
 using Lots.Data.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenQA.Selenium.Chrome;
 
-public class LotInfoParser : BackgroundService
+namespace FedresursScraper.Services
 {
-    private readonly ILogger<LotInfoParser> _logger;
-    private readonly ILotIdsCache _cache;
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IWebDriverFactory _webDriverFactory;
-    private readonly TimeSpan _interval = TimeSpan.FromSeconds(30);
-
-    public LotInfoParser(
-        ILogger<LotInfoParser> logger,
-        ILotIdsCache cache,
-        IServiceProvider serviceProvider,
-        IWebDriverFactory webDriverFactory)
+    public class LotInfoParser : BackgroundService
     {
-        _logger = logger;
-        _cache = cache;
-        _serviceProvider = serviceProvider;
-        _webDriverFactory = webDriverFactory;
-    }
+        private readonly ILogger<LotInfoParser> _logger;
+        private readonly ILotIdsCache _cache;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IWebDriverFactory _webDriverFactory;
+        private readonly TimeSpan _interval = TimeSpan.FromSeconds(30);
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        while (!stoppingToken.IsCancellationRequested)
+        public LotInfoParser(
+            ILogger<LotInfoParser> logger,
+            ILotIdsCache cache,
+            IServiceProvider serviceProvider,
+            IWebDriverFactory webDriverFactory)
         {
-            var lotIdsToParse = _cache.GetIdsToParse();
+            _logger = logger;
+            _cache = cache;
+            _serviceProvider = serviceProvider;
+            _webDriverFactory = webDriverFactory;
+        }
 
-            if (lotIdsToParse.Count == 0)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Нет новых ID для парсинга.");
+                var lotIdsToParse = _cache.GetIdsToParse();
+
+                if (lotIdsToParse.Count == 0)
+                {
+                    _logger.LogInformation("Нет новых ID для парсинга.");
+                    await Task.Delay(_interval, stoppingToken);
+                    continue;
+                }
+
+                _logger.LogInformation("В очереди на парсинг {Count} лотов.", lotIdsToParse.Count);
+
+                using var driver = _webDriverFactory.CreateDriver();
+                using var scope = _serviceProvider.CreateScope();
+                var scraperService = scope.ServiceProvider.GetRequiredService<IScraperService>();
+                var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
+
+                foreach (var lotId in lotIdsToParse)
+                {
+                    if (string.IsNullOrWhiteSpace(lotId)) continue;
+
+                    var lotUrl = $"https://fedresurs.ru/biddings/{lotId}";
+
+                    try
+                    {
+                        _logger.LogInformation("Парсинг лота: {LotUrl}", lotUrl);
+
+                        var lotInfo = await scraperService.ScrapeLotData(driver, lotUrl);
+
+                        await SaveToDatabase(lotInfo, dbContext, _logger);
+
+                        _cache.MarkAsCompleted(lotId);
+                        _logger.LogInformation("Лот {LotId} успешно обработан и помечен как 'Completed'.", lotId);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Ошибка при обработке лота {LotId}. Статус останется 'New' для повторной попытки.", lotId);
+                    }
+                }
+
                 await Task.Delay(_interval, stoppingToken);
-                continue;
             }
+        }
 
-            _logger.LogInformation("В очереди на парсинг {Count} лотов.", lotIdsToParse.Count);
-
-            using var driver = _webDriverFactory.CreateDriver();
-            using var scope = _serviceProvider.CreateScope();
-            var scraperService = scope.ServiceProvider.GetRequiredService<IScraperService>();
-            var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
-
-            foreach (var lotId in lotIdsToParse)
+        private async Task SaveToDatabase(LotInfo lotInfo, LotsDbContext db, ILogger logger)
+        {
+            var lot = new Lot
             {
-                if (string.IsNullOrWhiteSpace(lotId)) continue;
+                BiddingType = lotInfo.BiddingType,
+                Url = lotInfo.Url,
+                StartPrice = lotInfo.StartPrice,
+                Step = lotInfo.Step,
+                Deposit = lotInfo.Deposit,
+                Description = lotInfo.Description,
+                ViewingProcedure = lotInfo.ViewingProcedure,
+                BiddingAnnouncementDate = lotInfo.BiddingAnnouncementDate,
+                CreatedAt = DateTime.UtcNow
+            };
 
-                var lotUrl = $"https://fedresurs.ru/biddings/{lotId}";
-
-                try
-                {
-                    _logger.LogInformation("Парсинг лота: {LotUrl}", lotUrl);
-
-                    var lotInfo = await scraperService.ScrapeLotData(driver, lotUrl);
-
-                    await SaveToDatabase(lotInfo, dbContext, _logger);
-
-                    _cache.MarkAsCompleted(lotId);
-                    _logger.LogInformation("Лот {LotId} успешно обработан и помечен как 'Completed'.", lotId);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Ошибка при обработке лота {LotId}. Статус останется 'New' для повторной попытки.", lotId);
-                }
+            // Записываем все категории, исключая пустые
+            foreach (var cat in lotInfo.Categories)
+            {
+                if (!string.IsNullOrWhiteSpace(cat))
+                    lot.Categories.Add(new LotCategory { Name = cat });
             }
 
-            await Task.Delay(_interval, stoppingToken);
+            db.Lots.Add(lot);
+
+            await db.SaveChangesAsync();
         }
-    }
-
-    private async Task SaveToDatabase(LotInfo lotInfo, LotsDbContext db, ILogger logger)
-    {
-        var lot = new Lot
-        {
-            BiddingType = lotInfo.BiddingType,
-            Url = lotInfo.Url,
-            StartPrice = lotInfo.StartPrice,
-            Step = lotInfo.Step,
-            Deposit = lotInfo.Deposit,
-            Description = lotInfo.Description,
-            ViewingProcedure = lotInfo.ViewingProcedure,
-            BiddingAnnouncementDate = lotInfo.BiddingAnnouncementDate,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        // Записываем все категории, исключая пустые
-        foreach (var cat in lotInfo.Categories)
-        {
-            if (!string.IsNullOrWhiteSpace(cat))
-                lot.Categories.Add(new LotCategory { Name = cat });
-        }
-
-        db.Lots.Add(lot);
-
-        await db.SaveChangesAsync();
     }
 }
