@@ -93,13 +93,6 @@ public class LotInfoParser : BackgroundService
 
         db.Lots.Add(lot);
 
-        try
-        {
-            await db.SaveChangesAsync();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Произошла ошибка при сохранении данных в БД.");
-        }
+        await db.SaveChangesAsync();
     }
 }
