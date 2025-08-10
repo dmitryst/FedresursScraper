@@ -7,11 +7,18 @@ public class LotsDbContext : DbContext
     {
     }
 
+    public DbSet<Bidding> Biddings { get; set; }
     public DbSet<Lot> Lots { get; set; }
     public DbSet<LotCategory> LotCategories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Lot>()
+            .HasOne(c => c.Bidding)
+            .WithMany(l => l.Lots)
+            .HasForeignKey(c => c.BiddingId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<LotCategory>()
             .HasOne(c => c.Lot)
             .WithMany(l => l.Categories)

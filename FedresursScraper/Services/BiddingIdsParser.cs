@@ -5,12 +5,12 @@ using OpenQA.Selenium.Chrome;
 
 namespace FedresursScraper.Services
 {
-    public class LotIdsParser : BackgroundService
+    public class BiddingIdsParser : BackgroundService
     {
-        private readonly ILogger<LotIdsParser> _logger;
+        private readonly ILogger<BiddingIdsParser> _logger;
         private readonly ILotIdsCache _cache;
         private readonly IWebDriverFactory _webDriverFactory;
-        private readonly TimeSpan _interval = TimeSpan.FromMinutes(5);
+        private readonly TimeSpan _interval = TimeSpan.FromMinutes(1);
 
         // --- поля для динамического интервала ---
         private TimeSpan _currentInterval;
@@ -19,7 +19,7 @@ namespace FedresursScraper.Services
         private static readonly TimeSpan MaxInterval = TimeSpan.FromMinutes(10);
         private static readonly TimeSpan IntervalStep = TimeSpan.FromMinutes(2);
 
-        public LotIdsParser(ILogger<LotIdsParser> logger, ILotIdsCache cache, IWebDriverFactory webDriverFactory)
+        public BiddingIdsParser(ILogger<BiddingIdsParser> logger, ILotIdsCache cache, IWebDriverFactory webDriverFactory)
         {
             _logger = logger;
             _cache = cache;
@@ -51,6 +51,10 @@ namespace FedresursScraper.Services
         {
             _logger.LogInformation("Получаем ID торгов и добавляем их в кэш.");
 
+            // ---- отладка
+            //var newIds = new List<string>() { "6fa247d6-708d-40e6-b357-42fefb357020" };
+            // --- отладка
+
             using var driver = _webDriverFactory.CreateDriver();
 
             driver.Navigate().GoToUrl("https://old.bankrot.fedresurs.ru/TradeList.aspx");
@@ -81,7 +85,7 @@ namespace FedresursScraper.Services
 
             var addedCount = _cache.AddMany(newIds);
 
-            _logger.LogInformation("Добавлено {Count} новых ID лотов в очередь на парсинг.", addedCount);
+            _logger.LogInformation("Добавлено {Count} торгов в очередь на парсинг.", addedCount);
 
             return addedCount;
         }

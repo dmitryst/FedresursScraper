@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET Core Launch (web)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            // Убедитесь, что путь к вашей DLL указан верно
+            "program": "${workspaceFolder}/FedresursScraper/bin/Debug/net9.0/FedresursScraper.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/FedresursScraper",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            // Этот блок задаст переменные окружения только для отладки в VS Code.
+            // При запуске через docker-compose они будут браться из .env файла.
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "POSTGRES_HOST": "localhost",
+                "POSTGRES_PORT": "5432",
+                "POSTGRES_DB": "lot_db_new",
+                "POSTGRES_USER": "postgres",
+                "POSTGRES_PASSWORD": "postgres"
+            }
+        }
+    ]
+}

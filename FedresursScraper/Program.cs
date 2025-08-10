@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // 2. Регистрация сервисов в DI контейнере
 builder.Services.AddControllers(); // Добавляем поддержку API-контроллеров
 
-// Ваша логика для сборки строки подключения - она сохранена
+// Ваша логика для сборки строки подключения
 var host = builder.Configuration["POSTGRES_HOST"];
 var port = builder.Configuration["POSTGRES_PORT"];
 var user = builder.Configuration["POSTGRES_USER"];
@@ -23,8 +23,9 @@ builder.Services.AddDbContext<LotsDbContext>(options =>
 // Регистрация фабрики для создания ChromeDriver
 builder.Services.AddSingleton<IWebDriverFactory, WebDriverFactory>();
 
-// Регистрация сервиса для парсинга
-builder.Services.AddTransient<IScraperService, ScraperService>();
+// Регистрация сервисов для парсинга
+builder.Services.AddTransient<IBiddingScraper, BiddingScraper>();
+builder.Services.AddTransient<ILotsScraper, LotsScraper>();
 
 // Регистрация фоновых сервисов
 bool parsersEnabled = builder.Configuration.GetValue<bool>("BackgroundParsers:Enabled");
@@ -32,8 +33,8 @@ bool parsersEnabled = builder.Configuration.GetValue<bool>("BackgroundParsers:En
 if (parsersEnabled)
 {
     builder.Services.AddSingleton<ILotIdsCache, InMemoryLotIdsCache>();
-    builder.Services.AddHostedService<LotIdsParser>();
-    builder.Services.AddHostedService<LotInfoParser>();
+    builder.Services.AddHostedService<BiddingIdsParser>();
+    builder.Services.AddHostedService<BiddingWithLotsParser>();
 }
 
 // 3. Сборка приложения
