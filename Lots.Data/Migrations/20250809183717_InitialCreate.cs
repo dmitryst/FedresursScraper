@@ -13,21 +13,45 @@ namespace Lots.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Biddings",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    AnnouncedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    BidAcceptancePeriod = table.Column<string>(type: "text", nullable: true),
+                    BankruptMessageId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ViewingProcedure = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Biddings", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Lots",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    BiddingType = table.Column<string>(type: "text", nullable: false),
-                    Url = table.Column<string>(type: "text", nullable: false),
+                    LotNumber = table.Column<string>(type: "text", nullable: true),
                     StartPrice = table.Column<decimal>(type: "numeric", nullable: true),
                     Step = table.Column<decimal>(type: "numeric", nullable: true),
                     Deposit = table.Column<decimal>(type: "numeric", nullable: true),
-                    Description = table.Column<string>(type: "text", nullable: false),
-                    ViewingProcedure = table.Column<string>(type: "text", nullable: false)
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    ViewingProcedure = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    BiddingId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Lots", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Lots_Biddings_BiddingId",
+                        column: x => x.BiddingId,
+                        principalTable: "Biddings",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -54,6 +78,11 @@ namespace Lots.Data.Migrations
                 name: "IX_LotCategories_LotId",
                 table: "LotCategories",
                 column: "LotId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Lots_BiddingId",
+                table: "Lots",
+                column: "BiddingId");
         }
 
         /// <inheritdoc />
@@ -64,6 +93,9 @@ namespace Lots.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Lots");
+
+            migrationBuilder.DropTable(
+                name: "Biddings");
         }
     }
 }

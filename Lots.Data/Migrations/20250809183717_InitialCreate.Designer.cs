@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Lots.Data.Migrations
 {
     [DbContext(typeof(LotsDbContext))]
-    [Migration("20250725192706_InitialCreate")]
+    [Migration("20250809183717_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -24,21 +24,55 @@ namespace Lots.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Lots.Data.Entities.Bidding", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("AnnouncedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("BankruptMessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BidAcceptancePeriod")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ViewingProcedure")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Biddings");
+                });
+
             modelBuilder.Entity("Lots.Data.Entities.Lot", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("BiddingType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("BiddingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal?>("Deposit")
                         .HasColumnType("numeric");
 
                     b.Property<string>("Description")
-                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("LotNumber")
                         .HasColumnType("text");
 
                     b.Property<decimal?>("StartPrice")
@@ -47,15 +81,12 @@ namespace Lots.Data.Migrations
                     b.Property<decimal?>("Step")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("ViewingProcedure")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BiddingId");
 
                     b.ToTable("Lots");
                 });
@@ -82,6 +113,17 @@ namespace Lots.Data.Migrations
                     b.ToTable("LotCategories");
                 });
 
+            modelBuilder.Entity("Lots.Data.Entities.Lot", b =>
+                {
+                    b.HasOne("Lots.Data.Entities.Bidding", "Bidding")
+                        .WithMany("Lots")
+                        .HasForeignKey("BiddingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Bidding");
+                });
+
             modelBuilder.Entity("Lots.Data.Entities.LotCategory", b =>
                 {
                     b.HasOne("Lots.Data.Entities.Lot", "Lot")
@@ -91,6 +133,11 @@ namespace Lots.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Lot");
+                });
+
+            modelBuilder.Entity("Lots.Data.Entities.Bidding", b =>
+                {
+                    b.Navigation("Lots");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.Lot", b =>
