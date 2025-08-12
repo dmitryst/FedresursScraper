@@ -2,10 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using FedresursScraper.Services;
 
-// 1. Используем WebApplicationBuilder для создания веб-приложения
+// Используем WebApplicationBuilder для создания веб-приложения
 var builder = WebApplication.CreateBuilder(args);
 
-// 2. Регистрация сервисов в DI контейнере
+// Регистрация сервисов в DI контейнере
 builder.Services.AddControllers(); // Добавляем поддержку API-контроллеров
 
 // Ваша логика для сборки строки подключения
@@ -38,20 +38,36 @@ if (parsersEnabled)
     builder.Services.AddHostedService<BiddingWithLotsParser>();
 }
 
-// 3. Сборка приложения
+var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: myAllowSpecificOrigins,
+                      policy  =>
+                      {
+                          // Разрешаем запросы от Next.js приложения
+                          policy.WithOrigins("http://localhost:3000")
+                                // Разрешаем любые HTTP-методы (GET, POST, OPTIONS и т.д.)
+                                .AllowAnyMethod()
+                                // Разрешаем любые заголовки в запросе (Content-Type, Authorization и т.д.)
+                                .AllowAnyHeader();
+                      });
+});
+
+// Сборка приложения
 var app = builder.Build();
 
-// 4. Применение миграций при старте (логика сохранена)
+// Применение миграций при старте (логика сохранена)
 await ApplyMigrations(app);
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("Приложение запущено.");
 
-// 5. Настройка HTTP-конвейера для обработки API-запросов
+// Настройка HTTP-конвейера для обработки API-запросов
+app.UseCors(myAllowSpecificOrigins);
 app.UseAuthorization();
 app.MapControllers(); // Включаем маппинг запросов на контроллеры
 
-// 6. Запуск приложения (и фоновых задач, и API)
+// Запуск приложения (и фоновых задач, и API)
 await app.RunAsync();
 
 
