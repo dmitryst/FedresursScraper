@@ -26,6 +26,7 @@ builder.Services.AddSingleton<IWebDriverFactory, WebDriverFactory>();
 // Регистрация сервисов для парсинга
 builder.Services.AddTransient<IBiddingScraper, BiddingScraper>();
 builder.Services.AddTransient<ILotsScraper, LotsScraper>();
+builder.Services.AddScoped<ILotCopyService, LotCopyService>();
 
 // Регистрация фоновых сервисов
 bool parsersEnabled = builder.Configuration.GetValue<bool>("BackgroundParsers:Enabled");

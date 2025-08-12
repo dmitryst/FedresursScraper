@@ -19,11 +19,20 @@
             // При запуске через docker-compose они будут браться из .env файла.
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
+
+                // ПЕРЕМЕННЫЕ ДЛЯ DEV БАЗЫ
                 "POSTGRES_HOST": "localhost",
                 "POSTGRES_PORT": "5432",
                 "POSTGRES_DB": "lot_db_new",
                 "POSTGRES_USER": "postgres",
-                "POSTGRES_PASSWORD": "postgres"
+                "POSTGRES_PASSWORD": "postgres",
+
+                // ПЕРЕМЕННЫЕ ДЛЯ PROD БАЗЫ
+                "PROD_DB_HOST": "194.58.126.53",
+                "PROD_DB_PORT": "5432",
+                "PROD_DB_NAME": "lot_db",
+                "PROD_DB_USER": "postgres",
+                "PROD_DB_PASSWORD": "Alfa_bank_007postgres"
             }
         }
     ]
