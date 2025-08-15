@@ -15,27 +15,33 @@ namespace FedresursScraper.Services
 
         public ChromeDriver CreateDriver()
         {
-            // === КОНФИГУРАЦИЯ ОПЦИЙ CHROME ===
             var options = new ChromeOptions();
 
-            // НАИБОЛЕЕ ПОЛНЫЙ НАБОР АРГУМЕНТОВ ДЛЯ DOCKER
-            options.AddArgument("--headless=new");
-            options.AddArgument("--no-sandbox");            // Критически важный флаг для запуска от root в Docker
-            options.AddArgument("--disable-dev-shm-usage"); // Предотвращает проблемы с общей памятью /dev/shm в Docker
-            options.AddArgument("--disable-gpu");
+            // --- ОБЩИЕ НАСТРОЙКИ, КОТОРЫЕ НУЖНЫ ВСЕГДА ---
             options.AddArgument("--window-size=1920,1080");
             options.AddArgument("--disable-extensions");
             options.AddArgument("--disable-infobars");
-            options.AddArgument("--remote-debugging-port=9222");
+            options.AddArgument("--disable-gpu");
 
+#if DEBUG
+            _logger.LogInformation("Applying DEBUG options for local development.");
+            // Опции для локальной отладки (без headless)
+#else
+                _logger.LogInformation("Applying RELEASE options for Docker/Production.");
+                
+                options.AddArgument("--headless=new");
+                options.AddArgument("--no-sandbox");            // Критически важный флаг для запуска от root в Docker
+                options.AddArgument("--disable-dev-shm-usage"); // Предотвращает проблемы с общей памятью /dev/shm в Docker
+                options.AddArgument("--remote-debugging-port=9222");
+#endif
             // УНИКАЛЬНЫЙ ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ
             // Создаем кросс-платформенный путь к временной папке
             var tempPath = Path.GetTempPath();
             var profileDir = Path.Combine(tempPath, $"chrome-profile-{Guid.NewGuid()}");
-            
+
             // Создаем директорию, если она не существует (на всякий случай)
-            Directory.CreateDirectory(profileDir); 
-            
+            Directory.CreateDirectory(profileDir);
+
             options.AddArgument($"--user-data-dir={profileDir}");
 
             // Настройки для маскировки под обычного пользователя
