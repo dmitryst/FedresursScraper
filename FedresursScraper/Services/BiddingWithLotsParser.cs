@@ -49,8 +49,8 @@ namespace FedresursScraper.Services
                 using var driver = _webDriverFactory.CreateDriver();
                 using var scope = _serviceProvider.CreateScope();
                 
-                var biddingScraper = scope.ServiceProvider.GetRequiredService<BiddingScraper>();
-                var lotsScraper = scope.ServiceProvider.GetRequiredService<LotsScraper>();
+                var biddingScraper = scope.ServiceProvider.GetRequiredService<IBiddingScraper>();
+                var lotsScraper = scope.ServiceProvider.GetRequiredService<ILotsScraper>();
                 var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
 
                 foreach (var biddingIdStr in biddingIdsToParse)
@@ -68,7 +68,7 @@ namespace FedresursScraper.Services
         /// <summary>
         /// Обрабатывает один конкретный торг: парсит, получает лоты и сохраняет в БД.
         /// </summary>
-        private async Task ProcessBiddingAsync(string biddingIdStr, IWebDriver driver, BiddingScraper biddingScraper, LotsScraper lotsScraper, LotsDbContext dbContext, CancellationToken stoppingToken)
+        private async Task ProcessBiddingAsync(string biddingIdStr, IWebDriver driver, IBiddingScraper biddingScraper, ILotsScraper lotsScraper, LotsDbContext dbContext, CancellationToken stoppingToken)
         {
             if (string.IsNullOrWhiteSpace(biddingIdStr) || !Guid.TryParse(biddingIdStr, out var biddingId))
             {
