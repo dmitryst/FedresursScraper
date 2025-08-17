@@ -8,13 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Регистрация сервисов в DI контейнере
 builder.Services.AddControllers(); // Добавляем поддержку API-контроллеров
 
-// Ваша логика для сборки строки подключения
-var host = builder.Configuration["POSTGRES_HOST"];
-var port = builder.Configuration["POSTGRES_PORT"];
-var user = builder.Configuration["POSTGRES_USER"];
-var password = builder.Configuration["POSTGRES_PASSWORD"];
-var db = builder.Configuration["POSTGRES_DB"];
-var connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={password}";
+var connectionString = builder.Configuration.GetConnectionString("Postgres");
 
 // Регистрация DbContext
 builder.Services.AddDbContext<LotsDbContext>(options =>
