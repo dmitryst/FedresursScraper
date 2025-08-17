@@ -29,25 +29,13 @@ public class LotCopyService : ILotCopyService
 
     public async Task<bool> CopyLotToProdAsync(Guid lotId, CancellationToken ct = default)
     {
-        // Строка PROD из конфигурации (env/appsettings)
-        var prodHost = _config["PROD_DB_HOST"];
-        var prodPort = _config["PROD_DB_PORT"];
-        var prodUser = _config["PROD_DB_USER"];
-        var prodPassword = _config["PROD_DB_PASSWORD"];
-        var prodDb = _config["PROD_DB_NAME"];
+        var prodConnectionString = _config.GetConnectionString("PostgresProd");
 
-        if (string.IsNullOrWhiteSpace(prodHost) ||
-            string.IsNullOrWhiteSpace(prodPort) ||
-            string.IsNullOrWhiteSpace(prodUser) ||
-            string.IsNullOrWhiteSpace(prodPassword) ||
-            string.IsNullOrWhiteSpace(prodDb))
+        if (string.IsNullOrWhiteSpace(prodConnectionString))
         {
             _logger.LogError("Не заданы параметры подключения к PROD БД.");
             return false;
-        }
-
-        var prodConnectionString =
-            $"Host={prodHost};Port={prodPort};Database={prodDb};Username={prodUser};Password={prodPassword}";
+        };
 
         // Собираем Options для PROD вручную
         var prodOptions = new DbContextOptionsBuilder<LotsDbContext>()
