@@ -21,7 +21,7 @@ public class LotsController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpGet]
+    [HttpGet("list")]
     public async Task<IActionResult> GetLots([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
         var spec = new LotsWithDetailsSpecification(pageNumber, pageSize);
@@ -55,6 +55,48 @@ public class LotsController : ControllerBase
         var result = new PaginatedResult<LotDto>(lotDtos, totalCount, pageNumber, pageSize);
 
         return Ok(result);
+    }
+
+    [HttpGet("{lotId:guid}")]
+    public async Task<IActionResult> GetLotById(Guid lotId)
+    {
+        if (lotId == Guid.Empty)
+        {
+            return BadRequest(new { message = "Некорректный ID лота." });
+        }
+
+        var spec = new LotByIdWithDetailsSpecification(lotId);
+
+        var lot = await _dbContext.Lots.WithSpecification(spec).FirstOrDefaultAsync();
+
+        if (lot == null)
+        {
+            return NotFound(new { message = "Лот не найден." });
+        }
+
+        var lotDto = new LotDto
+        {
+            Id = lot.Id,
+            LotNumber = lot.LotNumber,
+            StartPrice = lot.StartPrice,
+            Step = lot.Step,
+            Deposit = lot.Deposit,
+            Description = lot.Description,
+            ViewingProcedure = lot.ViewingProcedure,
+            CreatedAt = lot.CreatedAt,
+            Bidding = new BiddingDto
+            {
+                Type = lot.Bidding.Type,
+                ViewingProcedure = lot.Bidding.ViewingProcedure
+            },
+            Categories = lot.Categories.Select(c => new CategoryDto
+            {
+                Id = c.Id,
+                Name = c.Name
+            }).ToList()
+        };
+
+        return Ok(lotDto);
     }
 
     [HttpPost("{lotId:guid}/copy-to-prod")]
