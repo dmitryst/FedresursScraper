@@ -22,13 +22,17 @@ public class LotsController : ControllerBase
     }
 
     [HttpGet("list")]
-    public async Task<IActionResult> GetLots([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetLots(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? biddingType = null)
     {
-        var spec = new LotsWithDetailsSpecification(pageNumber, pageSize);
+        var spec = new LotsWithDetailsSpecification(pageNumber, pageSize, biddingType);
 
-        var totalCount = await _dbContext.Lots.CountAsync();
+        var totalCountSpec = new LotsCountSpecification(biddingType);
+        var totalCount = await _dbContext.Lots.WithSpecification(totalCountSpec).CountAsync();
 
-        var lots = await SpecificationEvaluator.Default.GetQuery(_dbContext.Lots.AsQueryable(), spec).ToListAsync();
+        var lots = await _dbContext.Lots.WithSpecification(spec).ToListAsync();
 
         var lotDtos = lots.Select(l => new LotDto
         {
