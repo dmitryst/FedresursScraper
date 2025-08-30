@@ -1,6 +1,8 @@
 # Исключаем каталоги сборки
 bin/
 obj/
+output/
 launch.json
 appsettings.json
 appsettings.Development.json
+debug.log

@@ -13,7 +13,7 @@ public interface ILotCopyService
 
 public class LotCopyService : ILotCopyService
 {
-    private readonly LotsDbContext _devContext;          // Scoped из DI
+    private readonly LotsDbContext _devContext;
     private readonly IConfiguration _config;
     private readonly ILogger<LotCopyService> _logger;
 
@@ -35,7 +35,7 @@ public class LotCopyService : ILotCopyService
         {
             _logger.LogError("Не заданы параметры подключения к PROD БД.");
             return false;
-        };
+        }
 
         // Собираем Options для PROD вручную
         var prodOptions = new DbContextOptionsBuilder<LotsDbContext>()
@@ -53,6 +53,7 @@ public class LotCopyService : ILotCopyService
             var sourceLot = await _devContext.Lots
                 .Include(l => l.Bidding)
                 .Include(l => l.Categories)
+                .Include(l => l.CadastralNumbers)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(l => l.Id == lotId, ct);
 
@@ -97,7 +98,9 @@ public class LotCopyService : ILotCopyService
                     Deposit = sourceLot.Deposit,
                     Description = sourceLot.Description,
                     CreatedAt = sourceLot.CreatedAt,
-                    BiddingId = prodBidding.Id
+                    BiddingId = prodBidding.Id,
+                    Latitude = sourceLot.Latitude,
+                    Longitude = sourceLot.Longitude,
                 };
                 prodContext.Lots.Add(prodLot);
                 await prodContext.SaveChangesAsync(ct);
@@ -115,6 +118,25 @@ public class LotCopyService : ILotCopyService
                         prodContext.LotCategories.Add(new LotCategory
                         {
                             Name = cat.Name,
+                            LotId = prodLot.Id
+                        });
+                    }
+                }
+                await prodContext.SaveChangesAsync(ct);
+            }
+
+            // Копируем кадастровые номера в PROD (идемпотентно)
+            if (sourceLot.CadastralNumbers != null && sourceLot.CadastralNumbers.Count > 0)
+            {
+                foreach (var num in sourceLot.CadastralNumbers)
+                {
+                    var exists = await prodContext.LotCadastralNumbers
+                        .AnyAsync(cn => cn.LotId == prodLot.Id && cn.CadastralNumber == num.CadastralNumber, ct);
+                    if (!exists)
+                    {
+                        prodContext.LotCadastralNumbers.Add(new LotCadastralNumber
+                        {
+                            CadastralNumber = num.CadastralNumber,
                             LotId = prodLot.Id
                         });
                     }
