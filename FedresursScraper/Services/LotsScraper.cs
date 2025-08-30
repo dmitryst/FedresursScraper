@@ -12,10 +12,17 @@ namespace FedresursScraper.Services
     public class LotsScraper : ILotsScraper
     {
         private readonly ILogger<LotsScraper> _logger;
+        private readonly ICadastralNumberExtractor _cadastralNumberExtractor;
+        private readonly IRosreestrService _rosreestrService;
 
-        public LotsScraper(ILogger<LotsScraper> logger)
+        public LotsScraper(
+            ILogger<LotsScraper> logger,
+            ICadastralNumberExtractor cadastralNumberExtractor,
+            IRosreestrService rosreestrService)
         {
             _logger = logger;
+            _cadastralNumberExtractor = cadastralNumberExtractor;
+            _rosreestrService = rosreestrService;
         }
 
         /// <summary>
@@ -68,14 +75,20 @@ namespace FedresursScraper.Services
                     string stepRaw = GetTextByLabel(priceCell, "Шаг аукциона");
                     string depositRaw = GetTextByLabel(priceCell, "Задаток");
 
+                    var description = ParseLotDescription(detailsCell);
+                    var cadastralNumbers = _cadastralNumberExtractor.Extract(description);
+                    var coordinates = await _rosreestrService.FindFirstCoordinatesAsync(cadastralNumbers);
+
                     var lotInfo = new LotInfo
                     {
                         Number = numberCell.Text.Trim(),
-                        Description = ParseLotDescription(detailsCell),
+                        Description = description,
                         Categories = ParseLotCategories(detailsCell),
                         StartPrice = startPrice,
                         Step = ParseFinancialValue(stepRaw, startPrice),
-                        Deposit = ParseFinancialValue(depositRaw, startPrice)
+                        Deposit = ParseFinancialValue(depositRaw, startPrice),
+                        CadastralNumbers = cadastralNumbers,
+                        Coordinates = coordinates
                     };
 
                     lots.Add(lotInfo);

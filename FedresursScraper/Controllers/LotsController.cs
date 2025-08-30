@@ -25,7 +25,7 @@ public class LotsController : ControllerBase
     public async Task<IActionResult> GetLots([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
         var spec = new LotsWithDetailsSpecification(pageNumber, pageSize);
-        
+
         var totalCount = await _dbContext.Lots.CountAsync();
 
         var lots = await SpecificationEvaluator.Default.GetQuery(_dbContext.Lots.AsQueryable(), spec).ToListAsync();
@@ -84,6 +84,9 @@ public class LotsController : ControllerBase
             Description = lot.Description,
             ViewingProcedure = lot.ViewingProcedure,
             CreatedAt = lot.CreatedAt,
+            Coordinates = (lot.Latitude.HasValue && lot.Longitude.HasValue)
+                ? new[] { lot.Latitude.Value, lot.Longitude.Value }
+                : null,
             Bidding = new BiddingDto
             {
                 Type = lot.Bidding.Type,

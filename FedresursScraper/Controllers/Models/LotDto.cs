@@ -10,6 +10,7 @@ public class LotDto
     public string? Description { get; set; }
     public string? ViewingProcedure { get; set; }
     public DateTime CreatedAt { get; set; }
+    public double[]? Coordinates { get; set; }
     public BiddingDto Bidding { get; set; } = new();
     public List<CategoryDto> Categories { get; set; } = new();
 }

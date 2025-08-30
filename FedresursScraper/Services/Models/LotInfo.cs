@@ -39,5 +39,15 @@ namespace FedresursScraper.Services.Models
         /// Ссылка на источник
         /// </summary>
         // public string? Url { get; set; }
+
+        /// <summary>
+        /// Кадастровые номера
+        /// </summary>
+        public List<string>? CadastralNumbers { get; set; }
+
+        /// <summary>
+        /// Координаты участка
+        /// </summary>
+        public double[]? Coordinates { get; set; }
     }
 }

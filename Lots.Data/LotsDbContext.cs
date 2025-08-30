@@ -10,6 +10,7 @@ public class LotsDbContext : DbContext
     public DbSet<Bidding> Biddings { get; set; }
     public DbSet<Lot> Lots { get; set; }
     public DbSet<LotCategory> LotCategories { get; set; }
+    public DbSet<LotCadastralNumber> LotCadastralNumbers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,12 +25,19 @@ public class LotsDbContext : DbContext
             .WithMany(l => l.Categories)
             .HasForeignKey(c => c.LotId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<LotCadastralNumber>()
+        .HasOne(c => c.Lot)
+        .WithMany(l => l.CadastralNumbers)
+        .HasForeignKey(c => c.LotId)
+        .OnDelete(DeleteBehavior.Cascade);
     }
 }
 
 // == run command from Lots.Data project ==
 // dotnet ef migrations add InitialCreate --project Lots.Data.csproj --startup-project ../FedresursScraper
 // dotnet ef database update --project Lots.Data.csproj --startup-project ../FedresursScraper
+// dotnet ef migrations remove --project Lots.Data.csproj --startup-project ../FedresursScraper
 
 // -- удаление БД (Выполните эту команду из корневой папки вашего проекта (B:\Т\FedresursScraper)
 // dotnet ef database drop --project Lots.Data --startup-project FedresursScraper

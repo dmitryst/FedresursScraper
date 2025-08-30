@@ -17,9 +17,13 @@ builder.Services.AddDbContext<LotsDbContext>(options =>
 // Регистрация фабрики для создания ChromeDriver
 builder.Services.AddSingleton<IWebDriverFactory, WebDriverFactory>();
 
-// Регистрация сервисов для парсинга
+// Регистрация парсеров
 builder.Services.AddTransient<IBiddingScraper, BiddingScraper>();
 builder.Services.AddTransient<ILotsScraper, LotsScraper>();
+
+// Регистрация других сервисов
+builder.Services.AddTransient<ICadastralNumberExtractor, CadastralNumberExtractor>();
+builder.Services.AddTransient<IRosreestrService, RosreestrService>();
 builder.Services.AddScoped<ILotCopyService, LotCopyService>();
 
 // Регистрация фоновых сервисов

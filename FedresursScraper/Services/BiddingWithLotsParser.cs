@@ -149,7 +149,10 @@ namespace FedresursScraper.Services
                     StartPrice = lotInfo.StartPrice,
                     Step = lotInfo.Step,
                     Deposit = lotInfo.Deposit,
-                    Categories = lotInfo.Categories.Select(c => new LotCategory { Name = c }).ToList()
+                    Categories = lotInfo.Categories.Select(c => new LotCategory { Name = c }).ToList(),
+                    CadastralNumbers = lotInfo.CadastralNumbers?.Select(n => new LotCadastralNumber { CadastralNumber = n }).ToList(),
+                    Latitude = lotInfo.Coordinates?.LastOrDefault(),
+                    Longitude = lotInfo.Coordinates?.FirstOrDefault()
                 };
                 bidding.Lots.Add(lot);
             }
