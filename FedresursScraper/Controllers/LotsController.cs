@@ -108,6 +108,27 @@ public class LotsController : ControllerBase
         return Ok(lotDto);
     }
 
+    [HttpGet("with-coordinates")]
+    public async Task<IActionResult> GetLotsWithCoordinates()
+    {
+        var spec = new LotsWithCoordinatesSpecification();
+        
+        var lotsWithCoords = await _dbContext.Lots
+                                             .WithSpecification(spec)
+                                             .ToListAsync();
+
+        var lotsForMap = lotsWithCoords.Select(lot => new LotGeoDto
+        {
+            Id = lot.Id,
+            Title = lot.Description,
+            StartPrice = lot.StartPrice,
+            Latitude = lot.Latitude.Value,
+            Longitude = lot.Longitude.Value
+        }).ToList();
+
+        return Ok(lotsForMap);
+    }
+
     [HttpPost("{lotId:guid}/copy-to-prod")]
     public async Task<IActionResult> CopyToProd(Guid lotId)
     {

@@ -43,7 +43,7 @@ builder.Services.AddCors(options =>
                       policy  =>
                       {
                           // Разрешаем запросы от Next.js приложения
-                          policy.WithOrigins("http://localhost:3000")
+                          policy.WithOrigins("http://localhost:3000", "http://localhost:3001")
                                 // Разрешаем любые HTTP-методы (GET, POST, OPTIONS и т.д.)
                                 .AllowAnyMethod()
                                 // Разрешаем любые заголовки в запросе (Content-Type, Authorization и т.д.)
