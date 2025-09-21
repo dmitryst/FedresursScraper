@@ -112,7 +112,7 @@ public class LotsController : ControllerBase
     public async Task<IActionResult> GetLotsWithCoordinates()
     {
         var spec = new LotsWithCoordinatesSpecification();
-        
+
         var lotsWithCoords = await _dbContext.Lots
                                              .WithSpecification(spec)
                                              .ToListAsync();
@@ -145,5 +145,13 @@ public class LotsController : ControllerBase
         }
 
         return StatusCode(500, "Произошла ошибка при копировании лота.");
+    }
+    
+    [HttpGet("all-ids")]
+    [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAllIds()
+    {
+         var ids = await _dbContext.Lots.Select(l => l.Id).ToListAsync();
+        return Ok(ids);
     }
 }
