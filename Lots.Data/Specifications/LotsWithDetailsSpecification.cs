@@ -6,7 +6,7 @@ namespace Lots.Data.Specifications;
 public class LotsWithDetailsSpecification : Specification<Lot>
 {
     public LotsWithDetailsSpecification(
-        int pageNumber,
+        int page,
         int pageSize,
         string? biddingType = null,
         decimal? priceFrom = null,
@@ -16,7 +16,7 @@ public class LotsWithDetailsSpecification : Specification<Lot>
             .Include(l => l.Bidding)
             .Include(l => l.Categories);
 
-        if (!string.IsNullOrWhiteSpace(biddingType))
+        if (!string.IsNullOrWhiteSpace(biddingType) && biddingType != "Все")
         {
             Query.Where(l => l.Bidding.Type == biddingType);
         }
@@ -32,7 +32,7 @@ public class LotsWithDetailsSpecification : Specification<Lot>
         }
 
         Query.OrderByDescending(l => l.Bidding.CreatedAt)
-         .Skip((pageNumber - 1) * pageSize)
+         .Skip((page - 1) * pageSize)
          .Take(pageSize);
     }
 }
