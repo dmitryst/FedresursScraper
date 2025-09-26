@@ -14,11 +14,16 @@ public class LotsController : ControllerBase
 {
     private readonly ILotCopyService _lotCopyService;
     private readonly LotsDbContext _dbContext;
+    private readonly ILotClassifier _lotClassifier;
 
-    public LotsController(ILotCopyService lotCopyService, LotsDbContext dbContext)
+    public LotsController(
+        ILotCopyService lotCopyService,
+        LotsDbContext dbContext,
+        ILotClassifier lotClassifier)
     {
         _lotCopyService = lotCopyService;
         _dbContext = dbContext;
+        _lotClassifier = lotClassifier;
     }
 
     [HttpGet("list")]
@@ -146,12 +151,35 @@ public class LotsController : ControllerBase
 
         return StatusCode(500, "Произошла ошибка при копировании лота.");
     }
-    
+
     [HttpGet("all-ids")]
     [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllIds()
     {
-         var ids = await _dbContext.Lots.Select(l => l.Id).ToListAsync();
+        var ids = await _dbContext.Lots.Select(l => l.Id).ToListAsync();
         return Ok(ids);
+    }
+    
+    /// <summary>
+    /// Классифицирует лот по его названию.
+    /// </summary>
+    /// <param name="request">Тело запроса с названием лота.</param>
+    /// <returns>Название категории.</returns>
+    [HttpPost("classify")]
+    public async Task<IActionResult> ClassifyLot([FromBody] LotRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request?.Title))
+        {
+            return BadRequest("Параметр 'Title' не может быть пустым.");
+        }
+
+        string category = await _lotClassifier.ClassifyLotAsync(request.Title);
+
+        if (category == "Ошибка классификации")
+        {
+            return StatusCode(500, "Не удалось выполнить классификацию.");
+        }
+
+        return Ok(new { Category = category });
     }
 }

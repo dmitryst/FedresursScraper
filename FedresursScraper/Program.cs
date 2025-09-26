@@ -36,6 +36,17 @@ if (parsersEnabled)
     builder.Services.AddHostedService<BiddingWithLotsParser>();
 }
 
+builder.Services.AddSingleton<ILotClassifier>(serviceProvider =>
+{
+    var logger = serviceProvider.GetRequiredService<ILogger<LotClassifier>>();
+
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    string apiKey = configuration["DeepSeek:ApiKey"] ??
+        throw new InvalidOperationException("API ключ для DeepSeek не найден в конфигурации (DeepSeek:ApiKey).");
+
+    return new LotClassifier(logger, apiKey);
+});
+
 var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
 {
