@@ -1,8 +1,11 @@
 using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
+using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using FedresursScraper.Services.Models;
+using Lots.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace FedresursScraper.Services
 {
@@ -14,15 +17,18 @@ namespace FedresursScraper.Services
         private readonly ILogger<LotsScraper> _logger;
         private readonly ICadastralNumberExtractor _cadastralNumberExtractor;
         private readonly IRosreestrService _rosreestrService;
+        private readonly IBackgroundTaskQueue _taskQueue;
 
         public LotsScraper(
             ILogger<LotsScraper> logger,
             ICadastralNumberExtractor cadastralNumberExtractor,
-            IRosreestrService rosreestrService)
+            IRosreestrService rosreestrService,
+            IBackgroundTaskQueue taskQueue)
         {
             _logger = logger;
             _cadastralNumberExtractor = cadastralNumberExtractor;
             _rosreestrService = rosreestrService;
+            _taskQueue = taskQueue;
         }
 
         /// <summary>
@@ -83,7 +89,7 @@ namespace FedresursScraper.Services
                     {
                         Number = numberCell.Text.Trim(),
                         Description = description,
-                        Categories = ParseLotCategories(detailsCell),
+                        Categories = [],
                         StartPrice = startPrice,
                         Step = ParseFinancialValue(stepRaw, startPrice),
                         Deposit = ParseFinancialValue(depositRaw, startPrice),
@@ -154,47 +160,6 @@ namespace FedresursScraper.Services
                 _logger.LogWarning(ex, "Не удалось распарсить описание лота.");
             }
             return "не найдено";
-        }
-
-        /// <summary>
-        /// Парсит категории (классификаторы) из ячейки.
-        /// </summary>
-        private List<string> ParseLotCategories(IWebElement detailsCell)
-        {
-            var categories = new List<string>();
-            try
-            {
-                var items = detailsCell.FindElements(By.CssSelector(".td-inner-item"));
-                IWebElement? classifierBlock = null;
-                foreach (var item in items)
-                {
-                    var labelElement = item.FindElements(By.CssSelector(".fw-light")).FirstOrDefault();
-                    if (labelElement != null && labelElement.Text.Trim() == "Классификатор")
-                    {
-                        classifierBlock = item;
-                        break;
-                    }
-                }
-
-                if (classifierBlock != null)
-                {
-                    // Все div'ы, кроме первого (заголовка), являются категориями
-                    var categoryElements = classifierBlock.FindElements(By.TagName("div"));
-                    for (int i = 1; i < categoryElements.Count; i++)
-                    {
-                        var text = categoryElements[i].Text.Trim();
-                        if (!string.IsNullOrEmpty(text))
-                        {
-                            categories.Add(text);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Не удалось распарсить категории лота.");
-            }
-            return categories;
         }
 
         /// <summary>

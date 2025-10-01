@@ -15,18 +15,21 @@ namespace FedresursScraper.Services
         private readonly ILotIdsCache _cache;
         private readonly IServiceProvider _serviceProvider;
         private readonly IWebDriverFactory _webDriverFactory;
+        private readonly IBackgroundTaskQueue _taskQueue;
         private readonly TimeSpan _interval = TimeSpan.FromSeconds(30);
 
         public BiddingWithLotsParser(
             ILogger<BiddingWithLotsParser> logger,
             ILotIdsCache cache,
             IServiceProvider serviceProvider,
-            IWebDriverFactory webDriverFactory)
+            IWebDriverFactory webDriverFactory,
+            IBackgroundTaskQueue taskQueue)
         {
             _logger = logger;
             _cache = cache;
             _serviceProvider = serviceProvider;
             _webDriverFactory = webDriverFactory;
+            _taskQueue = taskQueue;
         }
 
         /// <summary>
@@ -48,7 +51,7 @@ namespace FedresursScraper.Services
 
                 using var driver = _webDriverFactory.CreateDriver();
                 using var scope = _serviceProvider.CreateScope();
-                
+
                 var biddingScraper = scope.ServiceProvider.GetRequiredService<IBiddingScraper>();
                 var lotsScraper = scope.ServiceProvider.GetRequiredService<ILotsScraper>();
                 var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
@@ -56,11 +59,11 @@ namespace FedresursScraper.Services
                 foreach (var biddingIdStr in biddingIdsToParse)
                 {
                     if (stoppingToken.IsCancellationRequested) break;
-                    
+
                     // Делегируем обработку одного ID отдельному методу
                     await ProcessBiddingAsync(biddingIdStr, driver, biddingScraper, lotsScraper, dbContext, stoppingToken);
                 }
-                
+
                 await Task.Delay(_interval, stoppingToken);
             }
         }
@@ -82,11 +85,11 @@ namespace FedresursScraper.Services
             {
                 _logger.LogInformation("Парсинг торгов: {url}", url);
                 var biddingInfo = await biddingScraper.ScrapeDataAsync(driver, biddingId);
-                
+
                 if (biddingInfo.BankruptMessageId.HasValue)
                 {
                     var messageId = biddingInfo.BankruptMessageId.Value;
-                    
+
                     // Проверяем, существуют ли лоты, перед тем как их парсить
                     bool lotsExist = await dbContext.Biddings.AnyAsync(b => b.BankruptMessageId == messageId, stoppingToken);
                     if (lotsExist)
@@ -104,8 +107,8 @@ namespace FedresursScraper.Services
                     _logger.LogWarning("Не удалось найти ID сообщения о банкротстве для торгов {BiddingId}. Лоты не будут загружены.", biddingId);
                 }
 
-                await SaveToDatabaseAsync(biddingInfo, dbContext);
-                
+                await SaveBiddingAndEnqueueClassificationAsync(biddingInfo, dbContext);
+
                 _cache.MarkAsCompleted(biddingIdStr);
                 _logger.LogInformation("Торги {biddingId} успешно обработаны и помечены как 'Completed'.", biddingId);
             }
@@ -118,7 +121,7 @@ namespace FedresursScraper.Services
         /// <summary>
         /// Сохраняет информацию о торгах и связанных лотах в базу данных.
         /// </summary>
-        private async Task SaveToDatabaseAsync(BiddingInfo biddingInfo, LotsDbContext db)
+        private async Task SaveBiddingAndEnqueueClassificationAsync(BiddingInfo biddingInfo, LotsDbContext db)
         {
             // Проверка, чтобы избежать ошибки добавления дубликата
             var existingBidding = await db.Biddings.FindAsync(biddingInfo.Id);
@@ -149,18 +152,103 @@ namespace FedresursScraper.Services
                     StartPrice = lotInfo.StartPrice,
                     Step = lotInfo.Step,
                     Deposit = lotInfo.Deposit,
-                    Categories = lotInfo.Categories.Select(c => new LotCategory { Name = c }).ToList(),
+                    Categories = [],
                     CadastralNumbers = lotInfo.CadastralNumbers?.Select(n => new LotCadastralNumber { CadastralNumber = n }).ToList(),
                     Latitude = lotInfo.Coordinates?.LastOrDefault(),
                     Longitude = lotInfo.Coordinates?.FirstOrDefault()
                 };
                 bidding.Lots.Add(lot);
             }
-            
+
             db.Biddings.Add(bidding);
             await db.SaveChangesAsync();
-            
+
             _logger.LogInformation("Торги {BiddingId} и {LotCount} лотов сохранены в БД.", bidding.Id, bidding.Lots.Count);
+
+            // ставим задачу на определение категорий для лота и их сохранения в БД
+            foreach (var lot in bidding.Lots)
+            {
+                if (!string.IsNullOrEmpty(lot.Description))
+                {
+                    await EnqueueClassificationTaskAsync(lot.Id, lot.Description);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Создает и ставит в очередь задачу для фоновой классификации лота.
+        /// </summary>
+        /// <param name="lotId">ID лота в базе данных.</param>
+        /// <param name="lotDescription">Описание лота для классификации.</param>
+        private async Task EnqueueClassificationTaskAsync(Guid lotId, string lotDescription)
+        {
+            _logger.LogInformation("Queuing background classification for lot ID: {LotId}", lotId);
+
+            await _taskQueue.QueueBackgroundWorkItemAsync(async (serviceProvider, token) =>
+            {
+                using var scope = serviceProvider.CreateScope();
+                var scopedLogger = scope.ServiceProvider.GetRequiredService<ILogger<BiddingWithLotsParser>>();
+                var classifier = scope.ServiceProvider.GetRequiredService<ILotClassifier>();
+                var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
+
+                try
+                {
+                    var categoryString = await classifier.ClassifyLotAsync(lotDescription);
+
+                    if (string.IsNullOrWhiteSpace(categoryString))
+                    {
+                        scopedLogger.LogWarning("Classifier returned empty or whitespace categories for lot ID {LotId}.", lotId);
+                        return;
+                    }
+
+                    // Разбиваем строку на уникальные, очищенные категории
+                    var categoryNames = categoryString
+                        .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(c => c.Trim())
+                        .Where(c => !string.IsNullOrEmpty(c))
+                        .Distinct();
+
+                    if (!categoryNames.Any())
+                    {
+                        scopedLogger.LogWarning("No valid categories found after parsing the string '{CategoryString}' for lot ID {LotId}.", categoryString, lotId);
+                        return;
+                    }
+
+                    var lotToUpdate = await dbContext.Lots
+                        .Include(l => l.Categories)
+                        .FirstOrDefaultAsync(l => l.Id == lotId, token);
+
+                    if (lotToUpdate == null)
+                    {
+                        scopedLogger.LogWarning("Lot with ID {LotId} not found for updating categories.", lotId);
+                        return;
+                    }
+
+                    // В цикле добавляем новые категории, если их еще нет
+                    foreach (var name in categoryNames)
+                    {
+                        // Проверяем, нет ли у лота уже такой категории
+                        if (!lotToUpdate.Categories.Any(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            var newCategory = new LotCategory
+                            {
+                                Name = name,
+                                LotId = lotId
+                            };
+                            dbContext.LotCategories.Add(newCategory); // Добавляем в контекст для отслеживания
+                        }
+                    }
+
+                    // Сохраняем все добавленные категории одним вызовом
+                    await dbContext.SaveChangesAsync(token);
+
+                    scopedLogger.LogInformation("Lot ID {LotId} successfully updated with categories: {Categories}", lotId, string.Join(", ", categoryNames));
+                }
+                catch (Exception ex)
+                {
+                    scopedLogger.LogError(ex, "Failed to classify and update lot ID: {LotId}", lotId);
+                }
+            });
         }
     }
 }

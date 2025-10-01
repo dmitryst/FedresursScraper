@@ -34,6 +34,7 @@ if (parsersEnabled)
     builder.Services.AddSingleton<ILotIdsCache, InMemoryLotIdsCache>();
     builder.Services.AddHostedService<BiddingIdsParser>();
     builder.Services.AddHostedService<BiddingWithLotsParser>();
+    builder.Services.AddHostedService<LotClassificationService>();
 }
 
 builder.Services.AddSingleton<ILotClassifier>(serviceProvider =>
@@ -46,6 +47,8 @@ builder.Services.AddSingleton<ILotClassifier>(serviceProvider =>
 
     return new LotClassifier(logger, apiKey);
 });
+
+builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 
 var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
