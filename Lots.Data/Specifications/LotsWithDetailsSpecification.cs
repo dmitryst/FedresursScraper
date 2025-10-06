@@ -8,6 +8,7 @@ public class LotsWithDetailsSpecification : Specification<Lot>
     public LotsWithDetailsSpecification(
         int page,
         int pageSize,
+        string[]? categories,
         string? biddingType = null,
         decimal? priceFrom = null,
         decimal? priceTo = null)
@@ -15,6 +16,11 @@ public class LotsWithDetailsSpecification : Specification<Lot>
         Query
             .Include(l => l.Bidding)
             .Include(l => l.Categories);
+
+        if (categories != null && categories.Length > 0)
+        {
+            Query.Where(l => l.Categories.Any(lc => categories.Contains(lc.Name)));
+        }
 
         if (!string.IsNullOrWhiteSpace(biddingType) && biddingType != "Все")
         {

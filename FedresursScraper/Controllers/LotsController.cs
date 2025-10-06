@@ -30,13 +30,14 @@ public class LotsController : ControllerBase
     public async Task<IActionResult> GetLots(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
+        [FromQuery] string[]? categories = null,
         [FromQuery] string? biddingType = null,
         [FromQuery] decimal? priceFrom = null,
         [FromQuery] decimal? priceTo = null)
     {
-        var spec = new LotsWithDetailsSpecification(page, pageSize, biddingType, priceFrom, priceTo);
+        var spec = new LotsWithDetailsSpecification(page, pageSize, categories, biddingType, priceFrom, priceTo);
 
-        var totalCountSpec = new LotsCountSpecification(biddingType, priceFrom, priceTo);
+        var totalCountSpec = new LotsCountSpecification(categories, biddingType, priceFrom, priceTo);
         var totalCount = await _dbContext.Lots.WithSpecification(totalCountSpec).CountAsync();
 
         var lots = await _dbContext.Lots.WithSpecification(spec).ToListAsync();
