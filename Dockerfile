@@ -50,10 +50,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Скачиваем и устанавливаем chromedriver последней стабильной версии
-RUN wget -q --continue -P /tmp https://storage.googleapis.com/chrome-for-testing-public/138.0.7204.183/linux64/chromedriver-linux64.zip && \
-    unzip -q /tmp/chromedriver-linux64.zip -d /tmp && \
-    mv /tmp/chromedriver-linux64/chromedriver /usr/bin/chromedriver && \
-    chmod +x /usr/bin/chromedriver
+# RUN wget -q --continue -P /tmp https://storage.googleapis.com/chrome-for-testing-public/138.0.7204.183/linux64/chromedriver-linux64.zip && \
+#     unzip -q /tmp/chromedriver-linux64.zip -d /tmp && \
+#     mv /tmp/chromedriver-linux64/chromedriver /usr/bin/chromedriver && \
+#     chmod +x /usr/bin/chromedriver
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
