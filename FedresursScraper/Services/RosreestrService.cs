@@ -90,12 +90,15 @@ public class RosreestrService : IRosreestrService
     /// </summary>
     private async Task<string?> GetGeoJsonFromFile(string cadastralNumber)
     {
-        string dir = "B:\\Projects\\parser\\FedresursScraper\\output\\geojson";
+        // Путь, который монтируется через emptyDir в deployment
+        string dir = "/app/temp_rosreestr";
+
+        Directory.CreateDirectory(dir);
 
         // Имя файла, которое создаст rosreestr2coord
         string outputFileName = $"{cadastralNumber.Replace(':', '_')}.geojson";
         string fullPath = Path.Combine(dir, outputFileName);
-        
+
         var arguments = $"-m rosreestr2coord -c {cadastralNumber}";
 
         var processStartInfo = new ProcessStartInfo

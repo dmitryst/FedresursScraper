@@ -76,4 +76,11 @@ RUN dotnet publish "FedresursScraper/FedresursScraper.csproj" -c Release -o /app
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
+
+# Устанавливаем Python и pip
+RUN apt-get update && apt-get install -y python3 python3-pip
+
+# Устанавливаем библиотеку rosreestr2coord
+RUN pip3 install rosreestr2coord
+
 ENTRYPOINT ["dotnet", "FedresursScraper.dll"]
