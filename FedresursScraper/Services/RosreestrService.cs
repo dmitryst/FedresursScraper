@@ -115,6 +115,7 @@ public class RosreestrService : IRosreestrService
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
+            WorkingDirectory = _tempDirPath,
         };
 
         try
