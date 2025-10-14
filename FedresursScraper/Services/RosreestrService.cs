@@ -28,10 +28,17 @@ public class RosreestrService : IRosreestrService
     private readonly ILogger<RosreestrService> _logger;
     // Укажите путь к python.exe, если его нет в системной переменной PATH
     private readonly string _pythonExecutablePath = "python";
+    private readonly string _tempDirPath;
 
-    public RosreestrService(ILogger<RosreestrService> logger)
+    public RosreestrService(ILogger<RosreestrService> logger, IConfiguration configuration)
     {
         _logger = logger;
+        _tempDirPath = configuration["Paths:TempRosreestrDir"] ?? "/app/temp_rosreestr";
+
+        if (!Directory.Exists(_tempDirPath))
+        {
+            Directory.CreateDirectory(_tempDirPath);
+        }
     }
 
     /// <summary>
@@ -90,9 +97,8 @@ public class RosreestrService : IRosreestrService
     /// </summary>
     private async Task<string?> GetGeoJsonFromFile(string cadastralNumber)
     {
-        // Путь, который монтируется через emptyDir в deployment
-        string dir = "/app/temp_rosreestr";
-
+        // rosreestr2coord сохраняет сюда: <_tempDirPath>/output/geojson
+        string dir = Path.Combine(_tempDirPath, "output", "geojson");
         Directory.CreateDirectory(dir);
 
         // Имя файла, которое создаст rosreestr2coord
