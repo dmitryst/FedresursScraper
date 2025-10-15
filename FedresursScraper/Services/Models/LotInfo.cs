@@ -46,8 +46,13 @@ namespace FedresursScraper.Services.Models
         public List<string>? CadastralNumbers { get; set; }
 
         /// <summary>
-        /// Координаты участка
+        /// Координаты участка (ширина)
         /// </summary>
-        public double[]? Coordinates { get; set; }
+        public double? Latitude { get; set; }
+
+        /// <summary>
+        /// Координаты участка (долгота)
+        /// </summary>
+        public double? Longitude { get; set; }
     }
 }

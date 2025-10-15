@@ -154,8 +154,8 @@ namespace FedresursScraper.Services
                     Deposit = lotInfo.Deposit,
                     Categories = [],
                     CadastralNumbers = lotInfo.CadastralNumbers?.Select(n => new LotCadastralNumber { CadastralNumber = n }).ToList(),
-                    Latitude = lotInfo.Coordinates?.LastOrDefault(),
-                    Longitude = lotInfo.Coordinates?.FirstOrDefault()
+                    Latitude = lotInfo.Latitude,
+                    Longitude = lotInfo.Longitude
                 };
                 bidding.Lots.Add(lot);
             }

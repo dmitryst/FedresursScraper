@@ -94,7 +94,8 @@ namespace FedresursScraper.Services
                         Step = ParseFinancialValue(stepRaw, startPrice),
                         Deposit = ParseFinancialValue(depositRaw, startPrice),
                         CadastralNumbers = cadastralNumbers,
-                        Coordinates = coordinates
+                        Latitude = coordinates?.Latitude,
+                        Longitude = coordinates?.Longitude
                     };
 
                     lots.Add(lotInfo);

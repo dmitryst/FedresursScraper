@@ -3,36 +3,91 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using System.Text.Json.Serialization;
 
+#region Coordinate Conversion
+/// <summary>
+/// Утилитарный класс для преобразования координат.
+/// </summary>
+public static class CoordinateConverter
+{
+    // Радиус Земли в метрах
+    private const double EarthRadius = 6378137.0;
+
+    /// <summary>
+    /// Преобразует координаты из Web Mercator (EPSG:3857) в WGS 84 (EPSG:4326).
+    /// </summary>
+    /// <param name="x">Координата X в метрах (смещение на восток).</param>
+    /// <param name="y">Координата Y в метрах (смещение на север).</param>
+    /// <returns>Кортеж с долготой (Longitude) и широтой (Latitude) в градусах.</returns>
+    public static (double Longitude, double Latitude) WebMercatorToWgs84(double x, double y)
+    {
+        double lon = (x / EarthRadius) * 180.0 / Math.PI;
+        double lat = (2.0 * Math.Atan(Math.Exp(y / EarthRadius)) - Math.PI / 2.0) * 180.0 / Math.PI;
+        return (lon, lat);
+    }
+}
+#endregion
+
+#region GeoJSON Models
 // Модели для десериализации ответа от rosreestr2coord
-// Нам не нужны все поля, только те, что ведут к координатам
+// Используем JsonElement для гибкой обработки разных структур координат
+
 public class GeoJsonFeature
 {
-    [System.Text.Json.Serialization.JsonPropertyName("geometry")]
+    [JsonPropertyName("geometry")]
     public Geometry? Geometry { get; set; }
 }
 
 public class Geometry
 {
-    [System.Text.Json.Serialization.JsonPropertyName("coordinates")]
-    public List<List<List<double>>>? Coordinates { get; set; }
+    [JsonPropertyName("type")]
+    public string? Type { get; set; }
+
+    [JsonPropertyName("coordinates")]
+    public JsonElement Coordinates { get; set; }
+
+    [JsonPropertyName("crs")]
+    public Crs? Crs { get; set; }
 }
+
+public class Crs
+{
+    [JsonPropertyName("properties")]
+    public CrsProperties? Properties { get; set; }
+}
+
+public class CrsProperties
+{
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+}
+#endregion
 
 public interface IRosreestrService
 {
-    Task<double[]?> FindFirstCoordinatesAsync(IEnumerable<string?>? cadastralNumbers);
+    /// <summary>
+    /// Находит первую точку координат для первого валидного кадастрового номера.
+    /// </summary>
+    /// <param name="cadastralNumbers">Список кадастровых номеров.</param>
+    /// <returns>Кортеж (Latitude, Longitude) или null, если координаты не найдены.</returns>
+    Task<(double Latitude, double Longitude)?> FindFirstCoordinatesAsync(IEnumerable<string>? cadastralNumbers);
 }
 
 public class RosreestrService : IRosreestrService
 {
     private readonly ILogger<RosreestrService> _logger;
-    // Укажите путь к python.exe, если его нет в системной переменной PATH
-    private readonly string _pythonExecutablePath = "python";
+    // Указываем путь к python.exe, если его нет в системной переменной PATH
+    private readonly string _pythonExecutablePath;
     private readonly string _tempDirPath;
+
+    // Опции для десериализации JSON без учета регистра
+    private readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public RosreestrService(ILogger<RosreestrService> logger, IConfiguration configuration)
     {
         _logger = logger;
+        _pythonExecutablePath = configuration["Python:ExecutablePath"] ?? "python";
         _tempDirPath = configuration["Paths:TempRosreestrDir"] ?? "/app/temp_rosreestr";
 
         if (!Directory.Exists(_tempDirPath))
@@ -41,46 +96,61 @@ public class RosreestrService : IRosreestrService
         }
     }
 
-    /// <summary>
-    /// Находит первую точку координат для первого валидного кадастрового номера.
-    /// </summary>
-    /// <param name="cadastralNumbers">Список кадастровых номеров.</param>
-    /// <returns>Массив double[2] с координатами [долгота, широта] или null.</returns>
-    public async Task<double[]?> FindFirstCoordinatesAsync(IEnumerable<string?>? cadastralNumbers)
+    public async Task<(double Latitude, double Longitude)?> FindFirstCoordinatesAsync(IEnumerable<string>? cadastralNumbers)
     {
-        if (cadastralNumbers == null)
-        {
-            return null;
-        }
+        if (cadastralNumbers == null) return null;
 
         foreach (var number in cadastralNumbers)
         {
-            if (string.IsNullOrWhiteSpace(number))
-            {
-                continue;
-            }
+            if (string.IsNullOrWhiteSpace(number)) continue;
 
-            string? geoJson = await GetGeoJsonFromFile(number);
-
-            if (string.IsNullOrWhiteSpace(geoJson))
-            {
-                continue;
-            }
+            string? geoJsonContent = await GetGeoJsonFromScript(number);
+            if (string.IsNullOrWhiteSpace(geoJsonContent)) continue;
 
             try
             {
-                var feature = JsonSerializer.Deserialize<GeoJsonFeature>(geoJson);
+                var feature = JsonSerializer.Deserialize<GeoJsonFeature>(geoJsonContent, _jsonOptions);
+                var geometry = feature?.Geometry;
 
-                // Извлекаем первую точку из первого полигона: [[[point1], [point2], ...]]
-                var firstPoint = feature?.Geometry?.Coordinates?
-                                        .FirstOrDefault()?
-                                        .FirstOrDefault();
-
-                if (firstPoint != null && firstPoint.Count >= 2)
+                if (geometry == null || geometry.Coordinates.ValueKind == JsonValueKind.Undefined)
                 {
-                    _logger.LogInformation("Успешно найдены координаты для номера {CadastralNumber}.", number);
-                    return firstPoint.ToArray();
+                    _logger.LogWarning("Геометрия или координаты отсутствуют для номера {CadastralNumber}", number);
+                    continue;
                 }
+
+                // Извлекаем первую точку, независимо от типа геометрии (Point, Polygon, etc.)
+                var firstPointCoords = GetFirstPoint(geometry);
+
+                if (firstPointCoords == null || firstPointCoords.Count < 2)
+                {
+                    _logger.LogWarning("Не удалось извлечь координаты из геометрии для {CadastralNumber}", number);
+                    continue;
+                }
+
+                double coord1 = firstPointCoords[0];
+                double coord2 = firstPointCoords[1];
+
+                bool isPolygon = string.Equals(geometry?.Type, "Polygon", StringComparison.OrdinalIgnoreCase);
+                if (isPolygon)
+                {
+                    // Для полигонов, даже если CRS указан как EPSG:3857, координаты фактически
+                    // предоставляются в градусах (WGS84). Поэтому конвертация не нужна.
+                    // Нужно только поменять местами порядок [lon, lat] на [lat, lon] для API карт.
+                    _logger.LogInformation("Обработка Polygon для {CadastralNumber}. Координаты считаются WGS84. Конвертация не требуется.", number);
+                    return (coord2, coord1); // Возвращаем как (Latitude, Longitude)
+                }
+                
+                // Для всех остальных типов (включая Point) используем стандартную логику: проверяем CRS.
+                bool needsConversion = geometry?.Crs?.Properties?.Name?.Contains("EPSG:3857") ?? false;
+                if (needsConversion)
+                {
+                    var (lon, lat) = CoordinateConverter.WebMercatorToWgs84(coord1, coord2);
+                    _logger.LogInformation("Координаты для {CadastralNumber} были конвертированы из EPSG:3857.", number);
+                    return (lat, lon); // Возвращаем в порядке [lat, lon]
+                }
+
+                // Если конвертация не нужна, считаем, что это WGS84 [lon, lat]
+                return (coord2, coord1); // Возвращаем, поменяв местами [lat, lon]
             }
             catch (JsonException ex)
             {
@@ -93,11 +163,39 @@ public class RosreestrService : IRosreestrService
     }
 
     /// <summary>
-    /// Вызывает python-скрипт, который сохраняет результат в файл, читает его и затем удаляет.
+    /// Рекурсивно извлекает первую пару координат из JsonElement.
     /// </summary>
-    private async Task<string?> GetGeoJsonFromFile(string cadastralNumber)
+    private List<double>? GetFirstPoint(Geometry geometry)
     {
-        // rosreestr2coord сохраняет сюда: <_tempDirPath>/output/geojson
+        JsonElement currentElement = geometry.Coordinates;
+
+        // Погружаемся вглубь массива, пока не дойдем до элемента с числами
+        while (currentElement.ValueKind == JsonValueKind.Array &&
+               currentElement.EnumerateArray().FirstOrDefault().ValueKind == JsonValueKind.Array)
+        {
+            currentElement = currentElement.EnumerateArray().FirstOrDefault();
+        }
+
+        if (currentElement.ValueKind == JsonValueKind.Array)
+        {
+            return currentElement.EnumerateArray()
+                                 .Where(e => e.ValueKind == JsonValueKind.Number)
+                                 .Select(e => e.GetDouble())
+                                 .ToList();
+        }
+
+        return null;
+    }
+
+
+    /// <summary>
+    /// Вызывает python-скрипт, который сохраняет результат в файл, читает его и затем удаляет
+    /// </summary>
+    /// <param name="cadastralNumber">Кадастровый номер участка</param>
+    /// <returns>Содержимое файла с данными о земельном участке</returns>
+    private async Task<string?> GetGeoJsonFromScript(string cadastralNumber)
+    {
+        // rosreestr2coord сохраняет в <_tempDirPath>/output/geojson
         string dir = Path.Combine(_tempDirPath, "output", "geojson");
         Directory.CreateDirectory(dir);
 
@@ -106,7 +204,6 @@ public class RosreestrService : IRosreestrService
         string fullPath = Path.Combine(dir, outputFileName);
 
         var arguments = $"-m rosreestr2coord -c {cadastralNumber}";
-
         var processStartInfo = new ProcessStartInfo
         {
             FileName = _pythonExecutablePath,
@@ -121,7 +218,6 @@ public class RosreestrService : IRosreestrService
         try
         {
             using var process = new Process { StartInfo = processStartInfo };
-
             _logger.LogInformation("Запуск Python-скрипта для {CadastralNumber}. Аргументы: {Arguments}", cadastralNumber, arguments);
             process.Start();
 
@@ -132,7 +228,7 @@ public class RosreestrService : IRosreestrService
             if (process.ExitCode != 0)
             {
                 _logger.LogError("Python-скрипт завершился с ошибкой для номера {CadastralNumber}: {Error}", cadastralNumber, error);
-                return null;
+                // несмотря на то, что скрипт завершился с ошибкой, файл должен быть создан
             }
 
             if (!File.Exists(fullPath))
@@ -143,6 +239,11 @@ public class RosreestrService : IRosreestrService
 
             _logger.LogInformation("Файл {FullPath} успешно создан, читаем содержимое.", fullPath);
             return await File.ReadAllTextAsync(fullPath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Произошла ошибка при выполнении python-скрипта для номера {CadastralNumber}", cadastralNumber);
+            return null;
         }
         finally
         {
