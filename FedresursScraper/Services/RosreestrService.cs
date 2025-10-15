@@ -130,8 +130,9 @@ public class RosreestrService : IRosreestrService
                 double coord1 = firstPointCoords[0];
                 double coord2 = firstPointCoords[1];
 
-                bool isPolygon = string.Equals(geometry?.Type, "Polygon", StringComparison.OrdinalIgnoreCase);
-                if (isPolygon)
+                bool isPolygonOrMultiPolygon = string.Equals(geometry.Type, "Polygon", StringComparison.OrdinalIgnoreCase) ||
+                                               string.Equals(geometry.Type, "MultiPolygon", StringComparison.OrdinalIgnoreCase);
+                if (isPolygonOrMultiPolygon)
                 {
                     // Для полигонов, даже если CRS указан как EPSG:3857, координаты фактически
                     // предоставляются в градусах (WGS84). Поэтому конвертация не нужна.
