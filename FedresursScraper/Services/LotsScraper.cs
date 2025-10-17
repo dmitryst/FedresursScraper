@@ -16,18 +16,18 @@ namespace FedresursScraper.Services
     {
         private readonly ILogger<LotsScraper> _logger;
         private readonly ICadastralNumberExtractor _cadastralNumberExtractor;
-        private readonly IRosreestrService _rosreestrService;
+        private readonly IRosreestrServiceClient _rosreestrServiceClient;
         private readonly IBackgroundTaskQueue _taskQueue;
 
         public LotsScraper(
             ILogger<LotsScraper> logger,
             ICadastralNumberExtractor cadastralNumberExtractor,
-            IRosreestrService rosreestrService,
+            IRosreestrServiceClient rosreestrServiceClient,
             IBackgroundTaskQueue taskQueue)
         {
             _logger = logger;
             _cadastralNumberExtractor = cadastralNumberExtractor;
-            _rosreestrService = rosreestrService;
+            _rosreestrServiceClient = rosreestrServiceClient;
             _taskQueue = taskQueue;
         }
 
@@ -83,7 +83,7 @@ namespace FedresursScraper.Services
 
                     var description = ParseLotDescription(detailsCell);
                     var cadastralNumbers = _cadastralNumberExtractor.Extract(description);
-                    var coordinates = await _rosreestrService.FindFirstCoordinatesAsync(cadastralNumbers);
+                    var coordinates = await _rosreestrServiceClient.FindFirstCoordinatesAsync(cadastralNumbers);
 
                     var lotInfo = new LotInfo
                     {
