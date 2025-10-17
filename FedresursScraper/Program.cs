@@ -23,7 +23,7 @@ builder.Services.AddTransient<ILotsScraper, LotsScraper>();
 
 // Регистрация других сервисов
 builder.Services.AddTransient<ICadastralNumberExtractor, CadastralNumberExtractor>();
-builder.Services.AddTransient<IRosreestrService, RosreestrService>();
+// builder.Services.AddTransient<IRosreestrService, RosreestrService>();
 builder.Services.AddScoped<ILotCopyService, LotCopyService>();
 
 // Регистрация фоновых сервисов
@@ -50,6 +50,21 @@ builder.Services.AddSingleton<ILotClassifier>(serviceProvider =>
 
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 
+var rosreestrServiceUrl = Environment.GetEnvironmentVariable("ROSREESTR_SERVICE_URL");
+
+if (string.IsNullOrWhiteSpace(rosreestrServiceUrl))
+{
+    // Можно выбросить исключение или установить значение по умолчанию для локальной разработки
+    throw new InvalidOperationException("Переменная окружения ROSREESTR_SERVICE_URL не установлена.");
+    // или: rosreestrServiceUrl = "http://localhost:8000"; // для локальной отладки
+}
+
+// Регистрируем типизированный HttpClient
+builder.Services.AddHttpClient<IRosreestrServiceClient, RosreestrServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(rosreestrServiceUrl);
+});
+
 var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
 {
@@ -57,7 +72,7 @@ builder.Services.AddCors(options =>
                       policy  =>
                       {
                           // Разрешаем запросы от Next.js приложения
-                          policy.WithOrigins("http://localhost:3000", "http://localhost:3001")
+                          policy.WithOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:3002")
                                 // Разрешаем любые HTTP-методы (GET, POST, OPTIONS и т.д.)
                                 .AllowAnyMethod()
                                 // Разрешаем любые заголовки в запросе (Content-Type, Authorization и т.д.)
