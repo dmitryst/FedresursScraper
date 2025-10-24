@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.ClientModel;
 using Azure;
+using System.Text.Json;
 
 public class LotClassifier : ILotClassifier
 {
@@ -62,38 +63,73 @@ public class LotClassifier : ILotClassifier
             "Ценные бумаги",
             "Доли в уставном капитале",
             "Товарно-материальные ценности",
+            "Оружие",
+            "Предметы искусства",
+            "Драгоценности",
             "Прочее",
         };
     }
 
-    public async Task<string> ClassifyLotAsync(string lotTitle)
+    public async Task<LotClassificationResult?> ClassifyLotAsync(string lotDescription)
     {
         string categoryList = string.Join(", ", _categories);
 
         var messages = new List<ChatMessage>
         {
-            new SystemChatMessage("Ты — полезный ассистент, который помогает классифицировать лоты."),
-            new UserChatMessage($"Классифицируй название лота в одну из следующих категорий: [{categoryList}]. Категория «Прочие постройки» лучше всего подходит для классификации таких вспомогательных строений, как бани, сараи, гаражи, хозяйственные блоки и беседки. Под категорию «Инвестиционный проект» подходит готовый бизнес, аренда, сервис, продажи - лот генерирует прибыль. В категорию «Коммерческий транспорт и спецтехника» входят грузовики, прицепы, ГАЗели, бетономешалки, автобусы, экскаваторы-погрузчики, бульдозеры, краны, погрузчики, грейдеры и т.п. В категорию «Нежилые помещения» относятся в том числе склады, зерносклады. Если в описании лота прямо указана какая-либо категория, то включай ее в ответ. Название лота: '{lotTitle}'. В ответе верни только название категории. Если лот подходит под несколько категорий, то верни их через запятую.")
+            new SystemChatMessage("Ты — полезный ассистент, который анализирует описания лотов с торгов по банкротству."),
+            new UserChatMessage(
+                $"Описание лота:\n" +
+                $"{lotDescription}\n\n" +
+                "У тебя 3 задачи:\n" +
+                $"1. Классифицируй описание лота в одну из следующих категорий: {categoryList}.\n" +
+                "Категория «Прочие постройки» лучше всего подходит для классификации таких вспомогательных строений \n" +
+                "как бани, сараи, гаражи, хозяйственные блоки и беседки. Под категорию «Инвестиционный проект» подходит \n" +
+                "готовый бизнес, аренда, сервис, продажи - лот генерирует прибыль. В категорию «Коммерческий транспорт \n" +
+                "и спецтехника» входят грузовики, прицепы, ГАЗели, бетономешалки, автобусы, экскаваторы-погрузчики, \n" +
+                "бульдозеры, краны, погрузчики, грейдеры и т.п. В категорию «Нежилые помещения» относятся в том числе \n" +
+                "склады, зерносклады. Если в описании лота прямо указана какая-либо категория, то включай ее в ответ. \n" +
+                "Если лот подходит под несколько категорий, то верни их через запятую.\n" +
+                "2. Из описания лота необходимо сформировать его название. Название должно содержать только самые \n" +
+                "важные характеристики лота, подходящие под его категорию.\n" +
+                "3. Определить является ли лот долей. Установи `true`, если в описании упоминается долевая собственность \n" +
+                "(например, 'доля 1/2', '50/100 доли'), иначе `false`. Совместная нажитая собственность не является долей.\n\n" +
+                "Ответ должен быть в формате json. Пример ответа:\n" +
+                "{\n" +
+                "   \"categories\": [\"Земельный участок\", \"Жилой дом\"],\n" +
+                "   \"title\": \"Жилой дом 420 кв.м. в Московской области, д. Жостово и земельный участок 1500 кв.м. КН 19:06:081003:78\",\n" +
+                "   \"isSharedOwnership\": false\n" +
+                "}"
+            )
         };
 
         var chatCompletionOptions = new ChatCompletionOptions()
         {
-            //MaxTokens = 20,
-            Temperature = 0.0f // Устанавливаем Temperature=0 для более детерминированного ответа
+            Temperature = 0.0f, // Устанавливаем Temperature=0 для более детерминированного ответа
         };
-        //chatCompletionOptions.SetMaxTokens(20);
 
+        string content = string.Empty;
         try
         {
             var response = await _chatClient.CompleteChatAsync(messages, chatCompletionOptions);
 
-            string content = response.Value.Content.First().Text;
-            return content.Trim();
+            content = response.Value.Content.First().Text;
+            //_logger.LogInformation("Получен сырой ответ от DeepSeek: {Content}", content);
+
+            content = content.Trim().Replace("```json", "").Trim().Replace("```", "").Trim();
+            _logger.LogInformation("Очищенный JSON для десериализации: {Content}", content);
+
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            return JsonSerializer.Deserialize<LotClassificationResult>(content, options);
+        }
+        catch (JsonException jsonEx)
+        {
+            _logger.LogCritical(jsonEx, "Ошибка десериализации JSON. Контент после очистки: {Content}", content);
+            return null;
         }
         catch (ClientResultException ex)
         {
             _logger.LogCritical(ex, "Произошла ошибка при вызове API DeepSeek");
-            return "Ошибка классификации";
+            return null;
         }
     }
 }

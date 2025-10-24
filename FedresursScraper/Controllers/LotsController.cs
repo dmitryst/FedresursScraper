@@ -49,6 +49,7 @@ public class LotsController : ControllerBase
             StartPrice = l.StartPrice,
             Step = l.Step,
             Deposit = l.Deposit,
+            Title = l.Title ?? l.Description,
             Description = l.Description,
             ViewingProcedure = l.ViewingProcedure,
             CreatedAt = l.CreatedAt,
@@ -93,6 +94,7 @@ public class LotsController : ControllerBase
             StartPrice = lot.StartPrice,
             Step = lot.Step,
             Deposit = lot.Deposit,
+            Title = lot.Title,
             Description = lot.Description,
             ViewingProcedure = lot.ViewingProcedure,
             CreatedAt = lot.CreatedAt,
@@ -123,14 +125,15 @@ public class LotsController : ControllerBase
                                              .WithSpecification(spec)
                                              .ToListAsync();
 
-        var lotsForMap = lotsWithCoords.Select(lot => new LotGeoDto
-        {
-            Id = lot.Id,
-            Title = lot.Description,
-            StartPrice = lot.StartPrice,
-            Latitude = lot.Latitude.Value,
-            Longitude = lot.Longitude.Value
-        }).ToList();
+        var lotsForMap = lotsWithCoords   
+            .Select(lot => new LotGeoDto
+            {
+                Id = lot.Id,
+                Title = lot.Title ?? lot.Description,
+                StartPrice = lot.StartPrice,
+                Latitude = lot.Latitude.GetValueOrDefault(),
+                Longitude = lot.Longitude.GetValueOrDefault()
+            }).ToList();
 
         return Ok(lotsForMap);
     }
@@ -160,27 +163,27 @@ public class LotsController : ControllerBase
         var ids = await _dbContext.Lots.Select(l => l.Id).ToListAsync();
         return Ok(ids);
     }
-    
+
     /// <summary>
-    /// Классифицирует лот по его названию.
+    /// Классифицирует лот по его описанию.
     /// </summary>
-    /// <param name="request">Тело запроса с названием лота.</param>
-    /// <returns>Название категории.</returns>
+    /// <param name="request">Тело запроса с описанием лота.</param>
+    /// <returns>Результат классификации.</returns>
     [HttpPost("classify")]
     public async Task<IActionResult> ClassifyLot([FromBody] LotRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request?.Title))
+        if (string.IsNullOrWhiteSpace(request?.Description))
         {
-            return BadRequest("Параметр 'Title' не может быть пустым.");
+            return BadRequest("Параметр 'Description' не может быть пустым.");
         }
 
-        string category = await _lotClassifier.ClassifyLotAsync(request.Title);
+        var lotClassificationResult = await _lotClassifier.ClassifyLotAsync(request.Description);
 
-        if (category == "Ошибка классификации")
+        if (lotClassificationResult?.Categories is null)
         {
-            return StatusCode(500, "Не удалось выполнить классификацию.");
+            return StatusCode(500, "Не удалось выполнить классификацию категорий лота.");
         }
 
-        return Ok(new { Category = category });
+        return Ok(new { result = lotClassificationResult });
     }
 }

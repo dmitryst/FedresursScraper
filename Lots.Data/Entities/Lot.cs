@@ -8,6 +8,8 @@ namespace Lots.Data.Entities
         public decimal? Step { get; set; }
         public decimal? Deposit { get; set; }
         public string? Description { get; set; }
+        public string? Title { get; set; }
+        public bool IsSharedOwnership { get; set; }
         public string? ViewingProcedure { get; set; }
         public List<LotCategory> Categories { get; set; } = new();
         public List<LotCadastralNumber>? CadastralNumbers { get; set; }

@@ -7,6 +7,7 @@ public class LotDto
     public decimal? StartPrice { get; set; }
     public decimal? Step { get; set; }
     public decimal? Deposit { get; set; }
+    public string? Title { get; set; }
     public string? Description { get; set; }
     public string? ViewingProcedure { get; set; }
     public DateTime CreatedAt { get; set; }
