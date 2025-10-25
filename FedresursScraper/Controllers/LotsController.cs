@@ -117,22 +117,20 @@ public class LotsController : ControllerBase
     }
 
     [HttpGet("with-coordinates")]
-    public async Task<IActionResult> GetLotsWithCoordinates()
+    public async Task<IActionResult> GetLotsWithCoordinates([FromQuery] string[]? categories = null)
     {
-        var spec = new LotsWithCoordinatesSpecification();
+        var spec = new LotsWithCoordinatesSpecification(categories);
 
-        var lotsWithCoords = await _dbContext.Lots
-                                             .WithSpecification(spec)
-                                             .ToListAsync();
+        var lotsWithCoords = await _dbContext.Lots.WithSpecification(spec).ToListAsync();
 
-        var lotsForMap = lotsWithCoords   
+        var lotsForMap = lotsWithCoords
             .Select(lot => new LotGeoDto
             {
                 Id = lot.Id,
                 Title = lot.Title ?? lot.Description,
                 StartPrice = lot.StartPrice,
                 Latitude = lot.Latitude.GetValueOrDefault(),
-                Longitude = lot.Longitude.GetValueOrDefault()
+                Longitude = lot.Longitude.GetValueOrDefault(),
             }).ToList();
 
         return Ok(lotsForMap);
