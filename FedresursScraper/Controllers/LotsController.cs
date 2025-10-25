@@ -4,6 +4,9 @@ using Lots.Data.Specifications;
 using Microsoft.EntityFrameworkCore;
 using FedresursScraper.Controllers.Models;
 using Ardalis.Specification.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Lots.Data.Entities;
 
 
 namespace FedresursScraper.Controllers;
@@ -117,13 +120,41 @@ public class LotsController : ControllerBase
     }
 
     [HttpGet("with-coordinates")]
+    [Authorize]
     public async Task<IActionResult> GetLotsWithCoordinates([FromQuery] string[]? categories = null)
     {
+        // Получаем ID пользователя из токена
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdString, out var userId))
+        {
+            return Unauthorized("Неверный ID пользователя в JWT");
+        }
+
+        var user = await _dbContext.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return Unauthorized("Пользователь не найден");
+        }
+        bool hasFullAccess = user?.IsSubscriptionActive ?? false;
+
         var spec = new LotsWithCoordinatesSpecification(categories);
+        var query = _dbContext.Lots.WithSpecification(spec);
 
-        var lotsWithCoords = await _dbContext.Lots.WithSpecification(spec).ToListAsync();
+        var totalCount = await query.CountAsync();
 
-        var lotsForMap = lotsWithCoords
+        List<Lot> lotsToShow;
+
+        if (hasFullAccess)
+        {
+            lotsToShow = await query.ToListAsync();
+        }
+        else
+        {
+            // Если нет подписки, берем только первые 100
+            lotsToShow = await query.Take(100).ToListAsync();
+        }
+
+        var lotsForMap = lotsToShow
             .Select(lot => new LotGeoDto
             {
                 Id = lot.Id,
@@ -133,7 +164,14 @@ public class LotsController : ControllerBase
                 Longitude = lot.Longitude.GetValueOrDefault(),
             }).ToList();
 
-        return Ok(lotsForMap);
+        var response = new MapLotsResponse
+        {
+            Lots = lotsForMap,
+            HasFullAccess = hasFullAccess,
+            TotalCount = totalCount
+        };
+
+        return Ok(response);
     }
 
     [HttpPost("{lotId:guid}/copy-to-prod")]

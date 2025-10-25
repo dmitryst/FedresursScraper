@@ -1,14 +1,18 @@
 ﻿using Lots.Data;
 using Microsoft.EntityFrameworkCore;
 using FedresursScraper.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 // Используем WebApplicationBuilder для создания веб-приложения
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
 // Регистрация сервисов в DI контейнере
 builder.Services.AddControllers(); // Добавляем поддержку API-контроллеров
 
-var connectionString = builder.Configuration.GetConnectionString("Postgres");
+var connectionString = configuration.GetConnectionString("Postgres");
 
 // Регистрация DbContext
 builder.Services.AddDbContext<LotsDbContext>(options =>
@@ -27,7 +31,7 @@ builder.Services.AddTransient<ICadastralNumberExtractor, CadastralNumberExtracto
 builder.Services.AddScoped<ILotCopyService, LotCopyService>();
 
 // Регистрация фоновых сервисов
-bool parsersEnabled = builder.Configuration.GetValue<bool>("BackgroundParsers:Enabled");
+bool parsersEnabled = configuration.GetValue<bool>("BackgroundParsers:Enabled");
 
 if (parsersEnabled)
 {
@@ -65,6 +69,35 @@ builder.Services.AddHttpClient<IRosreestrServiceClient, RosreestrServiceClient>(
     client.BaseAddress = new Uri(rosreestrServiceUrl);
 });
 
+// настройка аутентификации
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = configuration["Jwt:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = configuration["Jwt:Audience"],
+            ValidateLifetime = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"])),
+            ValidateIssuerSigningKey = true,
+        };
+        // Чтение токена из httpOnly cookie
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                context.Token = context.Request.Cookies["access_token"];
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
+
+// CORS
 var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
 {
@@ -76,7 +109,9 @@ builder.Services.AddCors(options =>
                                 // Разрешаем любые HTTP-методы (GET, POST, OPTIONS и т.д.)
                                 .AllowAnyMethod()
                                 // Разрешаем любые заголовки в запросе (Content-Type, Authorization и т.д.)
-                                .AllowAnyHeader();
+                                .AllowAnyHeader()
+                                // Говорим серверу, чтобы он в ответ прислал заголовок Access-Control-Allow-Credentials: true
+                                .AllowCredentials();
                       });
 });
 
@@ -91,6 +126,7 @@ logger.LogInformation("Приложение запущено.");
 
 // Настройка HTTP-конвейера для обработки API-запросов
 app.UseCors(myAllowSpecificOrigins);
+app.UseAuthentication(); 
 app.UseAuthorization();
 app.MapControllers(); // Включаем маппинг запросов на контроллеры
 
