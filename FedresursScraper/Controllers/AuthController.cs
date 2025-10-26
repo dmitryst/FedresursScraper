@@ -6,7 +6,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-// Определите DTO для запросов
 public record AuthDto(string Email, string Password);
 
 [ApiController]
@@ -58,9 +57,12 @@ public class AuthController : ControllerBase
         Response.Cookies.Append("access_token", token, new CookieOptions
         {
             HttpOnly = true,
-            Secure = true, // В продакшене должно быть true
-            SameSite = SameSiteMode.Strict, // или Lax
-            Expires = DateTime.UtcNow.AddHours(1)
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTime.UtcNow.AddHours(1),
+            // для отладки
+            //Secure = false, // В продакшене должно быть true
+            //SameSite = SameSiteMode.Strict, // или Lax
         });
 
         return Ok(new { message = "Вход выполнен успешно.", email = user.Email });
