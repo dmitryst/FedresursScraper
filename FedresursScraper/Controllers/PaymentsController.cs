@@ -100,13 +100,28 @@ public class PaymentsController : ControllerBase
     /// Принимает и обрабатывает webhook-уведомления от ЮKassa.
     /// </summary>
     [HttpPost("webhook")]
-    public async Task<IActionResult> YooKassaWebhook([FromBody] Notification notification)
+    public async Task<IActionResult> YooKassaWebhook()
     {
+        // Читаем тело запроса в строку
+        using var reader = new StreamReader(Request.Body);
+        var json = await reader.ReadToEndAsync();
+        
+        Notification notification;
+        try
+        {
+            notification = Client.ParseMessage(Request.Method, Request.ContentType, json);
+        }
+        catch (System.Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка парсинга webhook от ЮKassa. JSON: {WebhookJson}", json);
+            return BadRequest("Некорректный json");
+        }
+
         if (notification is PaymentSucceededNotification succeededNotification)
         {
             var payment = succeededNotification.Object;
 
-            if (payment.Paid && 
+            if (payment.Paid &&
                 payment.Metadata.TryGetValue("userId", out var userIdString) &&
                 Guid.TryParse(userIdString, out Guid userGuid))
             {
@@ -135,16 +150,16 @@ public class PaymentsController : ControllerBase
                                 _logger.LogWarning("Неизвестный planId '{PlanId}' в webhook для пользователя {UserId}", planId, user.Id);
                                 break;
                         }
-                        
+
                         _logger.LogInformation(
-                            "Подписка для пользователя {Email} продлена по тарифу '{PlanId}'. Новая дата окончания: {SubscriptionEndDate}", 
-                            user.Email, 
-                            planId, 
+                            "Подписка для пользователя {Email} продлена по тарифу '{PlanId}'. Новая дата окончания: {SubscriptionEndDate}",
+                            user.Email,
+                            planId,
                             user.SubscriptionEndDate);
                     }
                     else
                     {
-                         _logger.LogWarning("В метаданных платежа {PaymentId} отсутствует planId для пользователя {UserId}", payment.Id, user.Id);
+                        _logger.LogWarning("В метаданных платежа {PaymentId} отсутствует planId для пользователя {UserId}", payment.Id, user.Id);
                     }
 
                     await _dbContext.SaveChangesAsync();
