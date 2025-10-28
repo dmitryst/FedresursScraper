@@ -1,3 +1,6 @@
+# Объявляем аргумент сборки с версией
+ARG BUILD_VERSION=1.1.0
+
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 
@@ -54,6 +57,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 #     unzip -q /tmp/chromedriver-linux64.zip -d /tmp && \
 #     mv /tmp/chromedriver-linux64/chromedriver /usr/bin/chromedriver && \
 #     chmod +x /usr/bin/chromedriver
+
+# Устанавливаем версию как переменную окружения для приложения
+ENV AppInfo__Version=$BUILD_VERSION
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
