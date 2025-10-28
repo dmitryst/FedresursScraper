@@ -119,23 +119,38 @@ public class LotsController : ControllerBase
         return Ok(lotDto);
     }
 
+    /// <summary>
+    /// Возвращает лоты с координатами.
+    /// Для анонимных пользователей или пользователей без подписки возвращает не более 100 лотов.
+    /// Для пользователей с активной подпиской возвращает все лоты.
+    /// </summary>
     [HttpGet("with-coordinates")]
-    [Authorize]
     public async Task<IActionResult> GetLotsWithCoordinates([FromQuery] string[]? categories = null)
     {
-        // Получаем ID пользователя из токена
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!Guid.TryParse(userIdString, out var userId))
-        {
-            return Unauthorized("Неверный ID пользователя в JWT");
-        }
+        bool hasFullAccess = false;
 
-        var user = await _dbContext.Users.FindAsync(userId);
-        if (user == null)
+        // Проверяем, аутентифицирован ли пользователь
+        if (User.Identity?.IsAuthenticated == true)
         {
-            return Unauthorized("Пользователь не найден");
+            // Получаем ID пользователя из токена
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(userIdString, out var userId))
+            {
+                var user = await _dbContext.Users.FindAsync(userId);
+                if (user == null)
+                {
+                    return Unauthorized("Пользователь не найден");
+                }
+
+                // Проверяем, активна ли подписка
+                if (user.IsSubscriptionActive &&
+                    user.SubscriptionEndDate.HasValue &&
+                    user.SubscriptionEndDate.Value > DateTime.UtcNow)
+                {
+                    hasFullAccess = true;
+                }
+            }
         }
-        bool hasFullAccess = user?.IsSubscriptionActive ?? false;
 
         var spec = new LotsWithCoordinatesSpecification(categories);
         var query = _dbContext.Lots.WithSpecification(spec);
@@ -143,15 +158,18 @@ public class LotsController : ControllerBase
         var totalCount = await query.CountAsync();
 
         List<Lot> lotsToShow;
+        AccessLevel accessLevel;
 
         if (hasFullAccess)
         {
             lotsToShow = await query.ToListAsync();
+            accessLevel = AccessLevel.Full;
         }
         else
         {
             // Если нет подписки, берем только первые 100
             lotsToShow = await query.Take(100).ToListAsync();
+            accessLevel = AccessLevel.Limited;
         }
 
         var lotsForMap = lotsToShow
@@ -168,7 +186,8 @@ public class LotsController : ControllerBase
         {
             Lots = lotsForMap,
             HasFullAccess = hasFullAccess,
-            TotalCount = totalCount
+            TotalCount = totalCount,
+            AccessLevel = accessLevel
         };
 
         return Ok(response);
