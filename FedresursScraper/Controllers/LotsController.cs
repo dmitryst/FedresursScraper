@@ -127,7 +127,7 @@ public class LotsController : ControllerBase
     [HttpGet("with-coordinates")]
     public async Task<IActionResult> GetLotsWithCoordinates([FromQuery] string[]? categories = null)
     {
-        bool hasFullAccess = false;
+        AccessLevel accessLevel = AccessLevel.Anonymous; 
 
         // Проверяем, аутентифицирован ли пользователь
         if (User.Identity?.IsAuthenticated == true)
@@ -147,7 +147,11 @@ public class LotsController : ControllerBase
                     user.SubscriptionEndDate.HasValue &&
                     user.SubscriptionEndDate.Value > DateTime.UtcNow)
                 {
-                    hasFullAccess = true;
+                    accessLevel = AccessLevel.Full;
+                }
+                else
+                {
+                    accessLevel = AccessLevel.Limited;
                 }
             }
         }
@@ -158,18 +162,15 @@ public class LotsController : ControllerBase
         var totalCount = await query.CountAsync();
 
         List<Lot> lotsToShow;
-        AccessLevel accessLevel;
 
-        if (hasFullAccess)
+        if (accessLevel == AccessLevel.Full)
         {
             lotsToShow = await query.ToListAsync();
-            accessLevel = AccessLevel.Full;
         }
         else
         {
-            // Если нет подписки, берем только первые 100
+            // Если нет подписки или пользователь анонимный, берем только первые 100
             lotsToShow = await query.Take(100).ToListAsync();
-            accessLevel = AccessLevel.Limited;
         }
 
         var lotsForMap = lotsToShow
@@ -185,7 +186,6 @@ public class LotsController : ControllerBase
         var response = new MapLotsResponse
         {
             Lots = lotsForMap,
-            HasFullAccess = hasFullAccess,
             TotalCount = totalCount,
             AccessLevel = accessLevel
         };
