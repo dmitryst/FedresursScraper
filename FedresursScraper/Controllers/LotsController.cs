@@ -56,6 +56,9 @@ public class LotsController : ControllerBase
             Description = l.Description,
             ViewingProcedure = l.ViewingProcedure,
             CreatedAt = l.CreatedAt,
+            Coordinates = (l.Latitude.HasValue && l.Longitude.HasValue)
+                ? new[] { l.Latitude.Value, l.Longitude.Value }
+                : null,
             Bidding = new BiddingDto
             {
                 Type = l.Bidding.Type,
