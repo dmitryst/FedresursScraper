@@ -35,9 +35,9 @@ bool parsersEnabled = configuration.GetValue<bool>("BackgroundParsers:Enabled");
 
 if (parsersEnabled)
 {
-    builder.Services.AddSingleton<ILotIdsCache, InMemoryLotIdsCache>();
-    builder.Services.AddHostedService<BiddingIdsParser>();
-    builder.Services.AddHostedService<BiddingWithLotsParser>();
+    builder.Services.AddSingleton<IBiddingDataCache, InMemoryBiddingDataCache>();
+    builder.Services.AddHostedService<BiddingListParser>();
+    builder.Services.AddHostedService<BiddingProcessorService>();
     builder.Services.AddHostedService<LotClassificationService>();
 }
 
@@ -67,6 +67,45 @@ if (string.IsNullOrWhiteSpace(rosreestrServiceUrl))
 builder.Services.AddHttpClient<IRosreestrServiceClient, RosreestrServiceClient>(client =>
 {
     client.BaseAddress = new Uri(rosreestrServiceUrl);
+});
+
+builder.Services.AddHttpClient("FedresursScraper", client =>
+{
+    // Добавляем User-Agent, который будет использоваться для всех запросов этого клиента
+    client.DefaultRequestHeaders.Add(
+        "User-Agent",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+
+    // Здесь можно добавить и другие заголовки, если понадобятся
+    // client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+    // client.DefaultRequestHeaders.Add("Accept-Language", "ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3");
+})
+.ConfigurePrimaryHttpMessageHandler(() =>
+{
+    return new HttpClientHandler
+    {
+        // 1. Явно указываем, что нужно использовать TLS 1.2. 
+        // Это самая частая причина подобных ошибок со старыми сайтами.
+        SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
+
+        // 2. В качестве крайней меры, если п.1 не поможет.
+        // Этот параметр позволяет использовать более широкий (и менее безопасный) набор шифров,
+        // который может требоваться старыми серверами.
+        // Раскомментируйте следующую строку, только если явное указание Tls12 не сработало.
+        // CipherSuitesPolicy = new CipherSuitePolicy(
+        //     new[]
+        //     {
+        //         TlsCipherSuite.TLS_AES_128_GCM_SHA256,
+        //         TlsCipherSuite.TLS_AES_256_GCM_SHA384,
+        //         TlsCipherSuite.TLS_CHACHA20_POLY1305_SHA256,
+        //         TlsCipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+        //         TlsCipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+        //         TlsCipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+        //         TlsCipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+        //         TlsCipherSuite.TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,
+        //         TlsCipherSuite.TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
+        //     })
+    };
 });
 
 // настройка аутентификации
@@ -102,7 +141,7 @@ var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: myAllowSpecificOrigins,
-                      policy  =>
+                      policy =>
                       {
                           // Разрешаем запросы от Next.js приложения
                           policy.WithOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://s-lot.ru", "http://www.s-lot.ru")
@@ -126,7 +165,7 @@ logger.LogInformation("Приложение запущено.");
 
 // Настройка HTTP-конвейера для обработки API-запросов
 app.UseCors(myAllowSpecificOrigins);
-app.UseAuthentication(); 
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers(); // Включаем маппинг запросов на контроллеры
 

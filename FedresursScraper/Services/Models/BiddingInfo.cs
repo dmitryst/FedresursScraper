@@ -26,7 +26,7 @@ namespace FedresursScraper.Services.Models
         public string? BidAcceptancePeriod { get; set; }
 
         /// <summary>
-        /// Идентификатор сообщения о банкростве с Федресурса
+        /// Идентификатор сообщения о банкротстве с Федресурса
         /// </summary>
         public Guid? BankruptMessageId { get; set; }
 

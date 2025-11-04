@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AngleSharp" Version="1.3.0" />
     <PackageReference Include="Azure.AI.Inference" Version="1.0.0-beta.5" />
     <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
