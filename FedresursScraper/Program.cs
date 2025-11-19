@@ -138,19 +138,24 @@ builder.Services.AddHttpContextAccessor();
 
 // CORS
 var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
+var allowedOrigins = Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS");
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: myAllowSpecificOrigins,
                       policy =>
                       {
-                          // Разрешаем запросы от Next.js приложения
-                          policy.WithOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://s-lot.ru", "http://www.s-lot.ru")
-                                // Разрешаем любые HTTP-методы (GET, POST, OPTIONS и т.д.)
-                                .AllowAnyMethod()
-                                // Разрешаем любые заголовки в запросе (Content-Type, Authorization и т.д.)
-                                .AllowAnyHeader()
-                                // Говорим серверу, чтобы он в ответ прислал заголовок Access-Control-Allow-Credentials: true
-                                .AllowCredentials();
+                          if (!string.IsNullOrEmpty(allowedOrigins))
+                          {
+                              var origins = allowedOrigins.Split(',').Select(o => o.Trim()).ToArray();
+
+                              policy.WithOrigins(origins)
+                                    // Разрешаем любые HTTP-методы (GET, POST, OPTIONS и т.д.)
+                                    .AllowAnyMethod()
+                                    // Разрешаем любые заголовки в запросе (Content-Type, Authorization и т.д.)
+                                    .AllowAnyHeader()
+                                    // Говорим серверу, чтобы он в ответ прислал заголовок Access-Control-Allow-Credentials: true
+                                    .AllowCredentials();
+                          }
                       });
 });
 
