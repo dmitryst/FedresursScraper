@@ -1,4 +1,5 @@
 using Lots.Data.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -21,6 +22,14 @@ public class AuthController : ControllerBase
         _configuration = configuration;
     }
 
+    [HttpGet("me")]
+    [Authorize]
+    public IActionResult GetMe()
+    {
+        var email = User.FindFirst(ClaimTypes.Email)?.Value;
+        return Ok(new { email });
+    }
+
     [HttpPost("register")]
     public async Task<IActionResult> Register(AuthDto request)
     {
@@ -32,7 +41,7 @@ public class AuthController : ControllerBase
         var newUser = new User
         {
             Email = request.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password) 
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
         };
 
         _context.Users.Add(newUser);
@@ -66,6 +75,21 @@ public class AuthController : ControllerBase
         });
 
         return Ok(new { message = "Вход выполнен успешно.", email = user.Email });
+    }
+
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        // Удаляем куку, устанавливая ей истекший срок
+        Response.Cookies.Append("access_token", "", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true, // Важно: должно совпадать с тем, как ставили (true для https/prod)
+            SameSite = SameSiteMode.None, // Также должно совпадать
+            Expires = DateTime.UtcNow.AddDays(-1) // Прошедшая дата
+        });
+
+        return Ok(new { message = "Logged out" });
     }
 
     private string GenerateJwtToken(User user)

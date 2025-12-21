@@ -12,6 +12,7 @@ public class LotsDbContext : DbContext
     public DbSet<LotCategory> LotCategories { get; set; }
     public DbSet<LotCadastralNumber> LotCadastralNumbers { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Favorite> Favorites { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -59,7 +59,7 @@ var rosreestrServiceUrl = Environment.GetEnvironmentVariable("ROSREESTR_SERVICE_
 if (string.IsNullOrWhiteSpace(rosreestrServiceUrl))
 {
     // Можно выбросить исключение или установить значение по умолчанию для локальной разработки
-    throw new InvalidOperationException("Переменная окружения ROSREESTR_SERVICE_URL не установлена.");
+    //throw new InvalidOperationException("Переменная окружения ROSREESTR_SERVICE_URL не установлена.");
     // или: rosreestrServiceUrl = "http://localhost:8000"; // для локальной отладки
 }
 
@@ -142,21 +142,31 @@ var allowedOrigins = Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS");
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: myAllowSpecificOrigins,
-                      policy =>
-                      {
-                          if (!string.IsNullOrEmpty(allowedOrigins))
-                          {
-                              var origins = allowedOrigins.Split(',').Select(o => o.Trim()).ToArray();
-
-                              policy.WithOrigins(origins)
-                                    // Разрешаем любые HTTP-методы (GET, POST, OPTIONS и т.д.)
-                                    .AllowAnyMethod()
-                                    // Разрешаем любые заголовки в запросе (Content-Type, Authorization и т.д.)
-                                    .AllowAnyHeader()
-                                    // Говорим серверу, чтобы он в ответ прислал заголовок Access-Control-Allow-Credentials: true
-                                    .AllowCredentials();
-                          }
-                      });
+        policy =>
+        {
+            // Логика для режима разработки (Debug)
+            if (builder.Environment.IsDevelopment())
+            {
+                policy.SetIsOriginAllowed(origin => true) // Разрешаем любой Origin
+                      .AllowAnyMethod()
+                      .AllowAnyHeader()
+                      .AllowCredentials(); // Разрешаем Credentials (куки, auth-заголовки)
+            }
+            // Логика для остальных режимов (Production)
+            else
+            {
+                var allowedOrigins = Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS");
+                
+                if (!string.IsNullOrEmpty(allowedOrigins))
+                {
+                    var origins = allowedOrigins.Split(',').Select(o => o.Trim()).ToArray();
+                    policy.WithOrigins(origins)
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                }
+            }
+        });
 });
 
 // Сборка приложения
