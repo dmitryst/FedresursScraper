@@ -18,6 +18,7 @@ public class BiddingListParser : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly HtmlParser _htmlParser;
+    private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
 
     private const string BaseUrl = "https://old.bankrot.fedresurs.ru";
     private const string TradeListUrl = $"{BaseUrl}/TradeList.aspx";
@@ -26,17 +27,21 @@ public class BiddingListParser : BackgroundService
         ILogger<BiddingListParser> logger,
         IBiddingDataCache cache,
         IServiceProvider serviceProvider,
-        IHttpClientFactory httpClientFactory)
+        IHttpClientFactory httpClientFactory,
+        Microsoft.Extensions.Configuration.IConfiguration configuration)
     {
         _logger = logger;
         _cache = cache;
         _serviceProvider = serviceProvider;
         _httpClientFactory = httpClientFactory;
         _htmlParser = new HtmlParser();
+        _configuration = configuration;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        int intervalMinutes = _configuration.GetValue<int>("Parsing:ListIntervalMinutes", 60);
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -53,8 +58,9 @@ public class BiddingListParser : BackgroundService
                 _logger.LogError(ex, "Произошла критическая ошибка в процессе парсинга списка торгов.");
             }
 
-            _logger.LogInformation("Парсинг завершен. Следующий запуск через 1 час.");
-            await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+            _logger.LogInformation("Парсинг завершен. Следующий запуск через {Minutes} минут.", intervalMinutes);
+
+            await Task.Delay(TimeSpan.FromMinutes(intervalMinutes), stoppingToken);
         }
     }
 
