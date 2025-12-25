@@ -16,6 +16,7 @@ namespace FedresursScraper.Services
         private readonly IServiceProvider _serviceProvider;
         private readonly IWebDriverFactory _webDriverFactory;
         private readonly IBackgroundTaskQueue _taskQueue;
+        private readonly IRosreestrQueue _rosreestrQueue;
         private readonly TimeSpan _interval = TimeSpan.FromSeconds(30);
 
         public BiddingProcessorService(
@@ -23,13 +24,15 @@ namespace FedresursScraper.Services
             IBiddingDataCache cache,
             IServiceProvider serviceProvider,
             IWebDriverFactory webDriverFactory,
-            IBackgroundTaskQueue taskQueue)
+            IBackgroundTaskQueue taskQueue,
+            IRosreestrQueue rosreestrQueue)
         {
             _logger = logger;
             _cache = cache;
             _serviceProvider = serviceProvider;
             _webDriverFactory = webDriverFactory;
             _taskQueue = taskQueue;
+            _rosreestrQueue = rosreestrQueue;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -158,12 +161,20 @@ namespace FedresursScraper.Services
 
             _logger.LogInformation("Торги {BiddingId} и {LotCount} лотов сохранены в БД.", bidding.Id, bidding.Lots.Count);
 
-            // ставим задачу на классификацию лота и его обновления в БД
+            // ставим задачи на классификацию и обновление координат
             foreach (var lot in bidding.Lots)
             {
+                // Задача классификации
                 if (!string.IsNullOrEmpty(lot.Description))
                 {
                     await EnqueueClassificationTaskAsync(lot.Id, lot.Description);
+                }
+
+                // Задача обновления координат
+                if (lot.CadastralNumbers != null && lot.CadastralNumbers.Any())
+                {
+                     var numbers = lot.CadastralNumbers.Select(x => x.CadastralNumber).ToList();
+                     await EnqueueCoordinateUpdateTaskAsync(lot.Id, numbers);
                 }
             }
         }
@@ -238,6 +249,44 @@ namespace FedresursScraper.Services
                 catch (Exception ex)
                 {
                     scopedLogger.LogError(ex, "Ошибка классификации и обновления лота ID: {LotId}", lotId);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Добавляет задачу на обновление координат в очередь Росреестра
+        /// </summary>
+        private async Task EnqueueCoordinateUpdateTaskAsync(Guid lotId, List<string> cadastralNumbers)
+        {
+            _logger.LogInformation("Добавление в очередь Росреестра для лота ID: {LotId}", lotId);
+
+            await _rosreestrQueue.QueueWorkItemAsync(async (serviceProvider, token) =>
+            {
+                // Сервисы уже в Scope, созданном воркером
+                var scopedLogger = serviceProvider.GetRequiredService<ILogger<BiddingProcessorService>>();
+                var rosreestrService = serviceProvider.GetRequiredService<IRosreestrServiceClient>();
+                var dbContext = serviceProvider.GetRequiredService<LotsDbContext>();
+
+                try
+                {
+                    var coords = await rosreestrService.FindFirstCoordinatesAsync(cadastralNumbers);
+                    
+                    if (coords != null)
+                    {
+                        var lotToUpdate = await dbContext.Lots.FindAsync(new object[] { lotId }, token);
+                        if (lotToUpdate != null)
+                        {
+                            lotToUpdate.Latitude = coords.Latitude;
+                            lotToUpdate.Longitude = coords.Longitude;
+                            
+                            await dbContext.SaveChangesAsync(token);
+                            scopedLogger.LogInformation("Координаты обновлены для лота {LotId}", lotId);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    scopedLogger.LogError(ex, "Ошибка при получении координат для лота {LotId}", lotId);
                 }
             });
         }

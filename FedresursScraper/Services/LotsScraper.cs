@@ -16,19 +16,13 @@ namespace FedresursScraper.Services
     {
         private readonly ILogger<LotsScraper> _logger;
         private readonly ICadastralNumberExtractor _cadastralNumberExtractor;
-        private readonly IRosreestrServiceClient _rosreestrServiceClient;
-        private readonly IBackgroundTaskQueue _taskQueue;
 
         public LotsScraper(
             ILogger<LotsScraper> logger,
-            ICadastralNumberExtractor cadastralNumberExtractor,
-            IRosreestrServiceClient rosreestrServiceClient,
-            IBackgroundTaskQueue taskQueue)
+            ICadastralNumberExtractor cadastralNumberExtractor)
         {
             _logger = logger;
             _cadastralNumberExtractor = cadastralNumberExtractor;
-            _rosreestrServiceClient = rosreestrServiceClient;
-            _taskQueue = taskQueue;
         }
 
         /// <summary>
@@ -83,7 +77,6 @@ namespace FedresursScraper.Services
 
                     var description = ParseLotDescription(detailsCell);
                     var cadastralNumbers = _cadastralNumberExtractor.Extract(description);
-                    var coordinates = await _rosreestrServiceClient.FindFirstCoordinatesAsync(cadastralNumbers);
 
                     var lotInfo = new LotInfo
                     {
@@ -94,8 +87,9 @@ namespace FedresursScraper.Services
                         Step = ParseFinancialValue(stepRaw, startPrice),
                         Deposit = ParseFinancialValue(depositRaw, startPrice),
                         CadastralNumbers = cadastralNumbers,
-                        Latitude = coordinates?.Latitude,
-                        Longitude = coordinates?.Longitude
+                        // Координаты пока null, потом их заполнит фоновый процесс RosreestrWorker
+                        Latitude = null,
+                        Longitude = null
                     };
 
                     lots.Add(lotInfo);

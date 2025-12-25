@@ -39,6 +39,9 @@ if (parsersEnabled)
     builder.Services.AddHostedService<BiddingListParser>();
     builder.Services.AddHostedService<BiddingProcessorService>();
     builder.Services.AddHostedService<LotClassificationService>();
+
+    builder.Services.AddSingleton<IRosreestrQueue, RosreestrQueue>();
+    builder.Services.AddHostedService<RosreestrWorker>();
 }
 
 builder.Services.AddSingleton<ILotClassifier>(serviceProvider =>
@@ -156,7 +159,7 @@ builder.Services.AddCors(options =>
             else
             {
                 var allowedOrigins = Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS");
-                
+
                 if (!string.IsNullOrEmpty(allowedOrigins))
                 {
                     var origins = allowedOrigins.Split(',').Select(o => o.Trim()).ToArray();
