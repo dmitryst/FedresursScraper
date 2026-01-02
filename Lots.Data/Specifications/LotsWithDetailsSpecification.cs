@@ -1,44 +1,42 @@
 using Ardalis.Specification;
-using Lots.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Lots.Data.Specifications;
 
-public class LotsWithDetailsSpecification : Specification<Lot>
+public class LotsWithDetailsSpecification : LotsFilterSpecification
 {
     public LotsWithDetailsSpecification(
         int page,
         int pageSize,
         string[]? categories,
+        string? searchQuery = null,
         string? biddingType = null,
         decimal? priceFrom = null,
         decimal? priceTo = null)
+        : base(categories, searchQuery, biddingType, priceFrom, priceTo)
     {
+        // Жадная загрузка
         Query
             .Include(l => l.Bidding)
             .Include(l => l.Categories);
 
-        if (categories != null && categories.Length > 0)
+        // Сортировка
+        if (!string.IsNullOrWhiteSpace(searchQuery))
         {
-            Query.Where(l => l.Categories.Any(lc => categories.Contains(lc.Name)));
+            // Если есть поиск - сортируем по релевантности
+            Query.OrderByDescending(l =>
+                l.SearchVector.Rank(EF.Functions.WebSearchToTsQuery("russian", searchQuery))
+            );
+        }
+        else
+        {
+            // Иначе - по дате (свежие сверху)
+            Query.OrderByDescending(l => l.Bidding.CreatedAt);
         }
 
-        if (!string.IsNullOrWhiteSpace(biddingType) && biddingType != "Все")
-        {
-            Query.Where(l => l.Bidding.Type == biddingType);
-        }
-
-        if (priceFrom.HasValue)
-        {
-            Query.Where(l => l.StartPrice >= priceFrom.Value);
-        }
-
-        if (priceTo.HasValue)
-        {
-            Query.Where(l => l.StartPrice <= priceTo.Value);
-        }
-
-        Query.OrderByDescending(l => l.Bidding.CreatedAt)
-         .Skip((page - 1) * pageSize)
-         .Take(pageSize);
+        // Пагинация
+        Query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize);
     }
 }

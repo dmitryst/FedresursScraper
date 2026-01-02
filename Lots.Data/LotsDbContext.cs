@@ -33,6 +33,36 @@ public class LotsDbContext : DbContext
         .WithMany(l => l.CadastralNumbers)
         .HasForeignKey(c => c.LotId)
         .OnDelete(DeleteBehavior.Cascade);
+
+        // ПОЛНОТЕКСТОВЫЙ ПОИСК
+        // Включаем расширения
+        modelBuilder.HasPostgresExtension("uuid-ossp");
+        modelBuilder.HasPostgresExtension("pg_trgm"); // Для нечеткого поиска (опечатки)
+        modelBuilder.HasPostgresExtension("unaccent"); // Чтобы искать "ё" как "е"
+
+        // Индекс для полнотекстового поиска (быстрый поиск по словам)
+        // Генерируемый столбец (Generated Column) - лучший способ хранить tsvector в Postgres 12+
+        modelBuilder.Entity<Lot>()
+        .HasGeneratedTsVectorColumn(
+            p => p.SearchVector,
+            "russian_h",  // Используем Hunspell Dictionary
+            p => new { p.Title, p.Description }
+        )
+        .HasIndex(p => p.SearchVector)
+        .HasMethod("GIN"); // GIN индекс для мгновенного поиска
+
+        // === Оптимизация поиска по кадастровым номерам ===
+        // Кадастровые номера часто ищут как "77:01:..." так и "7701..."
+        // Создаем индекс по "чистому" номеру (только цифры) для быстрого поиска
+        modelBuilder.Entity<LotCadastralNumber>()
+        .Property(p => p.CleanCadastralNumber)
+        .HasComputedColumnSql(
+            "regexp_replace(\"CadastralNumber\", '\\D', '', 'g')",
+            stored: true // Важно: сохраняем результат в БД, чтобы можно было построить индекс
+        );
+
+        modelBuilder.Entity<LotCadastralNumber>()
+        .HasIndex(p => p.CleanCadastralNumber);
     }
 }
 
