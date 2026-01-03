@@ -11,7 +11,8 @@ public class LotsFilterSpecification : Specification<Lot>
         string? searchQuery = null,
         string? biddingType = null,
         decimal? priceFrom = null,
-        decimal? priceTo = null)
+        decimal? priceTo = null,
+        bool? isSharedOwnership = null)
     {
         // Полнотекстовый поиск + Кадастровые номера
         if (!string.IsNullOrWhiteSpace(searchQuery))
@@ -53,6 +54,15 @@ public class LotsFilterSpecification : Specification<Lot>
         if (priceTo.HasValue)
         {
             Query.Where(l => l.StartPrice <= priceTo.Value);
+        }
+
+        // Фильтр по долевой собственности
+        // Если параметр не передан (null) - показываем всё (и доли, и не доли)
+        // Если передан true - только доли
+        // Если передан false - только НЕ доли
+        if (isSharedOwnership.HasValue)
+        {
+            Query.Where(l => l.IsSharedOwnership == isSharedOwnership.Value);
         }
     }
 }

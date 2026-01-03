@@ -12,8 +12,9 @@ public class LotsWithDetailsSpecification : LotsFilterSpecification
         string? searchQuery = null,
         string? biddingType = null,
         decimal? priceFrom = null,
-        decimal? priceTo = null)
-        : base(categories, searchQuery, biddingType, priceFrom, priceTo)
+        decimal? priceTo = null,
+        bool? isSharedOwnership = null)
+        : base(categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership)
     {
         // Жадная загрузка
         Query
