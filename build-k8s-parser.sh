@@ -24,8 +24,9 @@ echo "🚀 Pushing images..."
 docker push $IMAGE_NAME:"$VERSION"
 docker push $IMAGE_NAME:latest
 
-# Deploy
+# Deploy (Triggering rollout with timestamp annotation)
 echo "🔄 Rolling out restart for $DEPLOYMENT_NAME..."
-kubectl rollout restart deployment/$DEPLOYMENT_NAME
+kubectl patch deployment $DEPLOYMENT_NAME -p \
+  "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"kubectl.kubernetes.io/restartedAt\":\"$(date +%Y-%m-%dT%H:%M:%S%z)\"}}}}}"
 
 echo "✅ Done! v$VERSION deployed."
