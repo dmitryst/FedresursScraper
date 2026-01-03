@@ -20,8 +20,8 @@ public class LotsFilterSpecification : Specification<Lot>
             var cleanSearchQuery = new string(searchQuery.Where(char.IsDigit).ToArray());
 
             Query.Where(l =>
-                // Поиск по заголовку и описанию (FTS)
-                l.SearchVector.Matches(EF.Functions.WebSearchToTsQuery("russian", searchQuery)) ||
+                // Поиск по заголовку и описанию (FTS), используем Hunspell словарь
+                l.SearchVector.Matches(EF.Functions.WebSearchToTsQuery("russian_h", searchQuery)) ||
 
                 // Поиск по точному вхождению фразы в Title (для коротких названий)
                 EF.Functions.ILike(l.Title ?? "", $"%{searchQuery}%") ||

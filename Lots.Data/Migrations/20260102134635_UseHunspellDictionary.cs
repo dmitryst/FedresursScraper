@@ -11,6 +11,9 @@ namespace Lots.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // я пытался выполнить здесь скрипт через migrationBuilder.Sql()
+            // но не получилось, пришлось выполнить скрипт init-search-config.sql вручную
+
             // Команда AlterColumn для GENERATED колонки в Postgres обычно автоматически
             // вызывает пересчет значений, так что вручную делать UPDATE не нужно
             migrationBuilder.AlterColumn<NpgsqlTsVector>(

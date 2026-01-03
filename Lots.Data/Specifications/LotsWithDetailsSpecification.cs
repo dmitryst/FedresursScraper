@@ -25,7 +25,7 @@ public class LotsWithDetailsSpecification : LotsFilterSpecification
         {
             // Если есть поиск - сортируем по релевантности
             Query.OrderByDescending(l =>
-                l.SearchVector.Rank(EF.Functions.WebSearchToTsQuery("russian", searchQuery))
+                l.SearchVector.Rank(EF.Functions.WebSearchToTsQuery("russian_h", searchQuery))
             );
         }
         else
