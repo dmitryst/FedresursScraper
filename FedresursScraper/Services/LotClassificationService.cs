@@ -4,6 +4,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+/// <summary>
+/// Разгребает очередь задач на классификацию лотов.
+/// </summary>
 public class LotClassificationService : BackgroundService
 {
     private readonly ILogger<LotClassificationService> _logger;

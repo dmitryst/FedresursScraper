@@ -17,6 +17,7 @@ namespace FedresursScraper.Services
         private readonly IWebDriverFactory _webDriverFactory;
         private readonly IBackgroundTaskQueue _taskQueue;
         private readonly IRosreestrQueue _rosreestrQueue;
+        private readonly IClassificationManager _classificationManager;
         private readonly TimeSpan _interval = TimeSpan.FromSeconds(30);
 
         public BiddingProcessorService(
@@ -25,7 +26,8 @@ namespace FedresursScraper.Services
             IServiceProvider serviceProvider,
             IWebDriverFactory webDriverFactory,
             IBackgroundTaskQueue taskQueue,
-            IRosreestrQueue rosreestrQueue)
+            IRosreestrQueue rosreestrQueue,
+            IClassificationManager classificationManager)
         {
             _logger = logger;
             _cache = cache;
@@ -33,6 +35,7 @@ namespace FedresursScraper.Services
             _webDriverFactory = webDriverFactory;
             _taskQueue = taskQueue;
             _rosreestrQueue = rosreestrQueue;
+            _classificationManager = classificationManager;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -167,7 +170,7 @@ namespace FedresursScraper.Services
                 // Задача классификации
                 if (!string.IsNullOrEmpty(lot.Description))
                 {
-                    await EnqueueClassificationTaskAsync(lot.Id, lot.Description);
+                    await _classificationManager.EnqueueClassificationAsync(lot.Id, lot.Description, "Scraper");
                 }
 
                 // Задача обновления координат
@@ -177,80 +180,6 @@ namespace FedresursScraper.Services
                      await EnqueueCoordinateUpdateTaskAsync(lot.Id, numbers);
                 }
             }
-        }
-
-        /// <summary>
-        /// Создает и ставит в очередь задачу для фоновой классификации лота.
-        /// </summary>
-        /// <param name="lotId">ID лота в базе данных.</param>
-        /// <param name="lotDescription">Описание лота для классификации.</param>
-        private async Task EnqueueClassificationTaskAsync(Guid lotId, string lotDescription)
-        {
-            _logger.LogInformation("Добавление в очередь фоновой классификации лота с ID: {LotId}", lotId);
-
-            await _taskQueue.QueueBackgroundWorkItemAsync(async (serviceProvider, token) =>
-            {
-                using var scope = serviceProvider.CreateScope();
-                var scopedLogger = scope.ServiceProvider.GetRequiredService<ILogger<BiddingProcessorService>>();
-                var classifier = scope.ServiceProvider.GetRequiredService<ILotClassifier>();
-                var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
-
-                try
-                {
-                    var classificationResult = await classifier.ClassifyLotAsync(lotDescription);
-
-                    if (classificationResult == null)
-                    {
-                        scopedLogger.LogWarning("LotClassifier вернул null для лота с ID {LotId}.", lotId);
-                        return;
-                    }
-
-                    var lotToUpdate = await dbContext.Lots
-                        .Include(l => l.Categories)
-                        .FirstOrDefaultAsync(l => l.Id == lotId, token);
-
-                    if (lotToUpdate == null)
-                    {
-                        scopedLogger.LogWarning("Лот с ID {LotId} не найден для обновления.", lotId);
-                        return;
-                    }
-
-                    lotToUpdate.Title = classificationResult.Title;
-                    lotToUpdate.IsSharedOwnership = classificationResult.IsSharedOwnership;
-
-                    // Обновляем категории
-                    var categoryNames = classificationResult.Categories
-                        .Select(c => c.Trim())
-                        .Where(c => !string.IsNullOrEmpty(c))
-                        .Distinct();
-
-                    if (!categoryNames.Any())
-                    {
-                        scopedLogger.LogWarning("В результате классификации не найдено валидных категорий для лота с ID {LotId}.", lotId);
-                    }
-                    else
-                    {
-                        foreach (var name in categoryNames)
-                        {
-                            if (!lotToUpdate.Categories.Any(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
-                            {
-                                var newCategory = new LotCategory { Name = name, LotId = lotId };
-                                dbContext.LotCategories.Add(newCategory);
-                            }
-                        }
-                    }
-
-                    await dbContext.SaveChangesAsync(token);
-
-                    scopedLogger.LogInformation(
-                        "Лот ID {LotId} успешно обновлен. Название: '{Title}', Доля: {IsShared}, Категории: {Categories}",
-                        lotId, lotToUpdate.Title, lotToUpdate.IsSharedOwnership, string.Join(", ", categoryNames));
-                }
-                catch (Exception ex)
-                {
-                    scopedLogger.LogError(ex, "Ошибка классификации и обновления лота ID: {LotId}", lotId);
-                }
-            });
         }
 
         /// <summary>

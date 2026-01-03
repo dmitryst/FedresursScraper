@@ -57,6 +57,10 @@ builder.Services.AddSingleton<ILotClassifier>(serviceProvider =>
 
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 
+builder.Services.AddScoped<IClassificationManager, ClassificationManager>();
+
+builder.Services.AddHostedService<LotRecoveryService>();
+
 var rosreestrServiceUrl = Environment.GetEnvironmentVariable("ROSREESTR_SERVICE_URL");
 
 if (string.IsNullOrWhiteSpace(rosreestrServiceUrl))

@@ -5,11 +5,13 @@ public class RosreestrQueue : IRosreestrQueue
     private readonly ConcurrentQueue<Func<IServiceProvider, CancellationToken, ValueTask>> _workItems = new();
     private readonly SemaphoreSlim _signal = new(0);
 
-    public async ValueTask QueueWorkItemAsync(Func<IServiceProvider, CancellationToken, ValueTask> workItem)
+    public ValueTask QueueWorkItemAsync(Func<IServiceProvider, CancellationToken, ValueTask> workItem)
     {
-        if (workItem == null) throw new ArgumentNullException(nameof(workItem));
+        ArgumentNullException.ThrowIfNull(workItem);
+
         _workItems.Enqueue(workItem);
         _signal.Release();
+        return ValueTask.CompletedTask;
     }
 
     public async ValueTask<Func<IServiceProvider, CancellationToken, ValueTask>> DequeueAsync(CancellationToken cancellationToken)

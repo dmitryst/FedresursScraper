@@ -13,6 +13,7 @@ public class LotsDbContext : DbContext
     public DbSet<LotCadastralNumber> LotCadastralNumbers { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Favorite> Favorites { get; set; }
+    public DbSet<LotAuditEvent> LotAuditEvents { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
