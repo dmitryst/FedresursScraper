@@ -2,6 +2,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Lots.Data.Entities;
 using Lots.Data;
+using System.Text.Json;
+using System.Text.Encodings.Web;
 
 /// <summary>
 /// Сервис постановки задач на классификацию лотов. 
@@ -47,13 +49,31 @@ public class ClassificationManager : IClassificationManager
 
             try
             {
-                // Классификация
+                // Выполнение классификации
                 var result = await classifier.ClassifyLotAsync(description);
 
                 if (result == null)
                 {
                     throw new Exception("Classifier returned null");
                 }
+
+                // Сохраняем аналитику
+                var jsonOptions = new JsonSerializerOptions
+                {
+                    // Делает читаемыми русский текст, спецсимволы (№, «, ») и всё остальное
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                };
+
+                var analysisEntry = new LotClassificationAnalysis
+                {
+                    LotId = lotId,
+                    SuggestedCategory = result.SuggestedCategory,
+                    SelectedCategories = string.Join(", ", result.Categories),
+                    RawResponseJson = JsonSerializer.Serialize(result, jsonOptions),
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                dbContext.LotClassificationAnalysis.Add(analysisEntry);
 
                 // Обновление лота
                 var lot = await dbContext.Lots.Include(l => l.Categories).FirstOrDefaultAsync(l => l.Id == lotId, token);

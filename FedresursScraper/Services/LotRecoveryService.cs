@@ -12,7 +12,7 @@ public class LotRecoveryService : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<LotRecoveryService> _logger;
-    private const int BatchSize = 1;
+    private const int BatchSize = 20;
 
     public LotRecoveryService(
         IServiceProvider serviceProvider,

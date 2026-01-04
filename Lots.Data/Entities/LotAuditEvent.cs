@@ -4,6 +4,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Lots.Data.Entities
 {
+    /// <summary>
+    /// Технический журнал процесса (Start -> Success/Fail). 
+    /// Его цель — мониторинг статусов и перезапуск упавших задач
+    /// </summary>
     [Table("LotAuditEvents")]
     public class LotAuditEvent
     {

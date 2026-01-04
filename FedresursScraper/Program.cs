@@ -38,7 +38,6 @@ if (parsersEnabled)
     builder.Services.AddSingleton<IBiddingDataCache, InMemoryBiddingDataCache>();
     builder.Services.AddHostedService<BiddingListParser>();
     builder.Services.AddHostedService<BiddingProcessorService>();
-    builder.Services.AddHostedService<LotClassificationService>();
 
     builder.Services.AddSingleton<IRosreestrQueue, RosreestrQueue>();
     builder.Services.AddHostedService<RosreestrWorker>();
@@ -59,6 +58,7 @@ builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 
 builder.Services.AddScoped<IClassificationManager, ClassificationManager>();
 
+builder.Services.AddHostedService<LotClassificationService>();
 builder.Services.AddHostedService<LotRecoveryService>();
 
 var rosreestrServiceUrl = Environment.GetEnvironmentVariable("ROSREESTR_SERVICE_URL");
