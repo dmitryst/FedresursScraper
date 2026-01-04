@@ -31,7 +31,7 @@ public class LotClassifier : ILotClassifier
         var openAiClient = new OpenAIClient(new ApiKeyCredential(apiKey), clientOptions);
         _chatClient = openAiClient.GetChatClient(_modelName);
 
-        // Актуализировано согласно constants.ts
+        // должно быть всегда в соответствии с constants.ts проекта app-lot
         _categoryTree = new Dictionary<string, List<string>>
         {
             { "Недвижимость", new List<string> {
@@ -59,6 +59,9 @@ public class LotClassifier : ILotClassifier
             { "Товарно-материальные ценности", new List<string> {
                 "Одежда", "Мебель", "Строительные материалы", "Оружие",
                 "Предметы искусства", "Драгоценности", "Другие ТМЦ"
+            }},
+            { "Нематериальные активы", new List<string> {
+                "Авторские права", "Торговые знаки"
             }},
             { "Прочее", new List<string> {
                 "Прочее"
