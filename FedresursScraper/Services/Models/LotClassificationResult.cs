@@ -11,4 +11,7 @@ public class LotClassificationResult
 
     [JsonPropertyName("isSharedOwnership")]
     public bool IsSharedOwnership { get; set; }
+
+    [JsonPropertyName("suggestedCategory")]
+    public string? SuggestedCategory { get; set; }
 }
