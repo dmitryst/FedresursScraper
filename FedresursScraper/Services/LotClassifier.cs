@@ -19,6 +19,9 @@ public class LotClassifier : ILotClassifier
     // Уточнения для конкретных категорий (Business Rules)
     private readonly Dictionary<string, string> _categoryHints;
 
+    // Белый список чистых категорий для быстрой проверки
+    private readonly HashSet<string> _validCategories;
+
     public LotClassifier(ILogger<LotClassifier> logger, string apiKey)
     {
         _logger = logger;
@@ -61,7 +64,8 @@ public class LotClassifier : ILotClassifier
                 "Предметы искусства", "Драгоценности", "Другие ТМЦ"
             }},
             { "Нематериальные активы", new List<string> {
-                "Программное обеспечение", "Торговые знаки", "Авторские права"
+                "Программное обеспечение", "Торговые знаки", "Авторские права", "Патенты на изобретение",
+                "Другие нематериальные активы"
             }},
             { "Прочее", new List<string> {
                 "Прочее"
@@ -78,6 +82,11 @@ public class LotClassifier : ILotClassifier
             { "Готовый бизнес", "бизнес под ключ, арендный бизнес, сервис, продажи (торговля), лот приносит прибыль (действующее предприятие)" },
             { "Прочее", "присваивается, когда ни одна из вышеперечисленных категорий не подходит" }
         };
+
+        // плоский список всех валидных имен категорий
+        _validCategories = _categoryTree.Values
+            .SelectMany(c => c)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
     public async Task<LotClassificationResult?> ClassifyLotAsync(string lotDescription)
@@ -162,7 +171,15 @@ public class LotClassifier : ILotClassifier
             _logger.LogInformation("Очищенный JSON для десериализации: {Content}", content);
 
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            return JsonSerializer.Deserialize<LotClassificationResult>(content, options);
+            var result = JsonSerializer.Deserialize<LotClassificationResult>(content, options);
+
+            if (result != null)
+            {
+                // Вызываем очистку перед возвратом
+                result.Categories = CleanCategories(result.Categories);
+            }
+
+            return result;
         }
         catch (JsonException jsonEx)
         {
@@ -174,5 +191,45 @@ public class LotClassifier : ILotClassifier
             _logger.LogCritical(ex, "Произошла ошибка при вызове API DeepSeek");
             return null;
         }
+    }
+
+    /// <summary>
+    /// Очистка категорий и валидация
+    /// </summary>
+    /// <param name="rawCategories"></param>
+    /// <returns></returns>
+    private List<string> CleanCategories(List<string> rawCategories)
+    {
+        var cleanedList = new List<string>();
+
+        if (rawCategories == null) return cleanedList;
+
+        foreach (var rawCat in rawCategories)
+        {
+            // Пробуем найти точное совпадение
+            if (_validCategories.Contains(rawCat))
+            {
+                cleanedList.Add(rawCat);
+                continue;
+            }
+
+            // Если точного нет, пробуем очистить от скобок "(включает...)"
+            // т.к. DeepSeek может вернуть: "Категория (пояснение)"
+            var cleanName = rawCat.Split('(')[0].Trim();
+
+            if (_validCategories.Contains(cleanName))
+            {
+                cleanedList.Add(cleanName);
+            }
+            else
+            {
+                // Если даже после очистки категория не найдена, 
+                // логируем это как Warning, но не добавляем в список категорий лота.
+                // Возможно, стоит добавить её в SuggestedCategory, чтобы не потерять сигнал.
+                _logger.LogWarning("DeepSeek вернул несуществующую категорию: '{RawCat}' (после очистки: '{CleanName}')", rawCat, cleanName);
+            }
+        }
+
+        return cleanedList.Distinct().ToList();
     }
 }
