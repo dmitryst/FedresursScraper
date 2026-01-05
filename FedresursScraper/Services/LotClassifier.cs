@@ -135,6 +135,17 @@ public class LotClassifier : ILotClassifier
                 "  \"title\": \"Toyota Camry, 2018 г.в. (требует ремонта)\",\n" +
                 "  \"isSharedOwnership\": false\n" +
                 "}"),
+
+            // Пример 3: Дебиторская задолженность (права требования на авто)
+            new UserChatMessage(
+                "Описание: Право требования автомобиля LADA LARGUS, 2019 г.в., VIN XTAFS045LK1200566 (на основании судебного акта)"),
+            new AssistantChatMessage(
+                "{\n" +
+                "  \"categories\": [\"Дебиторская задолженность\"],\n" +
+                "  \"suggestedCategory\": null,\n" +
+                "  \"title\": \"Право требования (LADA LARGUS, 2019 г.в., VIN XTAFS045LK1200566)\",\n" +
+                "  \"isSharedOwnership\": false\n" +
+                "}"),
                 
             // --- РЕАЛЬНЫЙ ЗАПРОС ---
             new UserChatMessage(
