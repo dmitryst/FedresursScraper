@@ -135,7 +135,7 @@ public class RosreestrServiceClient : IRosreestrServiceClient
     private Task AddToRetryQueueAsync(string cadastralNumber)
     {
         _retryQueue.Enqueue(cadastralNumber);
-        _logger.LogInformation("Кадастровый номер {Number} добавлен в очередь для повторной обработки.", cadastralNumber);
+        _logger.LogInformation("Кадастровый номер {Number} добавлен в _retryQueue для повторной обработки.", cadastralNumber);
         return Task.CompletedTask;
     }
 }

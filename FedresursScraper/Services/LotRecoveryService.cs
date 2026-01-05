@@ -12,14 +12,17 @@ public class LotRecoveryService : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<LotRecoveryService> _logger;
+    private readonly IConfiguration _configuration;
     private const int BatchSize = 20;
 
     public LotRecoveryService(
         IServiceProvider serviceProvider,
-        ILogger<LotRecoveryService> logger)
+        ILogger<LotRecoveryService> logger,
+        IConfiguration configuration)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _configuration = configuration;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -28,6 +31,13 @@ public class LotRecoveryService : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            if (!_configuration.GetValue<bool>("Features:EnableLotRecovery", true))
+            {
+                _logger.LogInformation("LotRecoveryService отключен в конфигурации. Сплю 1 минуту.");
+                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                continue;
+            }
+
             try
             {
                 using var scope = _serviceProvider.CreateScope();
@@ -37,7 +47,7 @@ public class LotRecoveryService : BackgroundService
                 // Берем лоты без категорий (неклассифицированные)
                 // Исключаем те, которые уже в процессе (есть событие Start без результата за последний час)
                 var thresholdTime = DateTime.UtcNow.AddHours(-1);
-                
+
                 // Для простоты берем просто без категорий. Аудит защитит от бесконечного цикла, если будем проверять статус.
                 // Чтобы не брать те, которые только что упали или в работе, можно джойнить с аудитом, но для начала простой вариант:
                 var lotsToProcess = await dbContext.Lots
@@ -73,7 +83,7 @@ public class LotRecoveryService : BackgroundService
                 // Ждем, пока эта пачка обработается
                 // Мы не можем знать наверняка, когда очередь дойдет до них, но мы можем поллить таблицу аудита
                 // Проверяем, появились ли события Success или Failure для этих ID после startTime.
-                
+
                 bool batchCompleted = false;
                 while (!batchCompleted && !stoppingToken.IsCancellationRequested)
                 {
@@ -83,8 +93,8 @@ public class LotRecoveryService : BackgroundService
                     var monitorDb = monitorScope.ServiceProvider.GetRequiredService<LotsDbContext>();
 
                     var processedCount = await monitorDb.LotAuditEvents
-                        .Where(e => lotIds.Contains(e.LotId) 
-                                    && e.Timestamp >= startTime 
+                        .Where(e => lotIds.Contains(e.LotId)
+                                    && e.Timestamp >= startTime
                                     && (e.Status == "Success" || e.Status == "Failure"))
                         .CountAsync(stoppingToken);
 
@@ -99,7 +109,7 @@ public class LotRecoveryService : BackgroundService
                         if ((DateTime.UtcNow - startTime).TotalMinutes > 30)
                         {
                             _logger.LogWarning("Таймаут ожидания обработки пачки лотов.");
-                            break; 
+                            break;
                         }
                     }
                 }
