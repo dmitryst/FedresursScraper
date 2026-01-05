@@ -14,6 +14,7 @@ public class LotRecoveryService : BackgroundService
     private readonly ILogger<LotRecoveryService> _logger;
     private readonly IConfiguration _configuration;
     private const int BatchSize = 20;
+    private const int MaxAttempts = 5; // Лимит попыток перед отправкой на "ручной разбор"
 
     public LotRecoveryService(
         IServiceProvider serviceProvider,
@@ -44,14 +45,21 @@ public class LotRecoveryService : BackgroundService
                 var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
                 var classificationManager = scope.ServiceProvider.GetRequiredService<IClassificationManager>();
 
-                // Берем лоты без категорий (неклассифицированные)
-                // Исключаем те, которые уже в процессе (есть событие Start без результата за последний час)
-                var thresholdTime = DateTime.UtcNow.AddHours(-1);
+                var retryDelay = DateTime.UtcNow.AddHours(-1); // Не трогать лот, если пробовали за последний час
 
-                // Для простоты берем просто без категорий. Аудит защитит от бесконечного цикла, если будем проверять статус.
-                // Чтобы не брать те, которые только что упали или в работе, можно джойнить с аудитом, но для начала простой вариант:
                 var lotsToProcess = await dbContext.Lots
+                    // Берем лоты без категорий
                     .Where(l => !l.Categories.Any() && !string.IsNullOrEmpty(l.Description))
+                    // DeepSeek может вернуть пустой массив categories. Чтобы избежать зациклинности,
+                    // исключаем те, по которым была попытка (Start/Success/Failure) за последний час
+                    .Where(l => !dbContext.LotAuditEvents.Any(e =>
+                        e.LotId == l.Id &&
+                        e.EventType == "Classification" &&
+                        e.Timestamp > retryDelay))
+                    // Исключаем лоты, у которых уже накопилось слишком много попыток
+                    // Такие лоты потом можно найти отдельным SQL-запросом для ручного разбора
+                    .Where(l => dbContext.LotAuditEvents
+                        .Count(e => e.LotId == l.Id && e.EventType == "Classification") < MaxAttempts)
                     .OrderBy(l => l.Id) // Важно для детерминированности
                     .Take(BatchSize)
                     .Select(l => new { l.Id, l.Description })
@@ -65,11 +73,6 @@ public class LotRecoveryService : BackgroundService
                 }
 
                 _logger.LogInformation("Найдено {Count} лотов для восстановления классификации.", lotsToProcess.Count);
-
-                // Фильтруем те, которые мы уже пытались обработать совсем недавно (чтобы не спамить API, если денег нет)
-                // Это можно сделать запросом в БД, но для 100 штук можно и в памяти, если нагрузка небольшая,
-                // либо усложнить SQL запрос выше. 
-                // Рекомендую добавить проверку: если был FAILURE в последние 30 минут, пропускаем.
 
                 var lotIds = lotsToProcess.Select(x => x.Id).ToList();
                 var startTime = DateTime.UtcNow;

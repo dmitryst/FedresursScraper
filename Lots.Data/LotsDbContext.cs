@@ -65,6 +65,11 @@ public class LotsDbContext : DbContext
 
         modelBuilder.Entity<LotCadastralNumber>()
         .HasIndex(p => p.CleanCadastralNumber);
+
+        // Добавляем составной индекс для таблицы аудита
+        modelBuilder.Entity<LotAuditEvent>()
+            .HasIndex(e => new { e.LotId, e.EventType })
+            .HasDatabaseName("IX_LotAuditEvents_LotId_EventType");
     }
 }
 
