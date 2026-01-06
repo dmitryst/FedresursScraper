@@ -119,6 +119,11 @@ public class ClassificationManager : IClassificationManager
                     Details = "Circuit Breaker: API limit/balance"
                 });
                 await dbContext.SaveChangesAsync(token);
+
+                // притормаживаем немного
+                // это заставит поток обработки очереди "уснуть" и не брать новые задачи 
+                // следующие 5-10 секунд. Этого достаточно, чтобы не спамить базу
+                await Task.Delay(TimeSpan.FromSeconds(10), token);
             }
             catch (Exception ex)
             {
