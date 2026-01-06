@@ -26,12 +26,15 @@ public class LotClassifier : ILotClassifier
     private static DateTime _circuitOpenUntil = DateTime.MinValue;
     private static readonly TimeSpan _cooldownPeriod = TimeSpan.FromHours(4); // Ждем 4 часа после ошибки оплаты
 
-    // Минимальный интервал между запросами (например, 1 секунда)
-    private static readonly TimeSpan _minRequestInterval = TimeSpan.FromSeconds(1.5);
+    // Минимальный интервал между запросами
+    private readonly TimeSpan _minRequestInterval;
     private static DateTime _nextAllowedRequestTime = DateTime.MinValue;
     private static readonly object _lockObj = new object(); // Для синхронизации времени
 
-    public LotClassifier(ILogger<LotClassifier> logger, string apiKey, string apiUrl)
+    public LotClassifier(
+        ILogger<LotClassifier> logger,
+        IConfiguration configuration,
+        string apiKey, string apiUrl)
     {
         _logger = logger;
 
@@ -42,6 +45,9 @@ public class LotClassifier : ILotClassifier
 
         var openAiClient = new OpenAIClient(new ApiKeyCredential(apiKey), clientOptions);
         _chatClient = openAiClient.GetChatClient(_modelName);
+
+        double seconds = configuration.GetValue<double>("DeepSeek:RequestIntervalSeconds", 3.0);
+        _minRequestInterval = TimeSpan.FromSeconds(seconds);
 
         // должно быть всегда в соответствии с constants.ts проекта app-lot
         _categoryTree = new Dictionary<string, List<string>>
