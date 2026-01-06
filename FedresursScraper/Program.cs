@@ -50,8 +50,10 @@ builder.Services.AddSingleton<ILotClassifier>(serviceProvider =>
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
     string apiKey = configuration["DeepSeek:ApiKey"] ??
         throw new InvalidOperationException("API ключ для DeepSeek не найден в конфигурации (DeepSeek:ApiKey).");
+    string apiUrl = configuration["DeepSeek:ApiUrl"] ??
+        throw new InvalidOperationException("API URL для DeepSeek не найден в конфигурации (DeepSeek:ApiUrl).");
 
-    return new LotClassifier(logger, apiKey);
+    return new LotClassifier(logger, apiKey, apiUrl);
 });
 
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();

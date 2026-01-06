@@ -14,7 +14,7 @@ public class LotRecoveryService : BackgroundService
     private readonly ILogger<LotRecoveryService> _logger;
     private readonly IConfiguration _configuration;
     private const int BatchSize = 20;
-    private const int MaxAttempts = 5; // Лимит попыток перед отправкой на "ручной разбор"
+    private const int MaxAttempts = 1; // Лимит попыток перед отправкой на "ручной разбор"
 
     public LotRecoveryService(
         IServiceProvider serviceProvider,
@@ -51,11 +51,11 @@ public class LotRecoveryService : BackgroundService
                     // Берем лоты без категорий
                     .Where(l => !l.Categories.Any() && !string.IsNullOrEmpty(l.Description))
                     // DeepSeek может вернуть пустой массив categories. Чтобы избежать зациклинности,
-                    // исключаем те, по которым была попытка классификации за последний час
+                    // исключаем те, по которым была хотя бы одна успешная классификация
                     .Where(l => !dbContext.LotAuditEvents.Any(e =>
                         e.LotId == l.Id &&
                         e.EventType == "Classification" &&
-                        e.Timestamp > retryDelay))
+                        e.Status == "Success"))
                     // Исключаем лоты, у которых уже накопилось слишком много неудачных попыток
                     // Такие лоты потом можно найти отдельным SQL-запросом для ручного разбора
                     .Where(l => dbContext.LotAuditEvents
@@ -67,7 +67,7 @@ public class LotRecoveryService : BackgroundService
 
                 if (lotsToProcess.Count == 0)
                 {
-                    _logger.LogInformation("Нет неклассифицированных лотов. Ждем 1 час.");
+                    _logger.LogInformation("Нет лотов на классификацию. Ждем 1 час.");
                     await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
                     continue;
                 }

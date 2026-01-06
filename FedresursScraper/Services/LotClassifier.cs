@@ -26,13 +26,13 @@ public class LotClassifier : ILotClassifier
     private static DateTime _circuitOpenUntil = DateTime.MinValue;
     private static readonly TimeSpan _cooldownPeriod = TimeSpan.FromHours(4); // Ждем 4 часа после ошибки оплаты
 
-    public LotClassifier(ILogger<LotClassifier> logger, string apiKey)
+    public LotClassifier(ILogger<LotClassifier> logger, string apiKey, string apiUrl)
     {
         _logger = logger;
 
         var clientOptions = new OpenAIClientOptions
         {
-            Endpoint = new Uri("https://api.deepseek.com/v1")
+            Endpoint = new Uri(apiUrl)
         };
 
         var openAiClient = new OpenAIClient(new ApiKeyCredential(apiKey), clientOptions);
