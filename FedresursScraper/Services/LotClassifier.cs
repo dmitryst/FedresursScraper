@@ -206,16 +206,18 @@ public class LotClassifier : ILotClassifier
         catch (ClientResultException ex) when (ex.Status == 402) // Ошибка оплаты
         {
             _circuitOpenUntil = DateTime.UtcNow.Add(_cooldownPeriod);
-            
+
             _logger.LogCritical(ex, "Баланс DeepSeek исчерпан (402). Запросы приостановлены на {Minutes} минут.", _cooldownPeriod.TotalMinutes);
             return null;
         }
         catch (ClientResultException ex) when (ex.Status == 429) // Too Many Requests (лимит рейтов)
         {
-             // Для 429 можно паузу поменьше, например 1 минуту
-             _circuitOpenUntil = DateTime.UtcNow.AddMinutes(1);
-             _logger.LogWarning("Лимит запросов DeepSeek (429). Пауза 1 минута.");
-             return null;
+            // Для 429 можно паузу поменьше, например 1 минуту
+            _circuitOpenUntil = DateTime.UtcNow.AddMinutes(1);
+            _logger.LogWarning("Лимит запросов DeepSeek (429). Пауза 1 минута.");
+
+            // Бросаем исключение, чтобы этот лот тоже стал Skipped
+            throw new CircuitBreakerOpenException($"API Rate Limit (429) до {_circuitOpenUntil}", ex);
         }
         catch (JsonException jsonEx)
         {
