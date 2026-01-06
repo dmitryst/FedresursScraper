@@ -26,6 +26,11 @@ public class LotClassifier : ILotClassifier
     private static DateTime _circuitOpenUntil = DateTime.MinValue;
     private static readonly TimeSpan _cooldownPeriod = TimeSpan.FromHours(4); // Ждем 4 часа после ошибки оплаты
 
+    // Минимальный интервал между запросами (например, 1 секунда)
+    private static readonly TimeSpan _minRequestInterval = TimeSpan.FromSeconds(1.5);
+    private static DateTime _nextAllowedRequestTime = DateTime.MinValue;
+    private static readonly object _lockObj = new object(); // Для синхронизации времени
+
     public LotClassifier(ILogger<LotClassifier> logger, string apiKey, string apiUrl)
     {
         _logger = logger;
@@ -100,6 +105,36 @@ public class LotClassifier : ILotClassifier
         if (DateTime.UtcNow < _circuitOpenUntil)
         {
             throw new CircuitBreakerOpenException($"API недоступно до {_circuitOpenUntil}");
+        }
+
+        // THROTTLING (Ограничение скорости)
+        // С использованием _nextAllowedRequestTime (алгоритм Token Bucket / Leaky Bucket в упрощенном виде):
+        // 1-й запрос: пройдет сразу.
+        // 2-й запрос: увидит, что слот занят, подождет 1.5 сек.
+        // 3-й запрос: увидит, что занято уже на 3 сек вперед, подождет 3 сек.
+        // ...
+        // 20-й запрос: подождет 30 секунд.
+        // Запросы выстроятся в ровную очередь с интервалом 1.5 секунды. Это гарантированно уберет 429 ошибки, вызванные пиковым RPS.
+        TimeSpan delay;
+        lock (_lockObj)
+        {
+            var now = DateTime.UtcNow;
+            if (_nextAllowedRequestTime < now)
+            {
+                _nextAllowedRequestTime = now;
+            }
+            
+            // Вычисляем, сколько нужно подождать до следующего свободного слота
+            delay = _nextAllowedRequestTime - now;
+            
+            // Сдвигаем слот для следующего запроса
+            _nextAllowedRequestTime = _nextAllowedRequestTime.Add(_minRequestInterval);
+        }
+
+        // Если нужно ждать, ждем (асинхронно, не блокируя поток)
+        if (delay > TimeSpan.Zero)
+        {
+            await Task.Delay(delay);
         }
 
         // Формируем "умный" список категорий с подсказками
