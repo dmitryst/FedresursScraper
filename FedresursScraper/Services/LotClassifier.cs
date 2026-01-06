@@ -22,6 +22,10 @@ public class LotClassifier : ILotClassifier
     // Белый список чистых категорий для быстрой проверки
     private readonly HashSet<string> _validCategories;
 
+    // Переменные для Circuit Breaker
+    private static DateTime _circuitOpenUntil = DateTime.MinValue;
+    private static readonly TimeSpan _cooldownPeriod = TimeSpan.FromHours(4); // Ждем 4 часа после ошибки оплаты
+
     public LotClassifier(ILogger<LotClassifier> logger, string apiKey)
     {
         _logger = logger;
@@ -92,6 +96,12 @@ public class LotClassifier : ILotClassifier
 
     public async Task<LotClassificationResult?> ClassifyLotAsync(string lotDescription)
     {
+        // Если предохранитель сработал, не делаем запрос
+        if (DateTime.UtcNow < _circuitOpenUntil)
+        {
+            throw new CircuitBreakerOpenException($"API недоступно до {_circuitOpenUntil}");
+        }
+
         // Формируем "умный" список категорий с подсказками
         var categoriesPromptBuilder = new System.Text.StringBuilder();
 
@@ -192,6 +202,20 @@ public class LotClassifier : ILotClassifier
             }
 
             return result;
+        }
+        catch (ClientResultException ex) when (ex.Status == 402) // Ошибка оплаты
+        {
+            _circuitOpenUntil = DateTime.UtcNow.Add(_cooldownPeriod);
+            
+            _logger.LogCritical(ex, "Баланс DeepSeek исчерпан (402). Запросы приостановлены на {Minutes} минут.", _cooldownPeriod.TotalMinutes);
+            return null;
+        }
+        catch (ClientResultException ex) when (ex.Status == 429) // Too Many Requests (лимит рейтов)
+        {
+             // Для 429 можно паузу поменьше, например 1 минуту
+             _circuitOpenUntil = DateTime.UtcNow.AddMinutes(1);
+             _logger.LogWarning("Лимит запросов DeepSeek (429). Пауза 1 минута.");
+             return null;
         }
         catch (JsonException jsonEx)
         {

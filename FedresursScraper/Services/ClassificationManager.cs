@@ -106,6 +106,20 @@ public class ClassificationManager : IClassificationManager
                     logger.LogInformation("Лот {LotId} успешно классифицирован.", lotId);
                 }
             }
+            catch (CircuitBreakerOpenException)
+            {
+                // API DeepSeek недоступно из-за сработанного CircuitBreaker
+                dbContext.LotAuditEvents.Add(new LotAuditEvent
+                {
+                    LotId = lotId,
+                    EventType = "Classification",
+                    Status = "Skipped", // фактически попытки не было, поэтому устанавливаем специальный статус: Skipped
+                    Source = source,
+                    Timestamp = DateTime.UtcNow,
+                    Details = "Circuit Breaker: API limit/balance"
+                });
+                await dbContext.SaveChangesAsync(token);
+            }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Ошибка классификации лота {LotId}", lotId);

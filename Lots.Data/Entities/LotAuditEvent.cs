@@ -29,7 +29,7 @@ namespace Lots.Data.Entities
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Статус события ("Start", "Success", "Failure")
+        /// Статус события ("Start", "Success", "Failure", "Skipped")
         /// </summary>
         [Required]
         [MaxLength(20)]

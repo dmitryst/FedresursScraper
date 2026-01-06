@@ -51,15 +51,15 @@ public class LotRecoveryService : BackgroundService
                     // Берем лоты без категорий
                     .Where(l => !l.Categories.Any() && !string.IsNullOrEmpty(l.Description))
                     // DeepSeek может вернуть пустой массив categories. Чтобы избежать зациклинности,
-                    // исключаем те, по которым была попытка (Start/Success/Failure) за последний час
+                    // исключаем те, по которым была попытка классификации за последний час
                     .Where(l => !dbContext.LotAuditEvents.Any(e =>
                         e.LotId == l.Id &&
                         e.EventType == "Classification" &&
                         e.Timestamp > retryDelay))
-                    // Исключаем лоты, у которых уже накопилось слишком много попыток
+                    // Исключаем лоты, у которых уже накопилось слишком много неудачных попыток
                     // Такие лоты потом можно найти отдельным SQL-запросом для ручного разбора
                     .Where(l => dbContext.LotAuditEvents
-                        .Count(e => e.LotId == l.Id && e.EventType == "Classification") < MaxAttempts)
+                        .Count(e => e.LotId == l.Id && e.EventType == "Classification" && e.Status == "Failure") < MaxAttempts)
                     .OrderBy(l => l.Id) // Важно для детерминированности
                     .Take(BatchSize)
                     .Select(l => new { l.Id, l.Description })
@@ -98,7 +98,7 @@ public class LotRecoveryService : BackgroundService
                     var processedCount = await monitorDb.LotAuditEvents
                         .Where(e => lotIds.Contains(e.LotId)
                                     && e.Timestamp >= startTime
-                                    && (e.Status == "Success" || e.Status == "Failure"))
+                                    && (e.Status == "Success" || e.Status == "Failure" || e.Status == "Skipped"))
                         .CountAsync(stoppingToken);
 
                     if (processedCount >= lotIds.Count)
