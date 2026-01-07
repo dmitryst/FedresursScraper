@@ -26,6 +26,37 @@ where a."LotId" = '019b31b0-da6f-797f-982f-f5a122488c01'
     AND ABS(EXTRACT(EPOCH FROM (a."CreatedAt" - e."Timestamp"))) < 5;
 
 
+-- запрос на выборку лотов на классификацию
+SELECT l."Id", l."Description"
+FROM "Lots" l
+WHERE 
+    -- 1. Берем лоты без категорий (NOT EXISTS в LotCategories)
+    NOT EXISTS (
+        SELECT 1 
+        FROM "LotCategories" lc 
+        WHERE lc."LotId" = l."Id"
+    )
+    -- 2. Исключаем те, где была хотя бы одна УСПЕШНАЯ классификация
+    AND NOT EXISTS (
+        SELECT 1 
+        FROM "LotAuditEvents" e 
+        WHERE e."LotId" = l."Id" 
+          AND e."EventType" = 'Classification' 
+          AND e."Status" = 'Success'
+    )
+    -- 3. Исключаем лоты, где количество НЕУДАЧНЫХ (Failure) попыток >= 1
+    -- (то есть оставляем только тех, у кого Failure < 1)
+    AND (
+        SELECT COUNT(*)
+        FROM "LotAuditEvents" e
+        WHERE e."LotId" = l."Id" 
+          AND e."EventType" = 'Classification' 
+          AND e."Status" = 'Failure'
+    ) < 1
+ORDER BY l."Id"
+LIMIT 20;
+
+
 -- находим все лоты с категориями, отсутствующими в дереве категорий
 WITH ValidCategories ("Name") AS (
     VALUES
@@ -134,9 +165,9 @@ SELECT l."Id", l."Title", COUNT(e."Id") as "Attempts"
 FROM "Lots" l
 JOIN "LotAuditEvents" e ON l."Id" = e."LotId"
 WHERE NOT EXISTS (SELECT 1 FROM "LotCategories" c WHERE c."LotId" = l."Id") -- Нет категорий
-  AND e."EventType" = 'Classification'
+  AND e."EventType" = 'Classification' AND e."Status" = 'Failure'
 GROUP BY l."Id", l."Title"
-HAVING COUNT(e."Id") >= 5 -- Лимит MaxAttempts
+HAVING COUNT(e."Id") >= 1 -- Лимит MaxAttempts
 ORDER BY "Attempts" DESC;
 
 
