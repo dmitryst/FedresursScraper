@@ -7,6 +7,9 @@ using FedresursScraper.Services.Models;
 
 namespace FedresursScraper.Services
 {
+    /// <summary>
+    /// Сервис парсинга сущности торгов с сайта fedresurs.ru
+    /// </summary>
     public class BiddingScraper : IBiddingScraper
     {
         private readonly ILogger<IBiddingScraper> _logger;
@@ -16,7 +19,7 @@ namespace FedresursScraper.Services
             _logger = logger;
         }
 
-        public async Task<BiddingInfo> ScrapeDataAsync(IWebDriver driver, Guid biddingId)
+        public async Task<BiddingInfo> ScrapeBiddingInfoAsync(IWebDriver driver, Guid biddingId)
         {
             var url = $"https://fedresurs.ru/biddings/{biddingId}";
 
@@ -26,57 +29,153 @@ namespace FedresursScraper.Services
             var random = new Random();
             await Task.Delay(3000 + random.Next(1500));
 
-            // Выводим HTML страницы для анализа
+            // Для дебага: выводим HTML страницы для анализа
             // var pageSource = driver.PageSource;
             // File.WriteAllText("debug.html", pageSource);
 
-            string biddingType = ParseField(driver, "Вид торгов");
-            string bidAcceptancePeriod = ParseField(driver, "Прием заявок");
-            // string startPriceText = ParseField(driver, "Начальная цена");
-            // string stepText = ParseField(driver, "Шаг аукциона");
-            // string depositText = ParseField(driver, "Задаток");
+            var biddingType = ParseSimpleField(driver, "Вид торгов");
+            var bidAcceptancePeriod = ParseSimpleField(driver, "Прием заявок");
+            var tradePeriod = ParseSimpleField(driver, "Период торгов");
+            var organizer = ParseSimpleField(driver, "Организатор торгов");
 
-            string announcementRawText = ParseField(driver, "Объявление о торгах");
-            DateTime? announcementDate = ParseBiddingAnnouncementDate(announcementRawText);
+            var announcementRawText = ParseSimpleField(driver, "Объявление о торгах");
+            DateTime? announcementDate = ParseDateTime(announcementRawText);
 
-            // var categories = ParseCategories(driver);
-            var (description, viewingProcedure) = ParseAndSplitDescription(driver);
+            var resultsDateRaw = ParseSimpleField(driver, "Дата объявления результатов");
+            DateTime? resultsDate = ParseDateTime(resultsDateRaw);
+
+            var (_, viewingProcedure) = ParseAndSplitDescription(driver);
+
+            var debtorInfo = ParseSubjectBlock(driver, "Должник");
+            var managerInfo = ParseSubjectBlock(driver, "Арбитражный управляющий");
+            var legalCaseInfo = ParseLegalCase(driver);
 
             return new BiddingInfo
             {
                 Id = biddingId,
                 AnnouncedAt = announcementDate,
-                Type = biddingType,
+                Type = biddingType!,
+
                 BidAcceptancePeriod = bidAcceptancePeriod,
+                TradePeriod = tradePeriod,
+                ResultsAnnouncementDate = resultsDate,
+
                 BankruptMessageId = ParseBankruptMessageId(driver),
-                ViewingProcedure = viewingProcedure
+
+                Organizer = organizer,
+
+                DebtorId = debtorInfo.Id,
+                DebtorName = debtorInfo.Name,
+                DebtorInn = debtorInfo.Inn,
+                DebtorSnils = debtorInfo.Snils,
+                DebtorOgrn = debtorInfo.Ogrn,
+                IsDebtorCompany = debtorInfo.IsCompany,
+
+                ArbitrationManagerId = managerInfo.Id,
+                ArbitrationManagerName = managerInfo.Name,
+                ArbitrationManagerInn = managerInfo.Inn,
+
+                LegalCaseId = legalCaseInfo.Id,
+                LegalCaseNumber = legalCaseInfo.Number,
+
+                ViewingProcedure = viewingProcedure,
             };
         }
 
-        private string? ParseBidAcceptancePeriod(string rawText)
+        private record LegalCaseParseResult(Guid? Id, string? Number);
+        private record SubjectParseResult(Guid? Id, string? Name, string? Inn, string? Snils, string? Ogrn, bool IsCompany);
+
+        private SubjectParseResult ParseSubjectBlock(IWebDriver driver, string label)
         {
-            if (string.IsNullOrWhiteSpace(rawText) || rawText.Equals("не найдено", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                return null;
+                // Ищем контейнер с заголовком (например, "Должник" или "Арбитражный управляющий")
+                // Используем XPath для поиска по тексту заголовка
+                var labelElements = driver.FindElements(By.XPath($"//div[contains(@class, 'info-item-name') and contains(text(), '{label}')]"));
+
+                if (!labelElements.Any())
+                    return new SubjectParseResult(null, null, null, null, null, false);
+
+                // Получаем соседний div со значением (info-item-value)
+                var valueDiv = labelElements.First().FindElement(By.XPath("./following-sibling::div[contains(@class, 'info-item-value')]"));
+
+                // Пытаемся определить ссылку и имя
+                string? name = null;
+                Guid? id = null;
+                string? href = null;
+
+                try
+                {
+                    // Ссылка может быть внутри .company-name
+                    var linkElement = valueDiv.FindElement(By.XPath(".//div[contains(@class, 'company-name')]//a"));
+                    name = linkElement.Text.Trim();
+                    href = linkElement.GetAttribute("href");
+                    id = ExtractGuidFromHref(href);
+                }
+                catch
+                {
+                    // Если ссылки нет, берем просто текст
+                    name = valueDiv.Text.Trim();
+                }
+
+                // Определяем тип (Компания или Физлицо) по ссылке
+                bool isCompany = href != null && href.Contains("/companies/");
+
+                // Парсим идентификаторы (ИНН, СНИЛС, ОГРН)
+                // Они лежат в блоках .company-identifier-item
+                string? inn = ParseSubField(valueDiv, "ИНН");
+                string? snils = ParseSubField(valueDiv, "СНИЛС");
+                string? ogrn = ParseSubField(valueDiv, "ОГРН");
+
+                return new SubjectParseResult(id, name, inn, snils, ogrn, isCompany);
             }
-
-            // Паттерн ищет две даты в формате "ДД.ММ.ГГГГ ЧЧ:ММ", разделенные словом "по"
-            // Пример строки: "с 25.07.2024 12:00 по 30.08.2024 12:00"
-            var match = Regex.Match(rawText, @"(\d{2}\.\d{2}\.\d{4}\s\d{2}:\d{2}).*?по.*?(\d{2}\.\d{2}\.\d{4}\s\d{2}:\d{2})", RegexOptions.IgnoreCase);
-
-            if (match.Success && match.Groups.Count > 2)
+            catch (Exception ex)
             {
-                // Форматируем результат в виде "Начало - Окончание"
-                string startDate = match.Groups[1].Value;
-                string endDate = match.Groups[2].Value;
-                return $"{startDate} - {endDate}";
+                _logger.LogWarning(ex, "Ошибка при парсинге блока '{Label}'", label);
+                return new SubjectParseResult(null, null, null, null, null, false);
             }
-
-            _logger.LogWarning("Не удалось распознать период приема заявок из строки: '{RawText}'", rawText);
-            // Если формат не соответствует, возвращаем исходную строку как есть
-            return rawText;
         }
 
+        private string? ParseSubField(IWebElement parent, string subLabel)
+        {
+            try
+            {
+                var els = parent.FindElements(By.XPath($".//div[contains(@class, 'company-identifier-item-name') and contains(text(), '{subLabel}')]/following-sibling::div"));
+                if (els.Any()) return els.First().Text.Trim();
+            }
+            catch { }
+            return null;
+        }
+
+        private LegalCaseParseResult ParseLegalCase(IWebDriver driver)
+        {
+            try
+            {
+                var labelElements = driver.FindElements(By.XPath("//div[contains(text(), 'Номер дела')]"));
+                if (!labelElements.Any()) return new LegalCaseParseResult(null, null);
+
+                var valueDiv = labelElements.First().FindElement(By.XPath("./following-sibling::div"));
+                var link = valueDiv.FindElement(By.TagName("a"));
+
+                string number = link.Text.Trim();
+                Guid? id = ExtractGuidFromHref(link.GetAttribute("href"));
+
+                return new LegalCaseParseResult(id, number);
+            }
+            catch
+            {
+                return new LegalCaseParseResult(null, null);
+            }
+        }
+
+        private Guid? ExtractGuidFromHref(string? href)
+        {
+            if (string.IsNullOrEmpty(href)) return null;
+            var segments = href.Split('/');
+            var guidString = segments.LastOrDefault();
+            if (Guid.TryParse(guidString, out Guid result)) return result;
+            return null;
+        }
 
         private Guid? ParseBankruptMessageId(IWebDriver driver)
         {
@@ -84,18 +183,7 @@ namespace FedresursScraper.Services
             {
                 // Находим ссылку внутри блока с объявлением о торгах
                 var linkElement = driver.FindElement(By.XPath("//div[contains(text(),'Объявление о торгах')]/following-sibling::div//a"));
-                var href = linkElement.GetAttribute("href");
-
-                if (string.IsNullOrEmpty(href)) return null;
-
-                // Извлекаем GUID из URL вида /bankruptmessages/guid
-                var segments = href.Split('/');
-                var guidString = segments.LastOrDefault();
-
-                if (Guid.TryParse(guidString, out Guid messageId))
-                {
-                    return messageId;
-                }
+                return ExtractGuidFromHref(linkElement.GetAttribute("href"));
             }
             catch (NoSuchElementException)
             {
@@ -109,8 +197,7 @@ namespace FedresursScraper.Services
             return null;
         }
 
-
-        private DateTime? ParseBiddingAnnouncementDate(string rawText)
+        private DateTime? ParseDateTime(string? rawText)
         {
             if (string.IsNullOrWhiteSpace(rawText) || rawText.Equals("не найдено", StringComparison.OrdinalIgnoreCase))
             {
@@ -137,7 +224,7 @@ namespace FedresursScraper.Services
                             moscowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
                         }
 
-                        // 2. Конвертируем "неопределенное" время в UTC, считая, что исходник был в MSK.
+                        // Конвертируем "неопределенное" время в UTC, считая, что исходник был в MSK.
                         return TimeZoneInfo.ConvertTimeToUtc(unspecifiedTime, moscowTimeZone);
                     }
                     catch (Exception ex)
@@ -151,40 +238,29 @@ namespace FedresursScraper.Services
             return null;
         }
 
-        // Универсальный метод для парсинга полей "ключ-значение"
-        private string ParseField(IWebDriver driver, string fieldName)
+        /// <summary>
+        /// Универсальный метод для парсинга полей "ключ-значение"
+        /// </summary>
+        /// <param name="driver"></param>
+        /// <param name="fieldName"></param>
+        /// <returns></returns>
+        private string? ParseSimpleField(IWebDriver driver, string fieldName)
         {
             try
             {
                 // Используем FindElements, чтобы избежать исключения, если элемента нет
-                var elements = driver.FindElements(By.XPath($"//div[contains(text(),'{fieldName}')]"));
+                var xpath = $"//div[contains(text(),'{fieldName}')]/following-sibling::div";
+                var elements = driver.FindElements(By.XPath(xpath));
                 if (elements.Any())
                 {
-                    return elements.First().FindElement(By.XPath("./following-sibling::div")).Text.Trim();
+                    return elements.First().Text.Trim();
                 }
             }
             catch (Exception)
             {
                 // Можно добавить логирование, если нужно
             }
-            return "не найдено";
-        }
-
-        private List<string> ParseCategories(IWebDriver driver)
-        {
-            var categories = new List<string>();
-            try
-            {
-                var elements = driver.FindElements(By.CssSelector(".lot-item-classifiers .lot-item-classifiers-element"));
-                foreach (var el in elements)
-                {
-                    var text = el.Text.Trim();
-                    if (!string.IsNullOrEmpty(text))
-                        categories.Add(text);
-                }
-            }
-            catch { }
-            return categories;
+            return null;
         }
 
         private (string description, string viewingProcedure) ParseAndSplitDescription(IWebDriver driver)
@@ -251,20 +327,6 @@ namespace FedresursScraper.Services
             catch { }
 
             return (description, viewingProcedure);
-        }
-
-
-        private decimal? ParsePrice(string priceText)
-        {
-            if (string.IsNullOrWhiteSpace(priceText) || priceText.Equals("не найдено", StringComparison.OrdinalIgnoreCase))
-                return null;
-
-            var cleanedString = Regex.Replace(priceText.Replace("₽", "").Replace(',', '.'), @"\s+", "");
-
-            if (decimal.TryParse(cleanedString, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal result))
-                return result;
-
-            return null;
         }
     }
 }

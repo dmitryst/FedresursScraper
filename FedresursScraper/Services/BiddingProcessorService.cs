@@ -15,9 +15,7 @@ namespace FedresursScraper.Services
         private readonly IBiddingDataCache _cache;
         private readonly IServiceProvider _serviceProvider;
         private readonly IWebDriverFactory _webDriverFactory;
-        private readonly IBackgroundTaskQueue _taskQueue;
         private readonly IRosreestrQueue _rosreestrQueue;
-        private readonly IClassificationManager _classificationManager;
         private readonly TimeSpan _interval = TimeSpan.FromSeconds(30);
 
         public BiddingProcessorService(
@@ -25,17 +23,13 @@ namespace FedresursScraper.Services
             IBiddingDataCache cache,
             IServiceProvider serviceProvider,
             IWebDriverFactory webDriverFactory,
-            IBackgroundTaskQueue taskQueue,
-            IRosreestrQueue rosreestrQueue,
-            IClassificationManager classificationManager)
+            IRosreestrQueue rosreestrQueue)
         {
             _logger = logger;
             _cache = cache;
             _serviceProvider = serviceProvider;
             _webDriverFactory = webDriverFactory;
-            _taskQueue = taskQueue;
             _rosreestrQueue = rosreestrQueue;
-            _classificationManager = classificationManager;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -58,12 +52,14 @@ namespace FedresursScraper.Services
                 var biddingScraper = scope.ServiceProvider.GetRequiredService<IBiddingScraper>();
                 var lotsScraper = scope.ServiceProvider.GetRequiredService<ILotsScraper>();
                 var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
+                var classificationManager = scope.ServiceProvider.GetRequiredService<IClassificationManager>();
 
                 foreach (var biddingData in biddingsToParse)
                 {
                     if (stoppingToken.IsCancellationRequested) break;
 
-                    await ProcessBiddingAsync(biddingData, driver, biddingScraper, lotsScraper, dbContext, stoppingToken);
+                    await ProcessBiddingAsync(biddingData, driver, biddingScraper, lotsScraper, dbContext,
+                        classificationManager, stoppingToken);
                 }
 
                 await Task.Delay(_interval, stoppingToken);
@@ -73,19 +69,23 @@ namespace FedresursScraper.Services
         /// <summary>
         /// Обрабатывает один конкретный торг: парсит, получает лоты и сохраняет в БД.
         /// </summary>
-        private async Task ProcessBiddingAsync(BiddingData biddingData, IWebDriver driver, IBiddingScraper biddingScraper, ILotsScraper lotsScraper, LotsDbContext dbContext, CancellationToken stoppingToken)
+        private async Task ProcessBiddingAsync(BiddingData biddingData, IWebDriver driver, IBiddingScraper biddingScraper,
+            ILotsScraper lotsScraper, LotsDbContext dbContext, IClassificationManager classificationManager,
+            CancellationToken stoppingToken)
         {
-            var biddingId = biddingData.Id; // Получаем Guid напрямую
+            var biddingId = biddingData.Id;
             var url = $"https://fedresurs.ru/biddings/{biddingId}";
 
             try
             {
-                _logger.LogInformation("Парсинг деталей торгов: {url}", url);
-                var detailedInfo = await biddingScraper.ScrapeDataAsync(driver, biddingId);
+                _logger.LogInformation("Парсинг страницы торгов: {url}", url);
 
-                if (detailedInfo.BankruptMessageId.HasValue)
+                var biddingInfo = await biddingScraper.ScrapeBiddingInfoAsync(driver, biddingId);
+                var scrappedLots = new List<LotInfo>();
+
+                if (biddingInfo.BankruptMessageId.HasValue)
                 {
-                    var messageId = detailedInfo.BankruptMessageId.Value;
+                    var messageId = biddingInfo.BankruptMessageId.Value;
 
                     // Проверяем, существуют ли лоты, перед тем как их парсить
                     bool lotsExist = await dbContext.Biddings.AnyAsync(b => b.BankruptMessageId == messageId, stoppingToken);
@@ -95,8 +95,8 @@ namespace FedresursScraper.Services
                     }
                     else
                     {
-                        detailedInfo.Lots = await lotsScraper.ScrapeLotsAsync(driver, messageId);
-                        _logger.LogInformation("Найдено {LotCount} новых лотов.", detailedInfo.Lots.Count);
+                        scrappedLots = await lotsScraper.ScrapeLotsAsync(driver, messageId);
+                        _logger.LogInformation("Найдено {LotCount} новых лотов.", scrappedLots.Count);
                     }
                 }
                 else
@@ -104,9 +104,10 @@ namespace FedresursScraper.Services
                     _logger.LogWarning("Не удалось найти ID сообщения о банкротстве для торгов {BiddingId}. Лоты не будут загружены.", biddingId);
                 }
 
-                await SaveBiddingAndEnqueueClassificationAsync(biddingData, detailedInfo, dbContext);
+                await SaveBiddingAndEnqueueClassificationAsync(biddingData, biddingInfo, dbContext, scrappedLots, classificationManager);
 
                 _cache.MarkAsCompleted(biddingId);
+
                 _logger.LogInformation("Торги {biddingId} успешно обработаны и помечены как 'Completed'.", biddingId);
             }
             catch (Exception ex)
@@ -118,31 +119,103 @@ namespace FedresursScraper.Services
         /// <summary>
         /// Сохраняет информацию о торгах и связанных лотах в базу данных.
         /// </summary>
-        private async Task SaveBiddingAndEnqueueClassificationAsync(BiddingData initialData, BiddingInfo detailedInfo, LotsDbContext db)
+        private async Task SaveBiddingAndEnqueueClassificationAsync(
+            BiddingData initialData, BiddingInfo biddingInfo, LotsDbContext db, List<LotInfo> lots,
+            IClassificationManager classificationManager)
         {
             // Проверка, чтобы избежать ошибки добавления дубликата
-            var existingBidding = await db.Biddings.FindAsync(detailedInfo.Id);
+            var existingBidding = await db.Biddings.FindAsync(biddingInfo.Id);
             if (existingBidding != null)
             {
-                _logger.LogWarning("Торги с ID {BiddingId} уже существуют в БД. Сохранение пропущено.", detailedInfo.Id);
+                _logger.LogWarning("Торги с ID {BiddingId} уже существуют в БД. Сохранение пропущено.", biddingInfo.Id);
                 return;
             }
 
+            // Логика обработки должника
+            if (biddingInfo.DebtorId.HasValue)
+            {
+                var debtor = await db.Subjects.FindAsync(biddingInfo.DebtorId.Value);
+                if (debtor == null)
+                {
+                    debtor = new Subject
+                    {
+                        Id = biddingInfo.DebtorId.Value,
+                        Name = biddingInfo.DebtorName ?? "неизвестно",
+                        Inn = biddingInfo.DebtorInn,
+                        Snils = biddingInfo.IsDebtorCompany ? null : biddingInfo.DebtorSnils,
+                        Ogrn = biddingInfo.IsDebtorCompany ? biddingInfo.DebtorOgrn : null,
+                        Type = biddingInfo.IsDebtorCompany ? SubjectType.Company : SubjectType.Individual
+                    };
+                    db.Subjects.Add(debtor);
+                }
+            }
+
+            // Логика обработки арбитражного управляющего
+            if (biddingInfo.ArbitrationManagerId.HasValue)
+            {
+                // Проверям, вдруг мы создали уже этого челоека выше, когда создавали должника
+                var manager = await db.Subjects.FindAsync(biddingInfo.ArbitrationManagerId.Value)
+                              ?? db.Subjects.Local.FirstOrDefault(p => p.Id == biddingInfo.ArbitrationManagerId.Value);
+
+                if (manager == null)
+                {
+                    manager = new Subject
+                    {
+                        Id = biddingInfo.ArbitrationManagerId.Value,
+                        Name = biddingInfo.ArbitrationManagerName ?? "неизвестно",
+                        Inn = biddingInfo.ArbitrationManagerInn,
+                        Snils = null // у арбитражных управляющих нет СНИЛСа в карточке
+                    };
+                    db.Subjects.Add(manager);
+                }
+            }
+
+            // Логика обработки судебного дела
+            if (biddingInfo.LegalCaseId.HasValue)
+            {
+                var legalCase = await db.LegalCases.FindAsync(biddingInfo.LegalCaseId.Value);
+                if (legalCase == null)
+                {
+                    legalCase = new LegalCase
+                    {
+                        Id = biddingInfo.LegalCaseId.Value,
+                        CaseNumber = biddingInfo.LegalCaseNumber ?? "неизвестно"
+                    };
+                    db.LegalCases.Add(legalCase);
+                }
+            }
+
+            // сохраняем связанные сущности, чтобы избежать ошибок внешних ключей 
+            // (хотя EF обычно автоматически обрабатывает это в рамках одной транзакции)
+            await db.SaveChangesAsync();
+
             var bidding = new Bidding
             {
-                Id = detailedInfo.Id,
+                Id = biddingInfo.Id,
                 TradeNumber = initialData.TradeNumber,
                 Platform = initialData.Platform,
-                AnnouncedAt = detailedInfo.AnnouncedAt,
-                Type = detailedInfo.Type,
-                BidAcceptancePeriod = detailedInfo.BidAcceptancePeriod,
-                BankruptMessageId = detailedInfo.BankruptMessageId ?? Guid.Empty,
-                ViewingProcedure = detailedInfo.ViewingProcedure,
+                AnnouncedAt = biddingInfo.AnnouncedAt,
+                Type = biddingInfo.Type,
+
+                BidAcceptancePeriod = biddingInfo.BidAcceptancePeriod,
+                TradePeriod = biddingInfo.TradePeriod,
+                ResultsAnnouncementDate = biddingInfo.ResultsAnnouncementDate,
+
+                BankruptMessageId = biddingInfo.BankruptMessageId ?? Guid.Empty,        
+
+                Organizer = biddingInfo.Organizer,
+
+                DebtorId = biddingInfo.DebtorId,
+                ArbitrationManagerId = biddingInfo.ArbitrationManagerId,
+                LegalCaseId = biddingInfo.LegalCaseId,
+
+                ViewingProcedure = biddingInfo.ViewingProcedure,
+
                 CreatedAt = DateTime.UtcNow,
-                Lots = new List<Lot>()
+                Lots = []
             };
 
-            foreach (var lotInfo in detailedInfo.Lots)
+            foreach (var lotInfo in lots)
             {
                 var lot = new Lot
                 {
@@ -152,7 +225,9 @@ namespace FedresursScraper.Services
                     Step = lotInfo.Step,
                     Deposit = lotInfo.Deposit,
                     Categories = [],
-                    CadastralNumbers = lotInfo.CadastralNumbers?.Select(n => new LotCadastralNumber { CadastralNumber = n }).ToList(),
+                    CadastralNumbers = lotInfo.CadastralNumbers?
+                        .Select(n => new LotCadastralNumber { CadastralNumber = n })
+                        .ToList() ?? [],
                     Latitude = lotInfo.Latitude,
                     Longitude = lotInfo.Longitude
                 };
@@ -170,14 +245,14 @@ namespace FedresursScraper.Services
                 // Задача классификации
                 if (!string.IsNullOrEmpty(lot.Description))
                 {
-                    await _classificationManager.EnqueueClassificationAsync(lot.Id, lot.Description, "Scraper");
+                    await classificationManager.EnqueueClassificationAsync(lot.Id, lot.Description, "Scraper");
                 }
 
                 // Задача обновления координат
                 if (lot.CadastralNumbers != null && lot.CadastralNumbers.Any())
                 {
-                     var numbers = lot.CadastralNumbers.Select(x => x.CadastralNumber).ToList();
-                     await EnqueueCoordinateUpdateTaskAsync(lot.Id, numbers);
+                    var numbers = lot.CadastralNumbers.Select(x => x.CadastralNumber).ToList();
+                    await EnqueueCoordinateUpdateTaskAsync(lot.Id, numbers);
                 }
             }
         }
@@ -199,7 +274,7 @@ namespace FedresursScraper.Services
                 try
                 {
                     var coords = await rosreestrService.FindFirstCoordinatesAsync(cadastralNumbers);
-                    
+
                     if (coords != null)
                     {
                         var lotToUpdate = await dbContext.Lots.FindAsync(new object[] { lotId }, token);
@@ -207,7 +282,7 @@ namespace FedresursScraper.Services
                         {
                             lotToUpdate.Latitude = coords.Latitude;
                             lotToUpdate.Longitude = coords.Longitude;
-                            
+
                             await dbContext.SaveChangesAsync(token);
                             scopedLogger.LogInformation("Координаты обновлены для лота {LotId}", lotId);
                         }

@@ -42,7 +42,7 @@ namespace FedresursScraper.Controllers
 
             try
             {
-                var biddingInfo = await _biddingScraper.ScrapeDataAsync(driver, biddingId);
+                var biddingInfo = await _biddingScraper.ScrapeBiddingInfoAsync(driver, biddingId);
 
                 return Ok(biddingInfo);
             }

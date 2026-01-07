@@ -15,6 +15,8 @@ public class LotsDbContext : DbContext
     public DbSet<Favorite> Favorites { get; set; }
     public DbSet<LotAuditEvent> LotAuditEvents { get; set; }
     public DbSet<LotClassificationAnalysis> LotClassificationAnalysis { get; set; }
+    public DbSet<Subject> Subjects { get; set; }
+    public DbSet<LegalCase> LegalCases { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -11,9 +12,11 @@ using NpgsqlTypes;
 namespace Lots.Data.Migrations
 {
     [DbContext(typeof(LotsDbContext))]
-    partial class LotsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260107160450_PersonAndLegalCases")]
+    partial class PersonAndLegalCases
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,9 +61,6 @@ namespace Lots.Data.Migrations
                     b.Property<string>("Platform")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<DateTime?>("ResultsAnnouncementDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("TradeNumber")
                         .IsRequired()
@@ -306,7 +306,7 @@ namespace Lots.Data.Migrations
                     b.ToTable("LotClassificationAnalysis");
                 });
 
-            modelBuilder.Entity("Lots.Data.Entities.Subject", b =>
+            modelBuilder.Entity("Lots.Data.Entities.Person", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -321,20 +321,13 @@ namespace Lots.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<string>("Ogrn")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
                     b.Property<string>("Snils")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
-                    b.ToTable("Subjects");
+                    b.ToTable("Persons");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.User", b =>
@@ -364,11 +357,11 @@ namespace Lots.Data.Migrations
 
             modelBuilder.Entity("Lots.Data.Entities.Bidding", b =>
                 {
-                    b.HasOne("Lots.Data.Entities.Subject", "ArbitrationManager")
+                    b.HasOne("Lots.Data.Entities.Person", "ArbitrationManager")
                         .WithMany()
                         .HasForeignKey("ArbitrationManagerId");
 
-                    b.HasOne("Lots.Data.Entities.Subject", "Debtor")
+                    b.HasOne("Lots.Data.Entities.Person", "Debtor")
                         .WithMany()
                         .HasForeignKey("DebtorId");
 

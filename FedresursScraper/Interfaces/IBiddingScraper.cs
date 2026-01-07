@@ -3,5 +3,5 @@ using FedresursScraper.Services.Models;
 
 public interface IBiddingScraper
 {
-    Task<BiddingInfo> ScrapeDataAsync(IWebDriver driver, Guid biddingId);
+    Task<BiddingInfo> ScrapeBiddingInfoAsync(IWebDriver driver, Guid biddingId);
 }

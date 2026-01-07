@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Lots.Data.Entities
 {
     /// <summary>
@@ -34,6 +36,42 @@ namespace Lots.Data.Entities
         /// Период приема заявок
         /// </summary>
         public string? BidAcceptancePeriod { get; set; }
+
+        /// <summary>
+        /// Период торгов
+        /// </summary>
+        public string? TradePeriod { get; set; }
+
+        /// <summary>
+        /// Дата объявления результатов
+        /// </summary>
+        public DateTime? ResultsAnnouncementDate { get; set; }
+
+        /// <summary>
+        /// Организатор торгов
+        /// </summary>
+        public string? Organizer { get; set; }
+
+        /// <summary>
+        /// Должник
+        /// </summary>
+        public Guid? DebtorId { get; set; }
+        [ForeignKey("DebtorId")]
+        public Subject? Debtor { get; set; }
+
+        /// <summary>
+        /// Арбитражный управляющий
+        /// </summary>
+        public Guid? ArbitrationManagerId { get; set; }
+        [ForeignKey("ArbitrationManagerId")]
+        public Subject? ArbitrationManager { get; set; }
+
+        /// <summary>
+        /// Судебное дело
+        /// </summary>
+        public Guid? LegalCaseId { get; set; }
+        [ForeignKey("LegalCaseId")]
+        public LegalCase? LegalCase { get; set; }
 
         /// <summary>
         /// Идентификатор сообщения о торгах
