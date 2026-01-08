@@ -1,7 +1,7 @@
 namespace FedresursScraper.Services.Models
 {
     /// <summary>
-    /// Лот
+    /// Лот, распарсенный с сайта fedresurs
     /// </summary>
     public class LotInfo
     {
@@ -36,23 +36,8 @@ namespace FedresursScraper.Services.Models
         public decimal? Deposit { get; set; }
 
         /// <summary>
-        /// Ссылка на источник
-        /// </summary>
-        // public string? Url { get; set; }
-
-        /// <summary>
         /// Кадастровые номера
         /// </summary>
         public List<string>? CadastralNumbers { get; set; }
-
-        /// <summary>
-        /// Координаты участка (ширина)
-        /// </summary>
-        public double? Latitude { get; set; }
-
-        /// <summary>
-        /// Координаты участка (долгота)
-        /// </summary>
-        public double? Longitude { get; set; }
     }
 }

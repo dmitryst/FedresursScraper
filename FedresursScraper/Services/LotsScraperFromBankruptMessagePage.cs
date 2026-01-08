@@ -4,33 +4,25 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using FedresursScraper.Services.Models;
-using Lots.Data.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace FedresursScraper.Services
 {
     /// <summary>
     /// Сервис для парсинга лотов со страницы сообщения о торгах.
     /// </summary>
-    public class LotsScraper : ILotsScraper
+    public class LotsScraperFromBankruptMessagePage : ILotsScraperFromBankruptMessagePage
     {
-        private readonly ILogger<LotsScraper> _logger;
+        private readonly ILogger<LotsScraperFromBankruptMessagePage> _logger;
         private readonly ICadastralNumberExtractor _cadastralNumberExtractor;
 
-        public LotsScraper(
-            ILogger<LotsScraper> logger,
+        public LotsScraperFromBankruptMessagePage(
+            ILogger<LotsScraperFromBankruptMessagePage> logger,
             ICadastralNumberExtractor cadastralNumberExtractor)
         {
             _logger = logger;
             _cadastralNumberExtractor = cadastralNumberExtractor;
         }
 
-        /// <summary>
-        /// Асинхронно парсит все лоты со страницы сообщения.
-        /// </summary>
-        /// <param name="driver">Экземпляр IWebDriver для управления браузером.</param>
-        /// <param name="messageId">GUID сообщения о торгах.</param>
-        /// <returns>Список объектов LotInfo.</returns>
         public async Task<List<LotInfo>> ScrapeLotsAsync(IWebDriver driver, Guid messageId)
         {
             var lots = new List<LotInfo>();
@@ -87,9 +79,6 @@ namespace FedresursScraper.Services
                         Step = ParseFinancialValue(stepRaw, startPrice),
                         Deposit = ParseFinancialValue(depositRaw, startPrice),
                         CadastralNumbers = cadastralNumbers,
-                        // Координаты пока null, потом их заполнит фоновый процесс RosreestrWorker
-                        Latitude = null,
-                        Longitude = null
                     };
 
                     lots.Add(lotInfo);

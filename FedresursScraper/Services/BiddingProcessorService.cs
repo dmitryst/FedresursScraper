@@ -50,7 +50,7 @@ namespace FedresursScraper.Services
                 using var scope = _serviceProvider.CreateScope();
 
                 var biddingScraper = scope.ServiceProvider.GetRequiredService<IBiddingScraper>();
-                var lotsScraper = scope.ServiceProvider.GetRequiredService<ILotsScraper>();
+                var lotsScraper = scope.ServiceProvider.GetRequiredService<ILotsScraperFromLotsPage>();
                 var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
                 var classificationManager = scope.ServiceProvider.GetRequiredService<IClassificationManager>();
 
@@ -70,7 +70,7 @@ namespace FedresursScraper.Services
         /// Обрабатывает один конкретный торг: парсит, получает лоты и сохраняет в БД.
         /// </summary>
         private async Task ProcessBiddingAsync(BiddingData biddingData, IWebDriver driver, IBiddingScraper biddingScraper,
-            ILotsScraper lotsScraper, LotsDbContext dbContext, IClassificationManager classificationManager,
+            ILotsScraperFromLotsPage lotsScraper, LotsDbContext dbContext, IClassificationManager classificationManager,
             CancellationToken stoppingToken)
         {
             var biddingId = biddingData.Id;
@@ -83,26 +83,9 @@ namespace FedresursScraper.Services
                 var biddingInfo = await biddingScraper.ScrapeBiddingInfoAsync(driver, biddingId);
                 var scrappedLots = new List<LotInfo>();
 
-                if (biddingInfo.BankruptMessageId.HasValue)
-                {
-                    var messageId = biddingInfo.BankruptMessageId.Value;
+                scrappedLots = await lotsScraper.ScrapeLotsAsync(driver, biddingId);
+                _logger.LogInformation("Найдено {LotCount} новых лотов.", scrappedLots.Count);
 
-                    // Проверяем, существуют ли лоты, перед тем как их парсить
-                    bool lotsExist = await dbContext.Biddings.AnyAsync(b => b.BankruptMessageId == messageId, stoppingToken);
-                    if (lotsExist)
-                    {
-                        _logger.LogInformation("Лоты для сообщения {MessageId} уже есть в БД. Парсинг лотов пропущен.", messageId);
-                    }
-                    else
-                    {
-                        scrappedLots = await lotsScraper.ScrapeLotsAsync(driver, messageId);
-                        _logger.LogInformation("Найдено {LotCount} новых лотов.", scrappedLots.Count);
-                    }
-                }
-                else
-                {
-                    _logger.LogWarning("Не удалось найти ID сообщения о банкротстве для торгов {BiddingId}. Лоты не будут загружены.", biddingId);
-                }
 
                 await SaveBiddingAndEnqueueClassificationAsync(biddingData, biddingInfo, dbContext, scrappedLots, classificationManager);
 
@@ -201,7 +184,7 @@ namespace FedresursScraper.Services
                 TradePeriod = biddingInfo.TradePeriod,
                 ResultsAnnouncementDate = biddingInfo.ResultsAnnouncementDate,
 
-                BankruptMessageId = biddingInfo.BankruptMessageId ?? Guid.Empty,        
+                BankruptMessageId = biddingInfo.BankruptMessageId ?? Guid.Empty,
 
                 Organizer = biddingInfo.Organizer,
 
@@ -228,8 +211,6 @@ namespace FedresursScraper.Services
                     CadastralNumbers = lotInfo.CadastralNumbers?
                         .Select(n => new LotCadastralNumber { CadastralNumber = n })
                         .ToList() ?? [],
-                    Latitude = lotInfo.Latitude,
-                    Longitude = lotInfo.Longitude
                 };
                 bidding.Lots.Add(lot);
             }

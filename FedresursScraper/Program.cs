@@ -23,7 +23,8 @@ builder.Services.AddSingleton<IWebDriverFactory, WebDriverFactory>();
 
 // Регистрация парсеров
 builder.Services.AddTransient<IBiddingScraper, BiddingScraper>();
-builder.Services.AddTransient<ILotsScraper, LotsScraper>();
+builder.Services.AddTransient<ILotsScraperFromBankruptMessagePage, LotsScraperFromBankruptMessagePage>();
+builder.Services.AddTransient<ILotsScraperFromLotsPage, LotsScraperFromLotsPage>();
 
 // Регистрация других сервисов
 builder.Services.AddTransient<ICadastralNumberExtractor, CadastralNumberExtractor>();
@@ -68,7 +69,7 @@ var rosreestrServiceUrl = Environment.GetEnvironmentVariable("ROSREESTR_SERVICE_
 if (string.IsNullOrWhiteSpace(rosreestrServiceUrl))
 {
     // Можно выбросить исключение или установить значение по умолчанию для локальной разработки
-    //throw new InvalidOperationException("Переменная окружения ROSREESTR_SERVICE_URL не установлена.");
+    throw new InvalidOperationException("Переменная окружения ROSREESTR_SERVICE_URL не установлена.");
     // или: rosreestrServiceUrl = "http://localhost:8000"; // для локальной отладки
 }
 
