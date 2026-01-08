@@ -4,8 +4,21 @@ namespace Lots.Data.Entities
 {
     public class Lot
     {
+        /// <summary>
+        /// Внутренний уникальный идентификатор лота
+        /// </summary>
         public Guid Id { get; set; }
+
+        /// <summary>
+        /// Глобальный сквозной номер лота для URL и поиска
+        /// </summary>
+        public int PublicId { get; set; }
+
+        /// <summary>
+        /// Номер лота внутри торгов (указан в торгах Федресурса)
+        /// </summary>
         public string? LotNumber { get; set; }
+
         public decimal? StartPrice { get; set; }
         public decimal? Step { get; set; }
         public decimal? Deposit { get; set; }

@@ -20,11 +20,25 @@ public class LotsDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Lot>()
-            .HasOne(c => c.Bidding)
-            .WithMany(l => l.Lots)
-            .HasForeignKey(c => c.BiddingId)
-            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.HasSequence<int>("lots_public_id_seq")
+                .StartsAt(10001)
+                .IncrementsBy(1);
+
+        modelBuilder.Entity<Lot>(entity =>
+        {
+            entity.HasOne(c => c.Bidding)
+                .WithMany(l => l.Lots)
+                .HasForeignKey(c => c.BiddingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.PublicId)
+                .IsUnique();
+
+            // Настраиваем автогенерацию значения через Sequence
+            entity.Property(e => e.PublicId)
+                .ValueGeneratedOnAdd()
+                .HasDefaultValueSql("nextval('lots_public_id_seq')");
+        });
 
         modelBuilder.Entity<LotCategory>()
             .HasOne(c => c.Lot)
@@ -33,10 +47,10 @@ public class LotsDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<LotCadastralNumber>()
-        .HasOne(c => c.Lot)
-        .WithMany(l => l.CadastralNumbers)
-        .HasForeignKey(c => c.LotId)
-        .OnDelete(DeleteBehavior.Cascade);
+            .HasOne(c => c.Lot)
+            .WithMany(l => l.CadastralNumbers)
+            .HasForeignKey(c => c.LotId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // ПОЛНОТЕКСТОВЫЙ ПОИСК
         // Включаем расширения

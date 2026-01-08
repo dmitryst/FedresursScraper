@@ -3,6 +3,7 @@ namespace FedresursScraper.Controllers.Models;
 public class LotDto
 {
     public Guid Id { get; set; }
+    public int PublicId { get; set; }
     public string? LotNumber { get; set; }
     public decimal? StartPrice { get; set; }
     public decimal? Step { get; set; }

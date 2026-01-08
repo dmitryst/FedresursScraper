@@ -7,6 +7,7 @@ using Ardalis.Specification.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Lots.Data.Entities;
+using Ardalis.Specification;
 
 
 namespace FedresursScraper.Controllers;
@@ -45,7 +46,7 @@ public class LotsController : ControllerBase
 
         var filterSpec = new LotsFilterSpecification(
             categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership);
-            
+
         var totalCount = await _dbContext.Lots.WithSpecification(filterSpec).CountAsync();
 
         var lots = await _dbContext.Lots.WithSpecification(spec).ToListAsync();
@@ -53,6 +54,7 @@ public class LotsController : ControllerBase
         var lotDtos = lots.Select(l => new LotDto
         {
             Id = l.Id,
+            PublicId = l.PublicId,
             LotNumber = l.LotNumber,
             StartPrice = l.StartPrice,
             Step = l.Step,
@@ -81,15 +83,29 @@ public class LotsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("{lotId:guid}")]
-    public async Task<IActionResult> GetLotById(Guid lotId)
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetLotAsync(string id)
     {
-        if (lotId == Guid.Empty)
+        if (string.IsNullOrWhiteSpace(id))
         {
             return BadRequest(new { message = "Некорректный ID лота." });
         }
 
-        var spec = new LotByIdWithDetailsSpecification(lotId);
+        ISingleResultSpecification<Lot>? spec = null;
+
+        if (int.TryParse(id, out int publicId))
+        {
+            spec = new LotByIdWithDetailsSpecification(publicId);
+        }
+        else if (Guid.TryParse(id, out Guid guidId))
+        {
+            spec = new LotByIdWithDetailsSpecification(guidId);
+        }
+        else
+        {
+            // Если это не число и не GUID (например, "some-slug-123" без правильной обработки на фронте)
+            return BadRequest(new { message = "Неверный формат ID." });
+        }
 
         var lot = await _dbContext.Lots.WithSpecification(spec).FirstOrDefaultAsync();
 
@@ -101,6 +117,7 @@ public class LotsController : ControllerBase
         var lotDto = new LotDto
         {
             Id = lot.Id,
+            PublicId = lot.PublicId,
             LotNumber = lot.LotNumber,
             StartPrice = lot.StartPrice,
             Step = lot.Step,
@@ -115,6 +132,7 @@ public class LotsController : ControllerBase
             Bidding = new BiddingDto
             {
                 Type = lot.Bidding.Type,
+                BidAcceptancePeriod = lot.Bidding.BidAcceptancePeriod,
                 ViewingProcedure = lot.Bidding.ViewingProcedure
             },
             Categories = lot.Categories.Select(c => new CategoryDto
@@ -135,7 +153,7 @@ public class LotsController : ControllerBase
     [HttpGet("with-coordinates")]
     public async Task<IActionResult> GetLotsWithCoordinates([FromQuery] string[]? categories = null)
     {
-        AccessLevel accessLevel = AccessLevel.Anonymous; 
+        AccessLevel accessLevel = AccessLevel.Anonymous;
 
         // Проверяем, аутентифицирован ли пользователь
         if (User.Identity?.IsAuthenticated == true)
