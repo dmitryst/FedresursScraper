@@ -74,8 +74,8 @@ builder.Services.Configure<MetsEnrichmentOptions>(
 builder.Services.AddScoped<IMetsEnrichmentService, MetsEnrichmentService>();
 builder.Services.AddHttpClient<IMetsEnrichmentService, MetsEnrichmentService>(client =>
 {
-    // Настраиваем заголовки один раз при создании клиента
     client.BaseAddress = new Uri("https://m-ets.ru/");
+    client.Timeout = TimeSpan.FromSeconds(30);
     client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
     
     // Добавляем и другие заголовки, чтобы меньше палиться

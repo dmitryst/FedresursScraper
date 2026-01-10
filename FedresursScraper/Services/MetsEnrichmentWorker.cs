@@ -36,6 +36,8 @@ public class MetsEnrichmentWorker : BackgroundService
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var enrichmentService = scope.ServiceProvider.GetRequiredService<IMetsEnrichmentService>();
+
+                    _logger.LogInformation("Вызов метода ProcessPendingBiddingsAsync...");
                     
                     bool hasWork = await enrichmentService.ProcessPendingBiddingsAsync(stoppingToken);
                     // дебаг
