@@ -25,6 +25,7 @@ namespace FedresursScraper.Services
         private readonly ILogger<MetsEnrichmentService> _logger;
 
         private const int BatchSize = 5;
+        private const int MaxRetryCount = 3;
 
         public MetsEnrichmentService(
             LotsDbContext context,
@@ -40,12 +41,20 @@ namespace FedresursScraper.Services
 
         public async Task<bool> ProcessPendingBiddingsAsync(CancellationToken ct)
         {
+            // Дата отсечения (09.01.2026)
+            // Используем UTC, так как в базе обычно хранится UTC
+            var dateThreshold = new DateTime(2026, 1, 9, 0, 0, 0, DateTimeKind.Utc);
+
             // Выбираем торги МЭТС, которые еще не были обработаны
             var biddings = await _context.Biddings
                 .Include(b => b.Lots)
+                .Include(b => b.EnrichmentState)
                 .Where(b => b.Platform.Contains("Межрегиональная Электронная Торговая Система"))
-                //.Where(b => !b.IsEnriched ?? true)
-                .Where(b => b.Id == Guid.Parse("32d7c1b5-e39d-41df-b520-ca2f317594e5"))
+                .Where(b => !b.IsEnriched ?? true)
+                .Where(b => b.EnrichmentState == null || b.EnrichmentState.RetryCount < MaxRetryCount)
+                .Where(b => b.CreatedAt > dateThreshold)
+                // дебаг
+                //.Where(b => b.Id == Guid.Parse("32d7c1b5-e39d-41df-b520-ca2f317594e5"))
                 .OrderByDescending(b => b.CreatedAt)
                 .Take(BatchSize)
                 .ToListAsync(ct);
@@ -72,8 +81,33 @@ namespace FedresursScraper.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Ошибка при обогащении торгов {TradeNumber} (ID: {Id})", bidding.TradeNumber, bidding.Id);
-                    // TODO: реализовать счетчик попыток (RetryCount), чтобы не зацикливаться на битых
+                    // Работаем с состоянием ошибки
+                    if (bidding.EnrichmentState == null)
+                    {
+                        // Создаем запись, если это первая ошибка
+                        bidding.EnrichmentState = new EnrichmentState
+                        {
+                            BiddingId = bidding.Id,
+                            RetryCount = 1,
+                            LastAttemptAt = DateTime.UtcNow,
+                            LastError = ex.Message
+                        };
+                    }
+                    else
+                    {
+                        // Обновляем существующую
+                        bidding.EnrichmentState.RetryCount++;
+                        bidding.EnrichmentState.LastAttemptAt = DateTime.UtcNow;
+                        bidding.EnrichmentState.LastError = ex.Message;
+                    }
+
+                    await _context.SaveChangesAsync(ct);
+
+                    _logger.LogError(ex,
+                        "Ошибка при обогащении торгов {TradeNumber}. Попытка {Retry}/{Max}.",
+                        bidding.TradeNumber,
+                        bidding.EnrichmentState.RetryCount,
+                        MaxRetryCount);
                 }
             }
 

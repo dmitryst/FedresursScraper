@@ -16,7 +16,7 @@ public class MetsEnrichmentWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Mets Enrichment Worker started.");
+        _logger.LogInformation("Mets Enrichment Worker стартовал.");
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -27,7 +27,8 @@ public class MetsEnrichmentWorker : BackgroundService
                     var enrichmentService = scope.ServiceProvider.GetRequiredService<IMetsEnrichmentService>();
                     
                     bool hasWork = await enrichmentService.ProcessPendingBiddingsAsync(stoppingToken);
-                    hasWork = false;  // для дебага
+                    // дебаг
+                    // hasWork = false; 
 
                     if (hasWork)
                     {
@@ -35,7 +36,7 @@ public class MetsEnrichmentWorker : BackgroundService
                         int delaySeconds = Random.Shared.Next(10, 16);
                         var randomDelay = TimeSpan.FromSeconds(delaySeconds);
 
-                        _logger.LogDebug("Batch processed. Sleeping for {Seconds} seconds...", delaySeconds);
+                        _logger.LogDebug("Пачка обработана. Ожидание {Seconds} сек...", delaySeconds);
 
                         // Если работа была, делаем короткую паузу и продолжаем молотить
                         await Task.Delay(randomDelay, stoppingToken);
@@ -43,7 +44,7 @@ public class MetsEnrichmentWorker : BackgroundService
                     else
                     {
                         // Если работы нет (все спарсили), спим дольше
-                        _logger.LogInformation("No pending lots. Sleeping...");
+                        _logger.LogInformation("Нет лотов для обработки. Переход в режим ожидания...");
                         await Task.Delay(_delayWhenNoWork, stoppingToken);
                     }
                 }

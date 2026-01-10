@@ -102,5 +102,10 @@ namespace Lots.Data.Entities
         /// Лоты торгов
         /// </summary>
         public List<Lot> Lots { get; set; } = new();
+
+        /// <summary>
+        /// Стейт обогощения торгов (со страницы площадки)
+        /// </summary>
+        public virtual EnrichmentState? EnrichmentState { get; set; }
     }
 }

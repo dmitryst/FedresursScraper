@@ -88,6 +88,13 @@ public class LotsDbContext : DbContext
         modelBuilder.Entity<LotAuditEvent>()
             .HasIndex(e => new { e.LotId, e.EventType })
             .HasDatabaseName("IX_LotAuditEvents_LotId_EventType");
+
+            // Настройка связи 1 к 1
+        modelBuilder.Entity<Bidding>()
+            .HasOne(b => b.EnrichmentState)
+            .WithOne(s => s.Bidding)
+            .HasForeignKey<EnrichmentState>(s => s.BiddingId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
 
