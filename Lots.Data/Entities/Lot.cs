@@ -28,6 +28,8 @@ namespace Lots.Data.Entities
         public string? ViewingProcedure { get; set; }
         public List<LotCategory> Categories { get; set; } = new();
         public List<LotCadastralNumber> CadastralNumbers { get; set; } = new();
+        public ICollection<LotImage> Images { get; set; } = new List<LotImage>();
+        public ICollection<LotPriceSchedule> PriceSchedules { get; set; } = new List<LotPriceSchedule>();
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
         public DateTime CreatedAt { get; set; }

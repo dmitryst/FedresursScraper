@@ -89,6 +89,16 @@ namespace Lots.Data.Entities
         public DateTime CreatedAt { get; set; }
 
         /// <summary>
+        /// Лот был обогащен (с сайта площадки)
+        /// </summary>
+        public bool? IsEnriched { get; set; }
+
+        /// <summary>
+        /// Дата обогащения лота
+        /// </summary>
+        public DateTime? EnrichedAt { get; set; }
+
+        /// <summary>
         /// Лоты торгов
         /// </summary>
         public List<Lot> Lots { get; set; } = new();

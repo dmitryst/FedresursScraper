@@ -139,7 +139,25 @@ public class LotsController : ControllerBase
             {
                 Id = c.Id,
                 Name = c.Name
-            }).ToList()
+            }).ToList(),
+
+            PriceSchedules = lot.PriceSchedules
+                .OrderBy(ps => ps.StartDate)
+                .Select((ps, index) => new PriceScheduleDto
+                {
+                    Number = index + 1,
+                    StartDate = ps.StartDate,
+                    EndDate = ps.EndDate,
+                    Price = ps.Price,
+                    Deposit = ps.Deposit,
+                    EstimatedRank = ps.EstimatedRank,
+                    PotentialRoi = ps.PotentialRoi
+                }).ToList(),
+
+            Images = lot.Images
+            .OrderBy(i => i.Order)
+            .Select(i => i.Url)
+            .ToList()
         };
 
         return Ok(lotDto);

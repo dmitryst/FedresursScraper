@@ -17,6 +17,8 @@ public class LotsDbContext : DbContext
     public DbSet<LotClassificationAnalysis> LotClassificationAnalysis { get; set; }
     public DbSet<Subject> Subjects { get; set; }
     public DbSet<LegalCase> LegalCases { get; set; }
+    public DbSet<LotImage> LotImages { get; set; }
+    public DbSet<LotPriceSchedule> LotPriceSchedules { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

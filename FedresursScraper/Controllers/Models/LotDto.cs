@@ -15,4 +15,6 @@ public class LotDto
     public double[]? Coordinates { get; set; }
     public BiddingDto Bidding { get; set; } = new();
     public List<CategoryDto> Categories { get; set; } = new();
+    public IEnumerable<PriceScheduleDto> PriceSchedules { get; set; } = new List<PriceScheduleDto>();
+    public List<string> Images { get; set; } = new();
 }

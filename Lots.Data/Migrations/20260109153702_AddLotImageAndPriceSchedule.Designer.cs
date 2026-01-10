@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -11,9 +12,11 @@ using NpgsqlTypes;
 namespace Lots.Data.Migrations
 {
     [DbContext(typeof(LotsDbContext))]
-    partial class LotsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260109153702_AddLotImageAndPriceSchedule")]
+    partial class AddLotImageAndPriceSchedule
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,12 +54,6 @@ namespace Lots.Data.Migrations
 
                     b.Property<Guid?>("DebtorId")
                         .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("EnrichedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool?>("IsEnriched")
-                        .HasColumnType("boolean");
 
                     b.Property<Guid?>("LegalCaseId")
                         .HasColumnType("uuid");
@@ -323,63 +320,6 @@ namespace Lots.Data.Migrations
                     b.ToTable("LotClassificationAnalysis");
                 });
 
-            modelBuilder.Entity("Lots.Data.Entities.LotImage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("LotId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LotId");
-
-                    b.ToTable("LotImages");
-                });
-
-            modelBuilder.Entity("Lots.Data.Entities.LotPriceSchedule", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Deposit")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<double?>("EstimatedRank")
-                        .HasColumnType("double precision");
-
-                    b.Property<Guid>("LotId")
-                        .HasColumnType("uuid");
-
-                    b.Property<double?>("PotentialRoi")
-                        .HasColumnType("double precision");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LotId");
-
-                    b.ToTable("LotPriceSchedules");
-                });
-
             modelBuilder.Entity("Lots.Data.Entities.Subject", b =>
                 {
                     b.Property<Guid>("Id")
@@ -490,28 +430,6 @@ namespace Lots.Data.Migrations
                     b.Navigation("Lot");
                 });
 
-            modelBuilder.Entity("Lots.Data.Entities.LotImage", b =>
-                {
-                    b.HasOne("Lots.Data.Entities.Lot", "Lot")
-                        .WithMany("Images")
-                        .HasForeignKey("LotId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Lot");
-                });
-
-            modelBuilder.Entity("Lots.Data.Entities.LotPriceSchedule", b =>
-                {
-                    b.HasOne("Lots.Data.Entities.Lot", "Lot")
-                        .WithMany("PriceSchedules")
-                        .HasForeignKey("LotId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Lot");
-                });
-
             modelBuilder.Entity("Lots.Data.Entities.Bidding", b =>
                 {
                     b.Navigation("Lots");
@@ -522,10 +440,6 @@ namespace Lots.Data.Migrations
                     b.Navigation("CadastralNumbers");
 
                     b.Navigation("Categories");
-
-                    b.Navigation("Images");
-
-                    b.Navigation("PriceSchedules");
                 });
 #pragma warning restore 612, 618
         }

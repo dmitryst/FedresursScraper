@@ -66,6 +66,23 @@ builder.Services.AddHostedService<LotRecoveryService>();
 
 var rosreestrServiceUrl = Environment.GetEnvironmentVariable("ROSREESTR_SERVICE_URL");
 
+builder.Services.AddSingleton<IFileStorageService, S3FileStorageService>();
+
+// МЭТС
+builder.Services.AddScoped<IMetsEnrichmentService, MetsEnrichmentService>();
+builder.Services.AddHttpClient<IMetsEnrichmentService, MetsEnrichmentService>(client =>
+{
+    // Настраиваем заголовки один раз при создании клиента
+    client.BaseAddress = new Uri("https://m-ets.ru/");
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+    
+    // Добавляем и другие заголовки, чтобы меньше палиться
+    client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+    client.DefaultRequestHeaders.Add("Accept-Language", "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7");
+});
+builder.Services.AddHostedService<MetsEnrichmentWorker>();
+
+
 if (string.IsNullOrWhiteSpace(rosreestrServiceUrl))
 {
     // Можно выбросить исключение или установить значение по умолчанию для локальной разработки
