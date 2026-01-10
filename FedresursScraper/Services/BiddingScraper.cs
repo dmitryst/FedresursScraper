@@ -54,7 +54,7 @@ namespace FedresursScraper.Services
             {
                 Id = biddingId,
                 AnnouncedAt = announcementDate,
-                Type = biddingType!,
+                Type = biddingType ?? "Не определен",
 
                 BidAcceptancePeriod = bidAcceptancePeriod,
                 TradePeriod = tradePeriod,

@@ -26,7 +26,7 @@ public class MetsEnrichmentWorker : BackgroundService
             // проверка флага отключения
             if (!_options.CurrentValue.IsEnabled)
             {
-                _logger.LogDebug("Mets Enrichment Worker отключен в настройках. Ожидание...");
+                _logger.LogWarning("Mets Enrichment Worker ОТКЛЮЧЕН (IsEnabled=false). Жду 1 мин...");
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 continue;
             }
@@ -62,7 +62,7 @@ public class MetsEnrichmentWorker : BackgroundService
                         var delayMinutes = _options.CurrentValue.DelayWhenNoWorkMinutes > 0 
                             ? _options.CurrentValue.DelayWhenNoWorkMinutes 
                             : 5;
-                        await Task.Delay(delayMinutes, stoppingToken);
+                        await Task.Delay(TimeSpan.FromMinutes(delayMinutes), stoppingToken);
                     }
                 }
             }
