@@ -1,17 +1,20 @@
 using FedresursScraper.Services;
+using Microsoft.Extensions.Options;
 
 public class MetsEnrichmentWorker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<MetsEnrichmentWorker> _logger;
-    
-    // Настройки задержки
-    private readonly TimeSpan _delayWhenNoWork = TimeSpan.FromMinutes(5);
+    private readonly IOptionsMonitor<MetsEnrichmentOptions> _options;
 
-    public MetsEnrichmentWorker(IServiceScopeFactory scopeFactory, ILogger<MetsEnrichmentWorker> logger)
+    public MetsEnrichmentWorker(
+        IServiceScopeFactory scopeFactory,
+        ILogger<MetsEnrichmentWorker> logger,
+        IOptionsMonitor<MetsEnrichmentOptions> options)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
+        _options = options;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -20,6 +23,14 @@ public class MetsEnrichmentWorker : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            // проверка флага отключения
+            if (!_options.CurrentValue.IsEnabled)
+            {
+                _logger.LogDebug("Mets Enrichment Worker отключен в настройках. Ожидание...");
+                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                continue;
+            }
+
             try
             {
                 using (var scope = _scopeFactory.CreateScope())
@@ -45,13 +56,17 @@ public class MetsEnrichmentWorker : BackgroundService
                     {
                         // Если работы нет (все спарсили), спим дольше
                         _logger.LogInformation("Нет лотов для обработки. Переход в режим ожидания...");
-                        await Task.Delay(_delayWhenNoWork, stoppingToken);
+
+                        var delayMinutes = _options.CurrentValue.DelayWhenNoWorkMinutes > 0 
+                            ? _options.CurrentValue.DelayWhenNoWorkMinutes 
+                            : 5;
+                        await Task.Delay(delayMinutes, stoppingToken);
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Critical error in Mets Worker loop");
+                _logger.LogError(ex, "Критическая ошибка в цикле Mets Enrichment Worker");
                 // Пауза при ошибке, чтобы не дудосить БД в цикле при отвале сети
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }

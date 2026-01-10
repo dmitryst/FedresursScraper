@@ -69,6 +69,8 @@ var rosreestrServiceUrl = Environment.GetEnvironmentVariable("ROSREESTR_SERVICE_
 builder.Services.AddSingleton<IFileStorageService, S3FileStorageService>();
 
 // МЭТС
+builder.Services.Configure<MetsEnrichmentOptions>(
+    builder.Configuration.GetSection("MetsEnrichment"));
 builder.Services.AddScoped<IMetsEnrichmentService, MetsEnrichmentService>();
 builder.Services.AddHttpClient<IMetsEnrichmentService, MetsEnrichmentService>(client =>
 {
