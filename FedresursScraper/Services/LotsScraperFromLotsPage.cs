@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using FedresursScraper.Services.Models;
+using OpenQA.Selenium.Support.UI;
+using SeleniumExtras.WaitHelpers;
 
 namespace FedresursScraper.Services
 {
@@ -37,9 +39,22 @@ namespace FedresursScraper.Services
             try
             {
                 driver.Navigate().GoToUrl(url);
-                // Ждем прогрузки SPA (лучше заменить на WebDriverWait в будущем)
-                await Task.Delay(5000 + new Random().Next(1500));
 
+                try
+                {
+                    var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+
+                    // Ждем, пока появится хотя бы один элемент лота
+                    // Используем тот же селектор, что и при поиске элементов ниже
+                    wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector("bidding-lot-card")));
+                }
+                catch (WebDriverTimeoutException)
+                {
+                    // Если за 10 секунд ничего не появилось, возможно, лотов нет или страница пустая.
+                    // Логируем предупреждение, но не роняем программу сразу, 
+                    // так как код ниже проверит count и корректно обработает пустой список.
+                    _logger.LogWarning("Лоты не появились на странице за 10 секунд (biddingId: {Id})", biddingId);
+                }
                 // Загружаем все страницы (кликаем "Загрузить еще" пока можно)
                 await LoadAllPagesAsync(driver);
 
@@ -88,13 +103,16 @@ namespace FedresursScraper.Services
 
                         // Описание
                         // Реальное описание лежит в .lot-item-tradeobject (а не в description)
-                        string description = GetTextSafe(card, By.CssSelector(".lot-item-tradeobject")) ?? string.Empty;
+                        string rawDescription = GetTextSafe(card, By.CssSelector(".lot-item-tradeobject")) ?? string.Empty;
 
-                        if (string.IsNullOrWhiteSpace(description))
+                        if (string.IsNullOrWhiteSpace(rawDescription))
                         {
                             // Фолбек: иногда описание в другом блоке
-                            description = GetTextSafe(card, By.CssSelector(".lot-item-description-text")) ?? string.Empty;
+                            rawDescription = GetTextSafe(card, By.CssSelector(".lot-item-description-text")) ?? string.Empty;
                         }
+
+                        // Очистка описания (удаление "Показать еще" и порядка ознакомления)
+                        string description = CleanDescription(rawDescription);
 
                         // Кадастровые номера (извлекаем из описания)
                         var cadastralNumbers = _cadastralNumberExtractor.Extract(description);
@@ -126,6 +144,45 @@ namespace FedresursScraper.Services
             }
 
             return lots;
+        }
+
+        /// <summary>
+        /// Очищает описание от технических фраз ("Показать еще") и блока "Порядок ознакомления".
+        /// Логика разделения заимствована из BiddingScraper.
+        /// </summary>
+        private string CleanDescription(string rawDesc)
+        {
+            if (string.IsNullOrWhiteSpace(rawDesc)) return string.Empty;
+
+            // Удаляем "Показать еще" в конце, если есть (артефакт UI аккордеона)
+            string showMoreMarker = "Показать еще";
+            if (rawDesc.EndsWith(showMoreMarker, StringComparison.OrdinalIgnoreCase))
+            {
+                rawDesc = rawDesc.Substring(0, rawDesc.Length - showMoreMarker.Length).Trim();
+            }
+
+            // Логика из BiddingScraper: ищем маркеры начала порядка ознакомления
+
+            // Маркер 1: "Порядок ознакомления с имуществом должника:"
+            string marker1 = "Порядок ознакомления с имуществом должника:";
+            int idx1 = rawDesc.IndexOf(marker1, StringComparison.OrdinalIgnoreCase);
+
+            if (idx1 >= 0)
+            {
+                return rawDesc.Substring(0, idx1).Trim();
+            }
+
+            // Маркер 2: "С имуществом можно ознакомиться"
+            string marker2 = "С имуществом можно ознакомиться";
+            int idx2 = rawDesc.IndexOf(marker2, StringComparison.OrdinalIgnoreCase);
+
+            if (idx2 >= 0)
+            {
+                return rawDesc.Substring(0, idx2).Trim();
+            }
+
+            // Если маркеры не найдены, возвращаем текст (уже без "Показать еще")
+            return rawDesc;
         }
 
         /// <summary>

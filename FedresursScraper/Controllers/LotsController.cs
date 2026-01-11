@@ -139,6 +139,7 @@ public class LotsController : ControllerBase
                 Type = lot.Bidding.Type,
                 Platform = lot.Bidding.Platform,
                 BidAcceptancePeriod = lot.Bidding.BidAcceptancePeriod,
+                TradePeriod = lot.Bidding.TradePeriod,
                 ViewingProcedure = lot.Bidding.ViewingProcedure,
 
             },
