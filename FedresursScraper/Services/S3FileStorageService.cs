@@ -14,18 +14,19 @@ public class S3FileStorageService : IFileStorageService
 {
     private readonly IAmazonS3 _s3Client;
     private readonly string _bucketName;
-    private readonly string _serviceUrl;
+    private readonly string _publicUrlBase;
 
     public S3FileStorageService(IConfiguration config)
     {
         var accessKey = config["S3:AccessKey"] ?? throw new ArgumentNullException("S3:AccessKey");
         var secretKey = config["S3:SecretKey"] ?? throw new ArgumentNullException("S3:SecretKey");
-        _serviceUrl = config["S3:ServiceUrl"] ?? throw new ArgumentNullException("S3:ServiceUrl");
+        var serviceUrl = config["S3:ServiceUrl"] ?? throw new ArgumentNullException("S3:ServiceUrl");
         _bucketName = config["S3:BucketName"] ?? throw new ArgumentNullException("S3:BucketName");
+        _publicUrlBase = config["S3:PublicUrlBase"] ?? throw new ArgumentNullException("S3:PublicUrlBase");
 
         var s3Config = new AmazonS3Config
         {
-            ServiceURL = _serviceUrl,
+            ServiceURL = serviceUrl,
             ForcePathStyle = true,
             UseHttp = true
         };
@@ -52,8 +53,8 @@ public class S3FileStorageService : IFileStorageService
         var fileTransferUtility = new TransferUtility(_s3Client);
         await fileTransferUtility.UploadAsync(uploadRequest);
 
-        // Формируем прямую ссылку на файл
-        return $"{_serviceUrl}/{_bucketName}/{fileName}";
+        // Формируем публичную ссылку для базы
+        return $"{_publicUrlBase}/{_bucketName}/{fileName}";
     }
 
     public async Task DeleteAsync(string fileName)

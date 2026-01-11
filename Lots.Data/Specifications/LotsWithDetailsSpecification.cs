@@ -19,7 +19,8 @@ public class LotsWithDetailsSpecification : LotsFilterSpecification
         // Жадная загрузка
         Query
             .Include(l => l.Bidding)
-            .Include(l => l.Categories);
+            .Include(l => l.Categories)
+            .Include(l => l.Images);
 
         // Сортировка
         if (!string.IsNullOrWhiteSpace(searchQuery))

@@ -75,7 +75,12 @@ public class LotsController : ControllerBase
             {
                 Id = c.Id,
                 Name = c.Name
-            }).ToList()
+            }).ToList(),
+
+            Images = l.Images
+                .OrderBy(i => i.Order)
+                .Select(i => i.Url)
+                .ToList()
         }).ToList();
 
         var result = new PaginatedResult<LotDto>(lotDtos, totalCount, page, pageSize);
@@ -132,8 +137,10 @@ public class LotsController : ControllerBase
             Bidding = new BiddingDto
             {
                 Type = lot.Bidding.Type,
+                Platform = lot.Bidding.Platform,
                 BidAcceptancePeriod = lot.Bidding.BidAcceptancePeriod,
-                ViewingProcedure = lot.Bidding.ViewingProcedure
+                ViewingProcedure = lot.Bidding.ViewingProcedure,
+
             },
             Categories = lot.Categories.Select(c => new CategoryDto
             {
