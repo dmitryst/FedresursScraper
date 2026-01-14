@@ -4,6 +4,7 @@ using OpenQA.Selenium;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using FedresursScraper.Services.Models;
+using OpenQA.Selenium.Support.UI;
 
 namespace FedresursScraper.Services
 {
@@ -25,11 +26,11 @@ namespace FedresursScraper.Services
 
             driver.Navigate().GoToUrl(url);
 
-            // ждем от 3 до 4.5 секунд пока прогрузится страница
-            var random = new Random();
-            await Task.Delay(3000 + random.Next(1500));
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
+            // Ждем появления любого ключевого элемента, например "Вид торгов"
+            wait.Until(d => d.FindElements(By.XPath("//div[contains(text(),'Вид торгов')]")).Count > 0);
 
-            // Для дебага: выводим HTML страницы для анализа
+            // Дебаг: выводим HTML страницы для анализа
             // var pageSource = driver.PageSource;
             // File.WriteAllText("debug.html", pageSource);
 
