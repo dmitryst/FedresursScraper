@@ -26,6 +26,11 @@ public class BiddingDto
     public string? TradePeriod { get; set; }
 
     /// <summary>
+    /// Дата объявления результатов
+    /// </summary>
+    public DateTime? ResultsAnnouncementDate { get; set; }
+
+    /// <summary>
     /// Порядок ознакомления с имуществом
     /// </summary>
     public string? ViewingProcedure { get; set; }
