@@ -28,7 +28,7 @@ builder.Services.AddTransient<ILotsScraperFromLotsPage, LotsScraperFromLotsPage>
 
 // Регистрация других сервисов
 builder.Services.AddTransient<ICadastralNumberExtractor, CadastralNumberExtractor>();
-// builder.Services.AddTransient<IRosreestrService, RosreestrService>();
+builder.Services.AddTransient<IRosreestrService, RosreestrService>();
 builder.Services.AddScoped<ILotCopyService, LotCopyService>();
 
 // Регистрация фоновых сервисов
