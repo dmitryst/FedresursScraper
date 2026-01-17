@@ -249,7 +249,7 @@ namespace FedresursScraper.Services
             {
                 // Сервисы уже в Scope, созданном воркером
                 var scopedLogger = serviceProvider.GetRequiredService<ILogger<BiddingProcessorService>>();
-                var rosreestrService = serviceProvider.GetRequiredService<IRosreestrServiceClient>();
+                var rosreestrService = serviceProvider.GetRequiredService<IRosreestrService>();
                 var dbContext = serviceProvider.GetRequiredService<LotsDbContext>();
 
                 try

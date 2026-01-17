@@ -1,102 +1,71 @@
-using System.Diagnostics;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
-using System.Text.Json.Serialization;
-
-#region Coordinate Conversion
-/// <summary>
-/// Утилитарный класс для преобразования координат.
-/// </summary>
-public static class CoordinateConverter
-{
-    // Радиус Земли в метрах
-    private const double EarthRadius = 6378137.0;
-
-    /// <summary>
-    /// Преобразует координаты из Web Mercator (EPSG:3857) в WGS 84 (EPSG:4326).
-    /// </summary>
-    /// <param name="x">Координата X в метрах (смещение на восток).</param>
-    /// <param name="y">Координата Y в метрах (смещение на север).</param>
-    /// <returns>Кортеж с долготой (Longitude) и широтой (Latitude) в градусах.</returns>
-    public static (double Longitude, double Latitude) WebMercatorToWgs84(double x, double y)
-    {
-        double lon = (x / EarthRadius) * 180.0 / Math.PI;
-        double lat = (2.0 * Math.Atan(Math.Exp(y / EarthRadius)) - Math.PI / 2.0) * 180.0 / Math.PI;
-        return (lon, lat);
-    }
-}
-#endregion
-
-#region GeoJSON Models
-// Модели для десериализации ответа от rosreestr2coord
-// Используем JsonElement для гибкой обработки разных структур координат
-
-public class GeoJsonFeature
-{
-    [JsonPropertyName("geometry")]
-    public Geometry? Geometry { get; set; }
-}
-
-public class Geometry
-{
-    [JsonPropertyName("type")]
-    public string? Type { get; set; }
-
-    [JsonPropertyName("coordinates")]
-    public JsonElement Coordinates { get; set; }
-
-    [JsonPropertyName("crs")]
-    public Crs? Crs { get; set; }
-}
-
-public class Crs
-{
-    [JsonPropertyName("properties")]
-    public CrsProperties? Properties { get; set; }
-}
-
-public class CrsProperties
-{
-    [JsonPropertyName("name")]
-    public string? Name { get; set; }
-}
-#endregion
+using System.Collections.Concurrent;
 
 public interface IRosreestrService
 {
     /// <summary>
-    /// Находит первую точку координат для первого валидного кадастрового номера.
+    /// Находит координаты для ПЕРВОГО валидного кадастрового номера из списка.
+    /// Используется для лотов с несколькими объектами, где достаточно одной точки на карте.
     /// </summary>
-    /// <param name="cadastralNumbers">Список кадастровых номеров.</param>
-    /// <returns>Кортеж (Latitude, Longitude) или null, если координаты не найдены.</returns>
-    Task<(double Latitude, double Longitude)?> FindFirstCoordinatesAsync(IEnumerable<string>? cadastralNumbers);
+    Task<Coordinates?> FindFirstCoordinatesAsync(IEnumerable<string> cadastralNumbers);
+
+    /// <summary>
+    /// Пытается получить координаты для указанного кадастрового номера через HTTP-клиент.
+    /// <para>
+    /// Если клиент исчерпает лимит попыток (Retry Policy) и выбросит исключение, 
+    /// номер будет добавлен в очередь <see cref="_retryQueue"/> для отложенной обработки.
+    /// </para>
+    /// </summary>
+    /// <param name="cadastralNumber">Кадастровый номер участка.</param>
+    /// <returns>
+    /// Объект <see cref="Coordinates"/>, если запрос успешен. 
+    /// Возвращает <c>null</c>, если координаты не найдены (404), доступ запрещен (403) или произошел сбой (номер добавлен в очередь).
+    /// </returns>
+    Task<Coordinates?> FindCoordinatesAsync(string cadastralNumber);
+
+    /// <summary>
+    /// Запускает принудительную повторную обработку всех кадастровых номеров из очереди сбоев.
+    /// </summary>
+    /// <returns>
+    /// Объект <see cref="RosreestrReprocessingResult"/>, содержащий списки успешных и неуспешных обработок.
+    /// </returns>
+    Task<RosreestrReprocessingResult> ReprocessRetryQueueAsync();
+
+    /// <summary>
+    /// Обрабатывает пакетную передачу кадастровых номеров, последовательно запрашивая координаты для каждого из них.
+    /// </summary>
+    /// <param name="numbers">Коллекция кадастровых номеров для обработки.</param>
+    /// <remarks>
+    /// Для каждого номера вызывается метод <see cref="FindCoordinatesAsync"/>. 
+    /// Ошибки при обработке отдельных номеров не прерывают обработку всего пакета (сбойные номера попадают в очередь ретраев).
+    /// </remarks>
+    Task ProcessBatchAsync(IEnumerable<string> numbers);
+
+    /// <summary>
+    /// Возвращает текущее количество кадастровых номеров, находящихся в очереди на повторную обработку (_retryQueue).
+    /// </summary>
+    /// <returns>Целое число, показывающее размер очереди.</returns>
+    int GetQueueSize();
 }
 
+/// <summary>
+/// Сервис-оркестратор для работы с данными Росреестра. 
+/// Отвечает за бизнес-логику получения координат, обработку критических сбоев и управление 
+/// очередью отложенной обработки (Fallback).
+/// </summary>
 public class RosreestrService : IRosreestrService
 {
+    private readonly IRosreestrServiceClient _client;
     private readonly ILogger<RosreestrService> _logger;
-    // Указываем путь к python.exe, если его нет в системной переменной PATH
-    private readonly string _pythonExecutablePath;
-    private readonly string _tempDirPath;
 
-    // Опции для десериализации JSON без учета регистра
-    private readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
+    private static readonly ConcurrentQueue<string> _retryQueue = new();
 
-    public RosreestrService(ILogger<RosreestrService> logger, IConfiguration configuration)
+    public RosreestrService(IRosreestrServiceClient client, ILogger<RosreestrService> logger)
     {
+        _client = client;
         _logger = logger;
-        _pythonExecutablePath = configuration["Python:ExecutablePath"] ?? "python";
-        _tempDirPath = configuration["Paths:TempRosreestrDir"] ?? "/app/temp_rosreestr";
-
-        if (!Directory.Exists(_tempDirPath))
-        {
-            Directory.CreateDirectory(_tempDirPath);
-        }
     }
 
-    public async Task<(double Latitude, double Longitude)?> FindFirstCoordinatesAsync(IEnumerable<string>? cadastralNumbers)
+    public async Task<Coordinates?> FindFirstCoordinatesAsync(IEnumerable<string> cadastralNumbers)
     {
         if (cadastralNumbers == null) return null;
 
@@ -104,163 +73,115 @@ public class RosreestrService : IRosreestrService
         {
             if (string.IsNullOrWhiteSpace(number)) continue;
 
-            string? geoJsonContent = await GetGeoJsonFromScript(number);
-            if (string.IsNullOrWhiteSpace(geoJsonContent)) continue;
+            // Пытаемся получить координаты для очередного номера.
+            // Если сервис вернет ошибку, номер уйдет в _retryQueue (через FindCoordinatesAsync),
+            // мы получим null и просто пойдем к следующему номеру.
+            var coords = await FindCoordinatesAsync(number);
 
-            try
+            if (coords != null)
             {
-                var feature = JsonSerializer.Deserialize<GeoJsonFeature>(geoJsonContent, _jsonOptions);
-                var geometry = feature?.Geometry;
-
-                if (geometry == null || geometry.Coordinates.ValueKind == JsonValueKind.Undefined)
-                {
-                    _logger.LogWarning("Геометрия или координаты отсутствуют для номера {CadastralNumber}", number);
-                    continue;
-                }
-
-                // Извлекаем первую точку, независимо от типа геометрии (Point, Polygon, etc.)
-                var firstPointCoords = GetFirstPoint(geometry);
-
-                if (firstPointCoords == null || firstPointCoords.Count < 2)
-                {
-                    _logger.LogWarning("Не удалось извлечь координаты из геометрии для {CadastralNumber}", number);
-                    continue;
-                }
-
-                double coord1 = firstPointCoords[0];
-                double coord2 = firstPointCoords[1];
-
-                bool isPolygonOrMultiPolygon = string.Equals(geometry.Type, "Polygon", StringComparison.OrdinalIgnoreCase) ||
-                                               string.Equals(geometry.Type, "MultiPolygon", StringComparison.OrdinalIgnoreCase);
-                if (isPolygonOrMultiPolygon)
-                {
-                    // Для полигонов, даже если CRS указан как EPSG:3857, координаты фактически
-                    // предоставляются в градусах (WGS84). Поэтому конвертация не нужна.
-                    // Нужно только поменять местами порядок [lon, lat] на [lat, lon] для API карт.
-                    _logger.LogInformation("Обработка Polygon для {CadastralNumber}. Координаты считаются WGS84. Конвертация не требуется.", number);
-                    return (coord2, coord1); // Возвращаем как (Latitude, Longitude)
-                }
-                
-                // Для всех остальных типов (включая Point) используем стандартную логику: проверяем CRS.
-                bool needsConversion = geometry?.Crs?.Properties?.Name?.Contains("EPSG:3857") ?? false;
-                if (needsConversion)
-                {
-                    var (lon, lat) = CoordinateConverter.WebMercatorToWgs84(coord1, coord2);
-                    _logger.LogInformation("Координаты для {CadastralNumber} были конвертированы из EPSG:3857.", number);
-                    return (lat, lon); // Возвращаем в порядке [lat, lon]
-                }
-
-                // Если конвертация не нужна, считаем, что это WGS84 [lon, lat]
-                return (coord2, coord1); // Возвращаем, поменяв местами [lat, lon]
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogError(ex, "Ошибка десериализации JSON для кадастрового номера {CadastralNumber}", number);
+                // Остальные номера проверять нет смысла
+                return coords;
             }
         }
 
-        _logger.LogWarning("Координаты не были найдены ни для одного из предоставленных кадастровых номеров.");
+        // Если прошли весь список и ничего не нашли (или все упало с ошибками)
         return null;
     }
 
-    /// <summary>
-    /// Рекурсивно извлекает первую пару координат из JsonElement.
-    /// </summary>
-    private List<double>? GetFirstPoint(Geometry geometry)
+    public async Task<Coordinates?> FindCoordinatesAsync(string cadastralNumber)
     {
-        JsonElement currentElement = geometry.Coordinates;
-
-        // Погружаемся вглубь массива, пока не дойдем до элемента с числами
-        while (currentElement.ValueKind == JsonValueKind.Array &&
-               currentElement.EnumerateArray().FirstOrDefault().ValueKind == JsonValueKind.Array)
-        {
-            currentElement = currentElement.EnumerateArray().FirstOrDefault();
-        }
-
-        if (currentElement.ValueKind == JsonValueKind.Array)
-        {
-            return currentElement.EnumerateArray()
-                                 .Where(e => e.ValueKind == JsonValueKind.Number)
-                                 .Select(e => e.GetDouble())
-                                 .ToList();
-        }
-
-        return null;
-    }
-
-
-    /// <summary>
-    /// Вызывает python-скрипт, который сохраняет результат в файл, читает его и затем удаляет
-    /// </summary>
-    /// <param name="cadastralNumber">Кадастровый номер участка</param>
-    /// <returns>Содержимое файла с данными о земельном участке</returns>
-    private async Task<string?> GetGeoJsonFromScript(string cadastralNumber)
-    {
-        // rosreestr2coord сохраняет в <_tempDirPath>/output/geojson
-        string dir = Path.Combine(_tempDirPath, "output", "geojson");
-        Directory.CreateDirectory(dir);
-
-        // Имя файла, которое создаст rosreestr2coord
-        string outputFileName = $"{cadastralNumber.Replace(':', '_')}.geojson";
-        string fullPath = Path.Combine(dir, outputFileName);
-
-        var arguments = $"-m rosreestr2coord -c {cadastralNumber}";
-        var processStartInfo = new ProcessStartInfo
-        {
-            FileName = _pythonExecutablePath,
-            Arguments = arguments,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            WorkingDirectory = _tempDirPath,
-        };
-
         try
         {
-            using var process = new Process { StartInfo = processStartInfo };
-            _logger.LogInformation("Запуск Python-скрипта для {CadastralNumber}. Аргументы: {Arguments}", cadastralNumber, arguments);
-            process.Start();
+            // Клиент внутри себя уже сделает 3 попытки с паузами
+            var coordsArray = await _client.GetCoordinatesAsync(cadastralNumber);
 
-            // Считываем вывод для отладки, хотя основной результат ожидаем в файле
-            string error = await process.StandardError.ReadToEndAsync();
-            await process.WaitForExitAsync();
-
-            if (process.ExitCode != 0)
+            if (coordsArray != null && coordsArray.Length == 2)
             {
-                _logger.LogError("Python-скрипт завершился с ошибкой для номера {CadastralNumber}: {Error}", cadastralNumber, error);
-                // несмотря на то, что скрипт завершился с ошибкой, файл должен быть создан
+                return new Coordinates { Latitude = coordsArray[0], Longitude = coordsArray[1] };
             }
-
-            if (!File.Exists(fullPath))
-            {
-                _logger.LogError("Python-скрипт выполнен успешно, но файл результата {FullPath} не найден.", fullPath);
-                return null;
-            }
-
-            _logger.LogInformation("Файл {FullPath} успешно создан, читаем содержимое.", fullPath);
-            return await File.ReadAllTextAsync(fullPath);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Произошла ошибка при выполнении python-скрипта для номера {CadastralNumber}", cadastralNumber);
-            return null;
+            // ЭТО НАШ FALLBACK
+            // Если мы здесь, значит Retry Policy в клиенте исчерпала лимит (3 раза) и сдалась.
+            _logger.LogError(ex, "Все попытки получения координат для {Number} исчерпаны. Добавляем в очередь репроцессинга.", cadastralNumber);
+
+            // Добавляем в очередь (только если это не 404/403, которые мы обработали внутри клиента возвратом null)
+            _retryQueue.Enqueue(cadastralNumber);
         }
-        finally
+
+        return null;
+    }
+
+    public async Task ProcessBatchAsync(IEnumerable<string> numbers)
+    {
+        foreach (var number in numbers)
         {
-            // Очистка: удаляем файл, если он был создан
-            if (File.Exists(fullPath))
-            {
-                try
-                {
-                    File.Delete(fullPath);
-                    _logger.LogInformation("Временный файл {FullPath} удален.", fullPath);
-                }
-                catch (IOException ex)
-                {
-                    _logger.LogWarning(ex, "Не удалось удалить временный файл {FullPath}.", fullPath);
-                }
-            }
+            await FindCoordinatesAsync(number);
         }
     }
+
+    public async Task<RosreestrReprocessingResult> ReprocessRetryQueueAsync()
+    {
+        var result = new RosreestrReprocessingResult();
+
+        if (_retryQueue.IsEmpty)
+        {
+            return result;
+        }
+
+        // Выгружаем текущий снимок очереди, чтобы не зациклиться
+        var snapshot = new List<string>();
+        while (_retryQueue.TryDequeue(out var number))
+        {
+            // Убираем дубликаты прямо на этапе вычитки
+            if (!snapshot.Contains(number))
+            {
+                snapshot.Add(number);
+            }
+        }
+
+        _logger.LogInformation("Начинаем репроцессинг. Извлечено {Count} уникальных номеров из очереди.", snapshot.Count);
+
+        // Проходим по снимку
+        foreach (var number in snapshot)
+        {
+            // Вызываем основной метод получения координат.
+            // Он сам решит: если успех -> вернет координаты.
+            // Если провал (500) -> вернет null и сам добавит номер ОБРАТНО в _retryQueue.
+            // Если 404/403 -> вернет null (в очередь не добавит, но для нас это тоже "неуспех" получения координат в данном контексте).
+            var coords = await FindCoordinatesAsync(number);
+
+            if (coords != null)
+            {
+                result.Succeeded[number] = coords;
+                _logger.LogInformation("Репроцессинг: номер {Number} успешно обработан.", number);
+            }
+            else
+            {
+                result.Failed.Add(number);
+                // Логировать ошибку тут не обязательно, т.к. FindCoordinatesAsync уже залогировал причину (500 или 404).
+            }
+        }
+
+        return result;
+    }
+
+    public int GetQueueSize() => _retryQueue.Count;
+}
+
+// Модель для хранения координат
+public class Coordinates
+{
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+}
+
+public class RosreestrReprocessingResult
+{
+    public Dictionary<string, Coordinates> Succeeded { get; set; } = new();
+    public List<string> Failed { get; set; } = new();
+
+    public int TotalProcessed => Succeeded.Count + Failed.Count;
 }
