@@ -1,60 +1,63 @@
 using FedresursScraper.Services;
 using Microsoft.Extensions.Options;
 
-public class CdtEnrichmentWorker : BackgroundService
+namespace FedresursScraper.Services
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ILogger<CdtEnrichmentWorker> _logger;
-    private readonly IOptionsMonitor<MetsEnrichmentOptions> _options; // Пока используем те же настройки что и для МЭТС
-
-    public CdtEnrichmentWorker(
-        IServiceScopeFactory scopeFactory,
-        ILogger<CdtEnrichmentWorker> logger,
-        IOptionsMonitor<MetsEnrichmentOptions> options)
+    public class CdtEnrichmentWorker : BackgroundService
     {
-        _scopeFactory = scopeFactory;
-        _logger = logger;
-        _options = options;
-    }
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ILogger<CdtEnrichmentWorker> _logger;
+        private readonly IOptionsMonitor<MetsEnrichmentOptions> _options; // Пока используем те же настройки что и для МЭТС
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        _logger.LogInformation("CDT Enrichment Worker стартовал.");
-
-        while (!stoppingToken.IsCancellationRequested)
+        public CdtEnrichmentWorker(
+            IServiceScopeFactory scopeFactory,
+            ILogger<CdtEnrichmentWorker> logger,
+            IOptionsMonitor<MetsEnrichmentOptions> options)
         {
-            if (!_options.CurrentValue.IsEnabled)
-            {
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
-                continue;
-            }
+            _scopeFactory = scopeFactory;
+            _logger = logger;
+            _options = options;
+        }
 
-            try
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            _logger.LogInformation("CDT Enrichment Worker стартовал.");
+
+            while (!stoppingToken.IsCancellationRequested)
             {
-                using (var scope = _scopeFactory.CreateScope())
+                if (!_options.CurrentValue.IsEnabled)
                 {
-                    var enrichmentService = scope.ServiceProvider.GetRequiredService<ICdtEnrichmentService>();
-                    
-                    bool hasWork = await enrichmentService.ProcessPendingBiddingsAsync(stoppingToken);
+                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                    continue;
+                }
 
-                    if (hasWork)
+                try
+                {
+                    using (var scope = _scopeFactory.CreateScope())
                     {
-                        int delaySeconds = Random.Shared.Next(10, 16);
-                        await Task.Delay(TimeSpan.FromSeconds(delaySeconds), stoppingToken);
-                    }
-                    else
-                    {
-                        var delayMinutes = _options.CurrentValue.DelayWhenNoWorkMinutes > 0
-                            ? _options.CurrentValue.DelayWhenNoWorkMinutes
-                            : 5;
-                        await Task.Delay(TimeSpan.FromMinutes(delayMinutes), stoppingToken);
+                        var enrichmentService = scope.ServiceProvider.GetRequiredService<ICdtEnrichmentService>();
+
+                        bool hasWork = await enrichmentService.ProcessPendingBiddingsAsync(stoppingToken);
+
+                        if (hasWork)
+                        {
+                            int delaySeconds = Random.Shared.Next(10, 16);
+                            await Task.Delay(TimeSpan.FromSeconds(delaySeconds), stoppingToken);
+                        }
+                        else
+                        {
+                            var delayMinutes = _options.CurrentValue.DelayWhenNoWorkMinutes > 0
+                                ? _options.CurrentValue.DelayWhenNoWorkMinutes
+                                : 5;
+                            await Task.Delay(TimeSpan.FromMinutes(delayMinutes), stoppingToken);
+                        }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Критическая ошибка в цикле CDT Enrichment Worker");
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Критическая ошибка в цикле CDT Enrichment Worker");
+                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                }
             }
         }
     }

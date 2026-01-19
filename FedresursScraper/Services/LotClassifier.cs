@@ -9,48 +9,50 @@ using System.ClientModel;
 using Azure;
 using System.Text.Json;
 
-public class LotClassifier : ILotClassifier
+namespace FedresursScraper.Services
 {
-    private readonly ILogger<LotClassifier> _logger;
-    private readonly ChatClient _chatClient;
-    private readonly string _modelName = "deepseek-chat";
-    private readonly Dictionary<string, List<string>> _categoryTree;
-
-    // Уточнения для конкретных категорий (Business Rules)
-    private readonly Dictionary<string, string> _categoryHints;
-
-    // Белый список чистых категорий для быстрой проверки
-    private readonly HashSet<string> _validCategories;
-
-    // Переменные для Circuit Breaker
-    private static DateTime _circuitOpenUntil = DateTime.MinValue;
-    private static readonly TimeSpan _cooldownPeriod = TimeSpan.FromHours(4); // Ждем 4 часа после ошибки оплаты
-
-    // Минимальный интервал между запросами
-    private readonly TimeSpan _minRequestInterval;
-    private static DateTime _nextAllowedRequestTime = DateTime.MinValue;
-    private static readonly object _lockObj = new object(); // Для синхронизации времени
-
-    public LotClassifier(
-        ILogger<LotClassifier> logger,
-        IConfiguration configuration,
-        string apiKey, string apiUrl)
+    public class LotClassifier : ILotClassifier
     {
-        _logger = logger;
+        private readonly ILogger<LotClassifier> _logger;
+        private readonly ChatClient _chatClient;
+        private readonly string _modelName = "deepseek-chat";
+        private readonly Dictionary<string, List<string>> _categoryTree;
 
-        var clientOptions = new OpenAIClientOptions
+        // Уточнения для конкретных категорий (Business Rules)
+        private readonly Dictionary<string, string> _categoryHints;
+
+        // Белый список чистых категорий для быстрой проверки
+        private readonly HashSet<string> _validCategories;
+
+        // Переменные для Circuit Breaker
+        private static DateTime _circuitOpenUntil = DateTime.MinValue;
+        private static readonly TimeSpan _cooldownPeriod = TimeSpan.FromHours(4); // Ждем 4 часа после ошибки оплаты
+
+        // Минимальный интервал между запросами
+        private readonly TimeSpan _minRequestInterval;
+        private static DateTime _nextAllowedRequestTime = DateTime.MinValue;
+        private static readonly object _lockObj = new object(); // Для синхронизации времени
+
+        public LotClassifier(
+            ILogger<LotClassifier> logger,
+            IConfiguration configuration,
+            string apiKey, string apiUrl)
         {
-            Endpoint = new Uri(apiUrl)
-        };
+            _logger = logger;
 
-        var openAiClient = new OpenAIClient(new ApiKeyCredential(apiKey), clientOptions);
-        _chatClient = openAiClient.GetChatClient(_modelName);
+            var clientOptions = new OpenAIClientOptions
+            {
+                Endpoint = new Uri(apiUrl)
+            };
 
-        double seconds = configuration.GetValue<double>("DeepSeek:RequestIntervalSeconds", 3.0);
-        _minRequestInterval = TimeSpan.FromSeconds(seconds);
+            var openAiClient = new OpenAIClient(new ApiKeyCredential(apiKey), clientOptions);
+            _chatClient = openAiClient.GetChatClient(_modelName);
 
-        // должно быть всегда в соответствии с constants.ts проекта app-lot
-        _categoryTree = new Dictionary<string, List<string>>
+            double seconds = configuration.GetValue<double>("DeepSeek:RequestIntervalSeconds", 3.0);
+            _minRequestInterval = TimeSpan.FromSeconds(seconds);
+
+            // должно быть всегда в соответствии с constants.ts проекта app-lot
+            _categoryTree = new Dictionary<string, List<string>>
         {
             { "Недвижимость", new List<string> {
                 "Квартира", "Жилой дом", "Прочие постройки", "Нежилое помещение", "Нежилое здание",
@@ -88,7 +90,7 @@ public class LotClassifier : ILotClassifier
             }}
         };
 
-        _categoryHints = new Dictionary<string, string>
+            _categoryHints = new Dictionary<string, string>
         {
             { "Прочие постройки", "бани, сараи, гаражи, хозяйственные блоки, беседки" },
             { "Коммерческий транспорт и спецтехника", "грузовики, прицепы, автобусы, экскаваторы, бульдозеры, краны, погрузчики" },
@@ -99,68 +101,68 @@ public class LotClassifier : ILotClassifier
             { "Прочее", "присваивается, когда ни одна из вышеперечисленных категорий не подходит" }
         };
 
-        // плоский список всех валидных имен категорий
-        _validCategories = _categoryTree.Values
-            .SelectMany(c => c)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-    }
-
-    public async Task<LotClassificationResult?> ClassifyLotAsync(string lotDescription)
-    {
-        // Если предохранитель сработал, не делаем запрос
-        if (DateTime.UtcNow < _circuitOpenUntil)
-        {
-            throw new CircuitBreakerOpenException($"API недоступно до {_circuitOpenUntil}");
+            // плоский список всех валидных имен категорий
+            _validCategories = _categoryTree.Values
+                .SelectMany(c => c)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
         }
 
-        // THROTTLING (Ограничение скорости)
-        // С использованием _nextAllowedRequestTime (алгоритм Token Bucket / Leaky Bucket в упрощенном виде):
-        // 1-й запрос: пройдет сразу.
-        // 2-й запрос: увидит, что слот занят, подождет 1.5 сек.
-        // 3-й запрос: увидит, что занято уже на 3 сек вперед, подождет 3 сек.
-        // ...
-        // 20-й запрос: подождет 30 секунд.
-        // Запросы выстроятся в ровную очередь с интервалом 1.5 секунды. Это гарантированно уберет 429 ошибки, вызванные пиковым RPS.
-        TimeSpan delay;
-        lock (_lockObj)
+        public async Task<LotClassificationResult?> ClassifyLotAsync(string lotDescription)
         {
-            var now = DateTime.UtcNow;
-            if (_nextAllowedRequestTime < now)
+            // Если предохранитель сработал, не делаем запрос
+            if (DateTime.UtcNow < _circuitOpenUntil)
             {
-                _nextAllowedRequestTime = now;
+                throw new CircuitBreakerOpenException($"API недоступно до {_circuitOpenUntil}");
             }
-            
-            // Вычисляем, сколько нужно подождать до следующего свободного слота
-            delay = _nextAllowedRequestTime - now;
-            
-            // Сдвигаем слот для следующего запроса
-            _nextAllowedRequestTime = _nextAllowedRequestTime.Add(_minRequestInterval);
-        }
 
-        // Если нужно ждать, ждем (асинхронно, не блокируя поток)
-        if (delay > TimeSpan.Zero)
-        {
-            await Task.Delay(delay);
-        }
-
-        // Формируем "умный" список категорий с подсказками
-        var categoriesPromptBuilder = new System.Text.StringBuilder();
-
-        foreach (var group in _categoryTree)
-        {
-            categoriesPromptBuilder.AppendLine($"- Группа '{group.Key}':");
-            foreach (var category in group.Value)
+            // THROTTLING (Ограничение скорости)
+            // С использованием _nextAllowedRequestTime (алгоритм Token Bucket / Leaky Bucket в упрощенном виде):
+            // 1-й запрос: пройдет сразу.
+            // 2-й запрос: увидит, что слот занят, подождет 1.5 сек.
+            // 3-й запрос: увидит, что занято уже на 3 сек вперед, подождет 3 сек.
+            // ...
+            // 20-й запрос: подождет 30 секунд.
+            // Запросы выстроятся в ровную очередь с интервалом 1.5 секунды. Это гарантированно уберет 429 ошибки, вызванные пиковым RPS.
+            TimeSpan delay;
+            lock (_lockObj)
             {
-                // Если для категории есть подсказка, добавляем её в скобках
-                string line = _categoryHints.TryGetValue(category, out var hint)
-                    ? $"  * {category} (включает: {hint})"
-                    : $"  * {category}";
+                var now = DateTime.UtcNow;
+                if (_nextAllowedRequestTime < now)
+                {
+                    _nextAllowedRequestTime = now;
+                }
 
-                categoriesPromptBuilder.AppendLine(line);
+                // Вычисляем, сколько нужно подождать до следующего свободного слота
+                delay = _nextAllowedRequestTime - now;
+
+                // Сдвигаем слот для следующего запроса
+                _nextAllowedRequestTime = _nextAllowedRequestTime.Add(_minRequestInterval);
             }
-        }
 
-        var messages = new List<ChatMessage>
+            // Если нужно ждать, ждем (асинхронно, не блокируя поток)
+            if (delay > TimeSpan.Zero)
+            {
+                await Task.Delay(delay);
+            }
+
+            // Формируем "умный" список категорий с подсказками
+            var categoriesPromptBuilder = new System.Text.StringBuilder();
+
+            foreach (var group in _categoryTree)
+            {
+                categoriesPromptBuilder.AppendLine($"- Группа '{group.Key}':");
+                foreach (var category in group.Value)
+                {
+                    // Если для категории есть подсказка, добавляем её в скобках
+                    string line = _categoryHints.TryGetValue(category, out var hint)
+                        ? $"  * {category} (включает: {hint})"
+                        : $"  * {category}";
+
+                    categoriesPromptBuilder.AppendLine(line);
+                }
+            }
+
+            var messages = new List<ChatMessage>
         {
             new SystemChatMessage("Ты — эксперт по анализу имущества на торгах по банкротству."),
 
@@ -216,99 +218,100 @@ public class LotClassifier : ILotClassifier
                 "{ \"categories\": [], \"suggestedCategory\": null, \"title\": \"...\", \"isSharedOwnership\": false }")
         };
 
-        var chatCompletionOptions = new ChatCompletionOptions()
-        {
-            Temperature = 0.1f, // Чуть выше 0, чтобы дать гибкость для suggestedCategory, но сохранить точность
-            ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat() // Гарантирует валидный JSON
-        };
-
-        string content = string.Empty;
-        try
-        {
-            var response = await _chatClient.CompleteChatAsync(messages, chatCompletionOptions);
-
-            content = response.Value.Content.First().Text;
-            //_logger.LogInformation("Получен сырой ответ от DeepSeek: {Content}", content);
-
-            content = content.Trim().Replace("```json", "").Trim().Replace("```", "").Trim();
-            _logger.LogInformation("Очищенный JSON для десериализации: {Content}", content);
-
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var result = JsonSerializer.Deserialize<LotClassificationResult>(content, options);
-
-            if (result != null)
+            var chatCompletionOptions = new ChatCompletionOptions()
             {
-                // Вызываем очистку перед возвратом
-                result.Categories = CleanCategories(result.Categories);
+                Temperature = 0.1f, // Чуть выше 0, чтобы дать гибкость для suggestedCategory, но сохранить точность
+                ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat() // Гарантирует валидный JSON
+            };
+
+            string content = string.Empty;
+            try
+            {
+                var response = await _chatClient.CompleteChatAsync(messages, chatCompletionOptions);
+
+                content = response.Value.Content.First().Text;
+                //_logger.LogInformation("Получен сырой ответ от DeepSeek: {Content}", content);
+
+                content = content.Trim().Replace("```json", "").Trim().Replace("```", "").Trim();
+                _logger.LogInformation("Очищенный JSON для десериализации: {Content}", content);
+
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var result = JsonSerializer.Deserialize<LotClassificationResult>(content, options);
+
+                if (result != null)
+                {
+                    // Вызываем очистку перед возвратом
+                    result.Categories = CleanCategories(result.Categories);
+                }
+
+                return result;
             }
-
-            return result;
-        }
-        catch (ClientResultException ex) when (ex.Status == 402) // Ошибка оплаты
-        {
-            _circuitOpenUntil = DateTime.UtcNow.Add(_cooldownPeriod);
-
-            _logger.LogCritical(ex, "Баланс DeepSeek исчерпан (402). Запросы приостановлены на {Minutes} минут.", _cooldownPeriod.TotalMinutes);
-            return null;
-        }
-        catch (ClientResultException ex) when (ex.Status == 429) // Too Many Requests (лимит рейтов)
-        {
-            // Для 429 можно паузу поменьше, например 1 минуту
-            _circuitOpenUntil = DateTime.UtcNow.AddMinutes(1);
-            _logger.LogWarning("Лимит запросов DeepSeek (429). Пауза 1 минута.");
-
-            // Бросаем исключение, чтобы этот лот тоже стал Skipped
-            throw new CircuitBreakerOpenException($"API Rate Limit (429) до {_circuitOpenUntil}", ex);
-        }
-        catch (JsonException jsonEx)
-        {
-            _logger.LogCritical(jsonEx, "Ошибка десериализации JSON. Контент после очистки: {Content}", content);
-            return null;
-        }
-        catch (ClientResultException ex)
-        {
-            _logger.LogCritical(ex, "Произошла ошибка при вызове API DeepSeek");
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Очистка категорий и валидация
-    /// </summary>
-    /// <param name="rawCategories"></param>
-    /// <returns></returns>
-    private List<string> CleanCategories(List<string> rawCategories)
-    {
-        var cleanedList = new List<string>();
-
-        if (rawCategories == null) return cleanedList;
-
-        foreach (var rawCat in rawCategories)
-        {
-            // Пробуем найти точное совпадение
-            if (_validCategories.Contains(rawCat))
+            catch (ClientResultException ex) when (ex.Status == 402) // Ошибка оплаты
             {
-                cleanedList.Add(rawCat);
-                continue;
+                _circuitOpenUntil = DateTime.UtcNow.Add(_cooldownPeriod);
+
+                _logger.LogCritical(ex, "Баланс DeepSeek исчерпан (402). Запросы приостановлены на {Minutes} минут.", _cooldownPeriod.TotalMinutes);
+                return null;
             }
-
-            // Если точного нет, пробуем очистить от скобок "(включает...)"
-            // т.к. DeepSeek может вернуть: "Категория (пояснение)"
-            var cleanName = rawCat.Split('(')[0].Trim();
-
-            if (_validCategories.Contains(cleanName))
+            catch (ClientResultException ex) when (ex.Status == 429) // Too Many Requests (лимит рейтов)
             {
-                cleanedList.Add(cleanName);
+                // Для 429 можно паузу поменьше, например 1 минуту
+                _circuitOpenUntil = DateTime.UtcNow.AddMinutes(1);
+                _logger.LogWarning("Лимит запросов DeepSeek (429). Пауза 1 минута.");
+
+                // Бросаем исключение, чтобы этот лот тоже стал Skipped
+                throw new CircuitBreakerOpenException($"API Rate Limit (429) до {_circuitOpenUntil}", ex);
             }
-            else
+            catch (JsonException jsonEx)
             {
-                // Если даже после очистки категория не найдена, 
-                // логируем это как Warning, но не добавляем в список категорий лота.
-                // Возможно, стоит добавить её в SuggestedCategory, чтобы не потерять сигнал.
-                _logger.LogWarning("DeepSeek вернул несуществующую категорию: '{RawCat}' (после очистки: '{CleanName}')", rawCat, cleanName);
+                _logger.LogCritical(jsonEx, "Ошибка десериализации JSON. Контент после очистки: {Content}", content);
+                return null;
+            }
+            catch (ClientResultException ex)
+            {
+                _logger.LogCritical(ex, "Произошла ошибка при вызове API DeepSeek");
+                return null;
             }
         }
 
-        return cleanedList.Distinct().ToList();
+        /// <summary>
+        /// Очистка категорий и валидация
+        /// </summary>
+        /// <param name="rawCategories"></param>
+        /// <returns></returns>
+        private List<string> CleanCategories(List<string> rawCategories)
+        {
+            var cleanedList = new List<string>();
+
+            if (rawCategories == null) return cleanedList;
+
+            foreach (var rawCat in rawCategories)
+            {
+                // Пробуем найти точное совпадение
+                if (_validCategories.Contains(rawCat))
+                {
+                    cleanedList.Add(rawCat);
+                    continue;
+                }
+
+                // Если точного нет, пробуем очистить от скобок "(включает...)"
+                // т.к. DeepSeek может вернуть: "Категория (пояснение)"
+                var cleanName = rawCat.Split('(')[0].Trim();
+
+                if (_validCategories.Contains(cleanName))
+                {
+                    cleanedList.Add(cleanName);
+                }
+                else
+                {
+                    // Если даже после очистки категория не найдена, 
+                    // логируем это как Warning, но не добавляем в список категорий лота.
+                    // Возможно, стоит добавить её в SuggestedCategory, чтобы не потерять сигнал.
+                    _logger.LogWarning("DeepSeek вернул несуществующую категорию: '{RawCat}' (после очистки: '{CleanName}')", rawCat, cleanName);
+                }
+            }
+
+            return cleanedList.Distinct().ToList();
+        }
     }
 }

@@ -2,6 +2,8 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 
+namespace FedresursScraper.Services;
+
 public interface IFileStorageService
 {
     // Возвращает публичную ссылку на сохраненный файл
