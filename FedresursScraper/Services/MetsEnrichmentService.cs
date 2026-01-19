@@ -9,12 +9,9 @@ namespace FedresursScraper.Services
 {
     public interface IMetsEnrichmentService
     {
-        /// <summary>
-        /// Обрабатывает пачку торгов, требующих обогащения данными с МЭТС.
-        /// </summary>
-        /// <param name="ct">Token отмены</param>
-        /// <returns>True, если были обработаны записи; False, если очередь пуста.</returns>
         Task<bool> ProcessPendingBiddingsAsync(CancellationToken ct);
+
+        Task EnrichByTradeNumberAsync(string tradeNumber, CancellationToken ct);
     }
 
     public class MetsEnrichmentService : IMetsEnrichmentService
@@ -42,12 +39,15 @@ namespace FedresursScraper.Services
         public async Task<bool> ProcessPendingBiddingsAsync(CancellationToken ct)
         {
             // Дата отсечения (09.01.2026)
-            // Используем UTC, так как в базе обычно хранится UTC
+            // Используем UTC, так как в базе хранится UTC
             var dateThreshold = new DateTime(2026, 1, 9, 0, 0, 0, DateTimeKind.Utc);
 
             // Выбираем торги МЭТС, которые еще не были обработаны
             var biddings = await _context.Biddings
                 .Include(b => b.Lots)
+                    .ThenInclude(l => l.Images)
+                .Include(b => b.Lots)
+                    .ThenInclude(l => l.Documents)
                 .Include(b => b.EnrichmentState)
                 .Where(b => b.Platform.Contains("Межрегиональная Электронная Торговая Система"))
                 .Where(b => !b.IsEnriched ?? true)
@@ -114,6 +114,38 @@ namespace FedresursScraper.Services
             return true;
         }
 
+        public async Task EnrichByTradeNumberAsync(string tradeNumber, CancellationToken ct)
+        {
+            var bidding = await _context.Biddings
+                .Include(b => b.Lots)
+                    .ThenInclude(l => l.Images)
+                .Include(b => b.Lots)
+                    .ThenInclude(l => l.Documents)
+                .Include(b => b.EnrichmentState)
+                .FirstOrDefaultAsync(b => b.TradeNumber == tradeNumber || b.TradeNumber.StartsWith(tradeNumber), ct);
+
+            if (bidding == null)
+            {
+                throw new KeyNotFoundException($"Торги с номером {tradeNumber} не найдены в базе.");
+            }
+
+            await EnrichBiddingAsync(bidding, ct);
+
+            // Обновляем статус и сохраняем
+            bidding.IsEnriched = true;
+            bidding.EnrichedAt = DateTime.UtcNow;
+
+            // Сбрасываем ошибки, если были, так как мы запустили вручную и преуспели
+            if (bidding.EnrichmentState != null)
+            {
+                bidding.EnrichmentState.LastError = null;
+            }
+
+            await _context.SaveChangesAsync(ct);
+
+            _logger.LogInformation("Ручное обогащение торгов {TradeNumber} выполнено успешно.", tradeNumber);
+        }
+
         private async Task EnrichBiddingAsync(Bidding bidding, CancellationToken ct)
         {
             var url = GetMetsUrl(bidding.TradeNumber);
@@ -131,6 +163,11 @@ namespace FedresursScraper.Services
 
             foreach (var lot in bidding.Lots)
             {
+                // Очищаем старые данные перед парсингом, чтобы избежать дубликатов
+                // Так как мы сделали Include, EF удалит старые записи из БД при SaveChanges
+                lot.Images.Clear();
+                lot.Documents.Clear();
+
                 // Парсинг и сохранение картинок
                 await ProcessImagesAsync(lot, doc, ct);
 

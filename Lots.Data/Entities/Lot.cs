@@ -29,6 +29,7 @@ namespace Lots.Data.Entities
         public List<LotCategory> Categories { get; set; } = new();
         public List<LotCadastralNumber> CadastralNumbers { get; set; } = new();
         public ICollection<LotImage> Images { get; set; } = new List<LotImage>();
+        public ICollection<LotDocument> Documents { get; set; } = new List<LotDocument>();
         public ICollection<LotPriceSchedule> PriceSchedules { get; set; } = new List<LotPriceSchedule>();
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
