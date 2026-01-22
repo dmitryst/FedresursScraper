@@ -42,10 +42,17 @@ namespace FedresursScraper.Services
                         if (hasWork)
                         {
                             int delaySeconds = Random.Shared.Next(10, 16);
-                            await Task.Delay(TimeSpan.FromSeconds(delaySeconds), stoppingToken);
+                            var randomDelay = TimeSpan.FromSeconds(delaySeconds);
+
+                            _logger.LogDebug("Пачка обработана. Ожидание {Seconds} сек...", delaySeconds);
+
+                            await Task.Delay(randomDelay, stoppingToken);
                         }
                         else
                         {
+                            // Если работы нет (все спарсили), спим дольше
+                            _logger.LogInformation("Нет лотов для обработки. Переход в режим ожидания...");
+
                             var delayMinutes = _options.CurrentValue.DelayWhenNoWorkMinutes > 0
                                 ? _options.CurrentValue.DelayWhenNoWorkMinutes
                                 : 5;

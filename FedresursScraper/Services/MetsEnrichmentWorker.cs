@@ -42,11 +42,7 @@ namespace FedresursScraper.Services
                     {
                         var enrichmentService = scope.ServiceProvider.GetRequiredService<IMetsEnrichmentService>();
 
-                        _logger.LogInformation("Вызов метода ProcessPendingBiddingsAsync...");
-
                         bool hasWork = await enrichmentService.ProcessPendingBiddingsAsync(stoppingToken);
-                        // дебаг
-                        // hasWork = false; 
 
                         if (hasWork)
                         {

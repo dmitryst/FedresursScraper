@@ -92,7 +92,7 @@ namespace FedresursScraper.Services
                     bool batchCompleted = false;
                     while (!batchCompleted && !stoppingToken.IsCancellationRequested)
                     {
-                        await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
+                        await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
 
                         using var monitorScope = _serviceProvider.CreateScope();
                         var monitorDb = monitorScope.ServiceProvider.GetRequiredService<LotsDbContext>();
@@ -110,10 +110,10 @@ namespace FedresursScraper.Services
                         }
                         else
                         {
-                            // Таймаут защиты от зависания (например, 30 минут на пачку)
-                            if ((DateTime.UtcNow - startTime).TotalMinutes > 30)
+                            // Таймаут защиты от зависания (например, 10 минут на пачку)
+                            if ((DateTime.UtcNow - startTime).TotalMinutes > 10)
                             {
-                                _logger.LogWarning("Таймаут ожидания обработки пачки лотов.");
+                                _logger.LogWarning("Время ожидания обработки пачки лотов (10 минут) истекло.");
                                 break;
                             }
                         }
