@@ -278,14 +278,14 @@ public class LotsController : ControllerBase
     /// <param name="request">Тело запроса с описанием лота.</param>
     /// <returns>Результат классификации.</returns>
     [HttpPost("classify")]
-    public async Task<IActionResult> ClassifyLot([FromBody] LotRequest request)
+    public async Task<IActionResult> ClassifyLot([FromBody] LotRequest request, CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(request?.Description))
         {
             return BadRequest("Параметр 'Description' не может быть пустым.");
         }
 
-        var lotClassificationResult = await _lotClassifier.ClassifyLotAsync(request.Description);
+        var lotClassificationResult = await _lotClassifier.ClassifyLotAsync(request.Description, token);
 
         if (lotClassificationResult?.Categories is null)
         {

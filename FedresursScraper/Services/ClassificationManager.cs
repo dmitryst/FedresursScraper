@@ -71,7 +71,7 @@ namespace FedresursScraper.Services
                 try
                 {
                     // Выполнение классификации
-                    var result = await classifier.ClassifyLotAsync(description);
+                    var result = await classifier.ClassifyLotAsync(description, token);
 
                     if (result == null)
                     {
