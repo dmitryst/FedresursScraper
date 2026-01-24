@@ -229,8 +229,15 @@ namespace FedresursScraper.Services
             {
                 var response = await _chatClient.CompleteChatAsync(messages, chatCompletionOptions);
 
+                // защита от пустого ответа: DeepSeek может вернуть 200, но без содержимого
+                if (response.Value.Content == null || response.Value.Content.Count == 0)
+                {
+                    _logger.LogWarning("DeepSeek вернул пустой ответ (без контента) для лота.");
+                    throw new Exception("DeepSeek вернул пустой ответ (без контента)");
+                }
+
                 content = response.Value.Content.First().Text;
-                //_logger.LogInformation("Получен сырой ответ от DeepSeek: {Content}", content);
+                _logger.LogDebug("Получен сырой ответ от DeepSeek: {Content}", content);
 
                 content = content.Trim().Replace("```json", "").Trim().Replace("```", "").Trim();
                 _logger.LogInformation("Очищенный JSON для десериализации: {Content}", content);

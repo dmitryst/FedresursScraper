@@ -75,7 +75,7 @@ namespace FedresursScraper.Services
 
                     if (result == null)
                     {
-                        throw new Exception("Classifier returned null");
+                        throw new Exception("ClassifyLotAsync вернул null");
                     }
 
                     // Сохраняем аналитику
