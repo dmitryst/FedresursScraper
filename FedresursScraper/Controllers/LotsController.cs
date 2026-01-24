@@ -164,9 +164,18 @@ public class LotsController : ControllerBase
                 }).ToList(),
 
             Images = lot.Images
-            .OrderBy(i => i.Order)
-            .Select(i => i.Url)
-            .ToList()
+                .OrderBy(i => i.Order)
+                .Select(i => i.Url)
+                .ToList(),
+
+            Documents = lot.Documents
+                .Select(d => new LotDocumentDto
+                {
+                    Id = d.Id,
+                    Url = d.Url,
+                    Title = d.Title,
+                    Extension = d.Extension
+                }).ToList()
         };
 
         return Ok(lotDto);
