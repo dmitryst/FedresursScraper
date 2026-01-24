@@ -9,12 +9,27 @@ namespace FedresursScraper.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IRosreestrService _rosreestrService;
+        private readonly IClassificationQueue _classificationQueue;
         private readonly ILogger<AdminController> _logger;
 
-        public AdminController(IRosreestrService rosreestrService, ILogger<AdminController> logger)
+        public AdminController(
+            IRosreestrService rosreestrService,
+            IClassificationQueue classificationQueue,
+            ILogger<AdminController> logger)
         {
             _rosreestrService = rosreestrService;
+            _classificationQueue = classificationQueue;
             _logger = logger;
+        }
+
+        /// <summary>
+        /// Получить текущий размер очереди на классификацию (DeepSeek).
+        /// </summary>
+        [HttpGet("classification-queue-size")]
+        public IActionResult GetClassificationQueueSize()
+        {
+            var count = _classificationQueue.GetQueueSize();
+            return Ok(new { QueueSize = count });
         }
 
         /// <summary>

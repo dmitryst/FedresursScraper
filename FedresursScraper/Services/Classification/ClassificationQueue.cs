@@ -2,7 +2,9 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 
-public class BackgroundTaskQueue : IBackgroundTaskQueue
+namespace FedresursScraper.Services;
+
+public class ClassificationQueue : IClassificationQueue
 {
     private readonly ConcurrentQueue<Func<IServiceProvider, CancellationToken, ValueTask>> _workItems = new();
     private readonly SemaphoreSlim _signal = new(0);
@@ -24,5 +26,10 @@ public class BackgroundTaskQueue : IBackgroundTaskQueue
         _workItems.Enqueue(workItem);
         _signal.Release();
         return ValueTask.CompletedTask;
+    }
+
+    public int GetQueueSize()
+    {
+        return _workItems.Count;
     }
 }

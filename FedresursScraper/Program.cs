@@ -58,7 +58,7 @@ builder.Services.AddSingleton<ILotClassifier>(serviceProvider =>
     return new LotClassifier(logger, configuration, apiKey, apiUrl);
 });
 
-builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+builder.Services.AddSingleton<IClassificationQueue, ClassificationQueue>();
 
 builder.Services.AddScoped<IClassificationManager, ClassificationManager>();
 
