@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Lots.Data.Entities
 {
     /// <summary>
-    /// Технический журнал процесса (Start -> Success/Fail). 
+    /// Технический журнал процесса (Enqueued -> Start -> Success/Fail). 
     /// Его цель — мониторинг статусов и перезапуск упавших задач
     /// </summary>
     [Table("LotAuditEvents")]
@@ -29,7 +29,7 @@ namespace Lots.Data.Entities
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Статус события ("Start", "Success", "Failure", "Skipped")
+        /// Статус события (Enqueued, Start, Success, Failure, Skipped)
         /// </summary>
         [Required]
         [MaxLength(20)]

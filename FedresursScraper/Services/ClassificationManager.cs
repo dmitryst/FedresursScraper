@@ -16,18 +16,37 @@ namespace FedresursScraper.Services
     public class ClassificationManager : IClassificationManager
     {
         private readonly IBackgroundTaskQueue _taskQueue;
+        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ClassificationManager> _logger;
 
         public ClassificationManager(
             IBackgroundTaskQueue taskQueue,
+            IServiceProvider serviceProvider,
             ILogger<ClassificationManager> logger)
         {
             _taskQueue = taskQueue;
+            _serviceProvider = serviceProvider;
             _logger = logger;
         }
 
         public async Task EnqueueClassificationAsync(Guid lotId, string description, string source)
         {
+            // Сразу пишем в БД, что лот "Запланирован"
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
+                var audit = new LotAuditEvent
+                {
+                    LotId = lotId,
+                    EventType = "Classification",
+                    Status = "Enqueued",            
+                    Source = source,
+                    Timestamp = DateTime.UtcNow
+                };
+                db.LotAuditEvents.Add(audit);
+                await db.SaveChangesAsync();
+            }
+
             _logger.LogInformation("Постановка в очередь классификации лота {LotId} (Источник: {Source})", lotId, source);
 
             await _taskQueue.QueueBackgroundWorkItemAsync(async (serviceProvider, token) =>
