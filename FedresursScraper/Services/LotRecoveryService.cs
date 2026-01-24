@@ -15,7 +15,7 @@ public class LotRecoveryService : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<LotRecoveryService> _logger;
     private readonly IConfiguration _configuration;
-    private const int BatchSize = 20;
+    private const int BatchSize = 10;
     private const int MaxAttempts = 1; // Лимит попыток перед отправкой на "ручной разбор"
 
     public LotRecoveryService(
@@ -116,10 +116,11 @@ public class LotRecoveryService : BackgroundService
                     }
                     else
                     {
-                        // Таймаут защиты от зависания (например, 10 минут на пачку)
-                        if ((DateTime.UtcNow - startTime).TotalMinutes > 10)
+                        // Таймаут защиты от зависания: ставим 20 минут - 2 минуты на 1 лот
+                        // (в LotClassifier установлен NetworkTimeout в 2 минуты на один запрос)
+                        if ((DateTime.UtcNow - startTime).TotalMinutes > 20)
                         {
-                            _logger.LogWarning("Время ожидания обработки пачки лотов (10 минут) истекло.");
+                            _logger.LogWarning("Время ожидания обработки пачки лотов (20 минут) истекло.");
                             break;
                         }
                     }
