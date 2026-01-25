@@ -65,6 +65,8 @@ namespace FedresursScraper.Services
                     .ThenInclude(l => l.Images)
                 .Include(b => b.Lots)
                     .ThenInclude(l => l.Documents)
+                .Include(b => b.Lots)
+                    .ThenInclude(l => l.PriceSchedules)
                 .Include(b => b.EnrichmentState)
                 .Where(b => b.Platform.Contains("Межрегиональная Электронная Торговая Система"))
                 .Where(b => !b.IsEnriched ?? true)
@@ -206,6 +208,8 @@ namespace FedresursScraper.Services
                     .ThenInclude(l => l.Images)
                 .Include(b => b.Lots)
                     .ThenInclude(l => l.Documents)
+                .Include(b => b.Lots)
+                    .ThenInclude(l => l.PriceSchedules)
                 .Include(b => b.EnrichmentState)
                 .FirstOrDefaultAsync(b => b.TradeNumber == tradeNumber || b.TradeNumber.StartsWith(tradeNumber), ct);
 
@@ -262,6 +266,7 @@ namespace FedresursScraper.Services
                 // Так как мы сделали Include, EF удалит старые записи из БД при SaveChanges
                 lot.Images.Clear();
                 lot.Documents.Clear();
+                lot.PriceSchedules.Clear();
 
                 // Парсинг и сохранение картинок
                 var hasImages = await ProcessImagesAsync(lot, doc, ct);
