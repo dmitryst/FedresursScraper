@@ -23,6 +23,17 @@ namespace FedresursScraper.Services
 
         private const int BatchSize = 5;
         private const int MaxRetryCount = 3;
+        
+        // Минимальная задержка перед первым обогащением (в часах)
+        // Фото на сайте площадки могут появиться в течение нескольких часов после создания лота
+        private const int MinHoursBeforeFirstEnrichment = 3;
+        
+        // Задержка для повторных попыток обогащения лотов без фото (в часах)
+        private const int RetryDelayHoursForMissingImages = 4;
+        
+        // Максимальное количество попыток обогащения для лотов без фото
+        // Если фото не найдено N раз подряд, помечаем лот как обогащенный (даже без фото)
+        private const int MaxMissingImagesAttempts = 3;
 
         public MetsEnrichmentService(
             LotsDbContext context,
@@ -41,6 +52,12 @@ namespace FedresursScraper.Services
             // Дата отсечения (09.01.2026)
             // Используем UTC, так как в базе хранится UTC
             var dateThreshold = new DateTime(2026, 1, 9, 0, 0, 0, DateTimeKind.Utc);
+            
+            // Минимальное время с момента создания лота до первого обогащения
+            var minEnrichmentTime = DateTime.UtcNow.AddHours(-MinHoursBeforeFirstEnrichment);
+            
+            // Время для повторных попыток (если фото не было найдено ранее)
+            var retryTimeThreshold = DateTime.UtcNow.AddHours(-RetryDelayHoursForMissingImages);
 
             // Выбираем торги МЭТС, которые еще не были обработаны
             var biddings = await _context.Biddings
@@ -51,8 +68,18 @@ namespace FedresursScraper.Services
                 .Include(b => b.EnrichmentState)
                 .Where(b => b.Platform.Contains("Межрегиональная Электронная Торговая Система"))
                 .Where(b => !b.IsEnriched ?? true)
-                .Where(b => b.EnrichmentState == null || b.EnrichmentState.RetryCount < MaxRetryCount)
+                .Where(b => b.EnrichmentState == null || 
+                    (b.EnrichmentState.RetryCount < MaxRetryCount && 
+                     b.EnrichmentState.MissingImagesAttemptCount < MaxMissingImagesAttempts))
                 .Where(b => b.CreatedAt > dateThreshold)
+                // Фильтр по времени: либо лот создан достаточно давно для первого обогащения,
+                // либо прошло достаточно времени с последней попытки для повторного обогащения
+                .Where(b => 
+                    (b.EnrichmentState == null && b.CreatedAt <= minEnrichmentTime) || // Первое обогащение
+                    (b.EnrichmentState != null && b.EnrichmentState.LastAttemptAt.HasValue && 
+                     b.EnrichmentState.LastAttemptAt <= retryTimeThreshold) || // Повторная попытка
+                    (b.EnrichmentState != null && !b.EnrichmentState.LastAttemptAt.HasValue && 
+                     b.CreatedAt <= minEnrichmentTime)) // Первая попытка после создания EnrichmentState
                 // дебаг
                 //.Where(b => b.Id == Guid.Parse("32d7c1b5-e39d-41df-b520-ca2f317594e5"))
                 .OrderByDescending(b => b.CreatedAt)
@@ -68,16 +95,74 @@ namespace FedresursScraper.Services
 
                 try
                 {
-                    await EnrichBiddingAsync(bidding, ct);
+                    var hasImages = await EnrichBiddingAsync(bidding, ct);
 
-                    bidding.IsEnriched = true;
-                    bidding.EnrichedAt = DateTime.UtcNow;
+                    // Помечаем как обогащенное только если найдены фото
+                    // Если фото нет, оставляем IsEnriched = false для повторной попытки позже
+                    if (hasImages)
+                    {
+                        bidding.IsEnriched = true;
+                        bidding.EnrichedAt = DateTime.UtcNow;
+                        
+                        // Сбрасываем состояние ошибок и счетчик попыток без фото, если были
+                        if (bidding.EnrichmentState != null)
+                        {
+                            bidding.EnrichmentState.LastError = null;
+                            bidding.EnrichmentState.MissingImagesAttemptCount = 0; // Сбрасываем счетчик, так как фото найдены
+                        }
+                        
+                        _logger.LogInformation("Успешно обогащены торги {TradeNumber} (найдены фото)", bidding.TradeNumber);
+                    }
+                    else
+                    {
+                        // Фото не найдено - создаем или обновляем EnrichmentState для повторной попытки
+                        if (bidding.EnrichmentState == null)
+                        {
+                            bidding.EnrichmentState = new EnrichmentState
+                            {
+                                BiddingId = bidding.Id,
+                                RetryCount = 0, // Не считаем это ошибкой
+                                MissingImagesAttemptCount = 1, // Первая попытка без фото
+                                LastAttemptAt = DateTime.UtcNow,
+                                LastError = "Фото не найдено на сайте площадки. Повторная попытка будет позже."
+                            };
+                        }
+                        else
+                        {
+                            bidding.EnrichmentState.MissingImagesAttemptCount++;
+                            bidding.EnrichmentState.LastAttemptAt = DateTime.UtcNow;
+                            bidding.EnrichmentState.LastError = "Фото не найдено на сайте площадки. Повторная попытка будет позже.";
+                        }
+                        
+                        // Если достигли максимума попыток без фото, помечаем как обогащенный
+                        // (для некоторых лотов фото может вообще не быть на сайте)
+                        if (bidding.EnrichmentState.MissingImagesAttemptCount >= MaxMissingImagesAttempts)
+                        {
+                            bidding.IsEnriched = true;
+                            bidding.EnrichedAt = DateTime.UtcNow;
+                            
+                            _logger.LogInformation(
+                                "Торги {TradeNumber} помечены как обогащенные без фото (попыток: {Attempts}/{Max}). " +
+                                "Фото, вероятно, отсутствуют на сайте площадки.",
+                                bidding.TradeNumber, 
+                                bidding.EnrichmentState.MissingImagesAttemptCount,
+                                MaxMissingImagesAttempts);
+                        }
+                        else
+                        {
+                            _logger.LogWarning(
+                                "Торги {TradeNumber} обогащены частично (фото не найдено). " +
+                                "Попытка {Attempt}/{Max}. Повторная попытка через {Hours} часов.", 
+                                bidding.TradeNumber,
+                                bidding.EnrichmentState.MissingImagesAttemptCount,
+                                MaxMissingImagesAttempts,
+                                RetryDelayHoursForMissingImages);
+                        }
+                    }
 
                     // Сохраняем прогресс после каждого успешного лота (или пачки)
                     // Можно вынести SaveChanges за цикл для скорости, но внутри надежнее
                     await _context.SaveChangesAsync(ct);
-
-                    _logger.LogInformation("Успешно обогащены торги {TradeNumber}", bidding.TradeNumber);
                 }
                 catch (Exception ex)
                 {
@@ -129,9 +214,10 @@ namespace FedresursScraper.Services
                 throw new KeyNotFoundException($"Торги с номером {tradeNumber} не найдены в базе.");
             }
 
-            await EnrichBiddingAsync(bidding, ct);
+            var hasImages = await EnrichBiddingAsync(bidding, ct);
 
-            // Обновляем статус и сохраняем
+            // При ручном обогащении помечаем как обогащенное независимо от наличия фото
+            // (пользователь может захотеть обогатить даже если фото еще нет)
             bidding.IsEnriched = true;
             bidding.EnrichedAt = DateTime.UtcNow;
 
@@ -143,10 +229,17 @@ namespace FedresursScraper.Services
 
             await _context.SaveChangesAsync(ct);
 
-            _logger.LogInformation("Ручное обогащение торгов {TradeNumber} выполнено успешно.", tradeNumber);
+            if (hasImages)
+            {
+                _logger.LogInformation("Ручное обогащение торгов {TradeNumber} выполнено успешно (найдены фото).", tradeNumber);
+            }
+            else
+            {
+                _logger.LogWarning("Ручное обогащение торгов {TradeNumber} выполнено, но фото не найдено.", tradeNumber);
+            }
         }
 
-        private async Task EnrichBiddingAsync(Bidding bidding, CancellationToken ct)
+        private async Task<bool> EnrichBiddingAsync(Bidding bidding, CancellationToken ct)
         {
             var url = GetMetsUrl(bidding.TradeNumber);
 
@@ -161,6 +254,8 @@ namespace FedresursScraper.Services
             var doc = new HtmlDocument();
             doc.LoadHtml(htmlContent);
 
+            bool hasAnyImages = false;
+
             foreach (var lot in bidding.Lots)
             {
                 // Очищаем старые данные перед парсингом, чтобы избежать дубликатов
@@ -169,14 +264,21 @@ namespace FedresursScraper.Services
                 lot.Documents.Clear();
 
                 // Парсинг и сохранение картинок
-                await ProcessImagesAsync(lot, doc, ct);
+                var hasImages = await ProcessImagesAsync(lot, doc, ct);
+                if (hasImages)
+                {
+                    hasAnyImages = true;
+                }
 
                 // Парсинг графика цены (только для Публичного предложения)
+                // Выполняем даже если фото нет - это полезная информация
                 if (IsPublicOffer(bidding.Type))
                 {
                     ProcessPriceSchedule(lot, doc);
                 }
             }
+
+            return hasAnyImages;
         }
 
         private string GetMetsUrl(string tradeNumber)
@@ -193,7 +295,7 @@ namespace FedresursScraper.Services
             return type.Contains("Публичное", StringComparison.OrdinalIgnoreCase);
         }
 
-        private async Task ProcessImagesAsync(Lot lot, HtmlDocument doc, CancellationToken ct)
+        private async Task<bool> ProcessImagesAsync(Lot lot, HtmlDocument doc, CancellationToken ct)
         {
             // Передаем lot, чтобы сформировать точный поисковый запрос
             var imageUrls = ExtractImageUrls(doc, lot);
@@ -201,10 +303,11 @@ namespace FedresursScraper.Services
             if (!imageUrls.Any())
             {
                 _logger.LogWarning("Lot {LotNumber}: Images not found using strict scoped search.", lot.LotNumber);
-                return;
+                return false;
             }
 
             int order = 0;
+            int successCount = 0;
             foreach (var imgUrl in imageUrls)
             {
                 try
@@ -219,12 +322,15 @@ namespace FedresursScraper.Services
                         Url = s3Url,
                         Order = order++
                     });
+                    successCount++;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogWarning("Не удалось скачать картинку {Url}: {Message}", imgUrl, ex.Message);
                 }
             }
+
+            return successCount > 0;
         }
 
         private List<string> ExtractImageUrls(HtmlDocument doc, Lot lot)

@@ -78,13 +78,13 @@ namespace FedresursScraper.Controllers
         private bool IsMets(string platform)
         {
             return !string.IsNullOrEmpty(platform) && 
-                   (platform.Contains("МЭТС") || platform.Contains("М-ЭТС"));
+                platform.Contains("Межрегиональная Электронная Торговая Система");
         }
 
         private bool IsCdt(string platform)
         {
             return !string.IsNullOrEmpty(platform) && 
-                   platform.Contains("Центр дистанционных торгов");
+                platform.Contains("Центр дистанционных торгов");
         }
     }
 }

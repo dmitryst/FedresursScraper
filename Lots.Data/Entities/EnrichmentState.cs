@@ -16,6 +16,11 @@ public class EnrichmentState
 
     public int RetryCount { get; set; } = 0;
 
+    /// <summary>
+    /// Количество попыток обогащения, когда фото не были найдены
+    /// </summary>
+    public int MissingImagesAttemptCount { get; set; } = 0;
+
     public DateTime? LastAttemptAt { get; set; }
 
     public string? LastError { get; set; }
