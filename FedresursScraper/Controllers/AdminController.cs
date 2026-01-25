@@ -91,8 +91,17 @@ namespace FedresursScraper.Controllers
         /// Полезно, когда фото появились на сайте после первоначального обогащения.
         /// </summary>
         /// <param name="tradeNumber">Номер торгов (опционально). Если не указан, сбрасывает для всех торгов МЭТС без фото.</param>
+        /// <param name="fromDate">Дата начала периода (опционально). Фильтрует торги по дате создания (CreatedAt).</param>
+        /// <param name="toDate">Дата окончания периода (опционально). Фильтрует торги по дате создания (CreatedAt).</param>
+        /// <param name="fromPublicId">Начальный PublicId лота (опционально). Фильтрует торги, содержащие лоты с PublicId >= fromPublicId.</param>
+        /// <param name="toPublicId">Конечный PublicId лота (опционально). Фильтрует торги, содержащие лоты с PublicId <= toPublicId.</param>
         [HttpPost("reset-mets-enrichment")]
-        public async Task<IActionResult> ResetMetsEnrichment([FromQuery] string? tradeNumber = null)
+        public async Task<IActionResult> ResetMetsEnrichment(
+            [FromQuery] string? tradeNumber = null,
+            [FromQuery] DateTime? fromDate = null,
+            [FromQuery] DateTime? toDate = null,
+            [FromQuery] int? fromPublicId = null,
+            [FromQuery] int? toPublicId = null)
         {
             try
             {
@@ -106,6 +115,46 @@ namespace FedresursScraper.Controllers
                 if (!string.IsNullOrEmpty(tradeNumber))
                 {
                     query = query.Where(b => b.TradeNumber == tradeNumber || b.TradeNumber.StartsWith(tradeNumber));
+                }
+
+                // Фильтр по дате создания торгов
+                if (fromDate.HasValue)
+                {
+                    var fromDateUtc = fromDate.Value.ToUniversalTime();
+                    query = query.Where(b => b.CreatedAt >= fromDateUtc);
+                }
+
+                if (toDate.HasValue)
+                {
+                    var toDateUtc = toDate.Value.ToUniversalTime();
+                    // Добавляем один день, чтобы включить весь день toDate
+                    var toDateUtcEnd = toDateUtc.Date.AddDays(1).AddTicks(-1);
+                    query = query.Where(b => b.CreatedAt <= toDateUtcEnd);
+                }
+
+                // Фильтр по PublicId лотов
+                // Если указан диапазон publicId, находим торги, у которых есть хотя бы один лот в этом диапазоне
+                if (fromPublicId.HasValue || toPublicId.HasValue)
+                {
+                    var lotQuery = _context.Lots.AsQueryable();
+
+                    if (fromPublicId.HasValue)
+                    {
+                        lotQuery = lotQuery.Where(l => l.PublicId >= fromPublicId.Value);
+                    }
+
+                    if (toPublicId.HasValue)
+                    {
+                        lotQuery = lotQuery.Where(l => l.PublicId <= toPublicId.Value);
+                    }
+
+                    // Получаем ID торгов, которые содержат лоты в указанном диапазоне publicId
+                    var biddingIds = await lotQuery
+                        .Select(l => l.BiddingId)
+                        .Distinct()
+                        .ToListAsync();
+
+                    query = query.Where(b => biddingIds.Contains(b.Id));
                 }
 
                 var biddings = await query.ToListAsync();
@@ -146,16 +195,27 @@ namespace FedresursScraper.Controllers
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation(
-                    "Сброшен флаг IsEnriched для {Count} торгов МЭТС. TradeNumber: {TradeNumber}",
+                    "Сброшен флаг IsEnriched для {Count} торгов МЭТС. TradeNumber: {TradeNumber}, FromDate: {FromDate}, ToDate: {ToDate}, FromPublicId: {FromPublicId}, ToPublicId: {ToPublicId}",
                     resetCount,
-                    tradeNumber ?? "все");
+                    tradeNumber ?? "все",
+                    fromDate,
+                    toDate,
+                    fromPublicId,
+                    toPublicId);
 
                 return Ok(new
                 {
                     Message = "Флаг IsEnriched успешно сброшен",
                     TotalFound = biddings.Count,
                     ResetCount = resetCount,
-                    TradeNumber = tradeNumber
+                    Filters = new
+                    {
+                        TradeNumber = tradeNumber,
+                        FromDate = fromDate,
+                        ToDate = toDate,
+                        FromPublicId = fromPublicId,
+                        ToPublicId = toPublicId
+                    }
                 });
             }
             catch (Exception ex)

@@ -9,10 +9,13 @@ curl http://localhost:8080/api/admin/classification-queue-size
 # Сброс IsEnriched в false для повторного автоматического дообогащения
 
 ```bash
-# Сбросить конкретные торги
-POST /api/admin/reset-mets-enrichment?tradeNumber=190006-МЭТС-1
+# Сбросить конкретные торги МЭТС
+curl -X POST "http://localhost:8080/api/admin/reset-mets-enrichment?tradeNumber=192052-%D0%9C%D0%AD%D0%A2%D0%A1-1"
 
 # Сбросить все торги МЭТС без фото
-POST /api/admin/reset-mets-enrichment
+curl -X POST "http://localhost:8080/api/admin/reset-mets-enrichment"
+
+# Сбросить торги МЭТС по дате создания (от и до)
+curl -X POST "http://localhost:8080/api/admin/reset-mets-enrichment?fromDate=2026-01-01&toDate=2026-01-31"
 ```
 
