@@ -37,6 +37,21 @@ namespace Lots.Data.Entities
         public Guid BiddingId { get; set; }
         public Bidding Bidding { get; set; } = default!;
 
+        /// <summary>
+        /// Код региона местонахождения имущества (первые две цифры ИНН должника)
+        /// </summary>
+        public string? PropertyRegionCode { get; set; }
+
+        /// <summary>
+        /// Название региона местонахождения имущества
+        /// </summary>
+        public string? PropertyRegionName { get; set; }
+
+        /// <summary>
+        /// Полный адрес местонахождения имущества (если указан в описании)
+        /// </summary>
+        public string? PropertyFullAddress { get; set; }
+
         // Техническое поле для хранения поискового индекса
         public NpgsqlTsVector SearchVector { get; set; } = default!;
     }

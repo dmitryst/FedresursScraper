@@ -4,6 +4,7 @@ using Lots.Data.Entities;
 using Lots.Data;
 using System.Text.Json;
 using System.Text.Encodings.Web;
+using FedresursScraper.Services.Utils;
 
 namespace FedresursScraper.Services;
 
@@ -97,11 +98,52 @@ public class ClassificationManager : IClassificationManager
                 dbContext.LotClassificationAnalysis.Add(analysisEntry);
 
                 // Обновление лота
-                var lot = await dbContext.Lots.Include(l => l.Categories).FirstOrDefaultAsync(l => l.Id == lotId, token);
+                var lot = await dbContext.Lots
+                    .Include(l => l.Categories)
+                    .Include(l => l.Bidding)
+                        .ThenInclude(b => b.Debtor)
+                    .FirstOrDefaultAsync(l => l.Id == lotId, token);
                 if (lot != null)
                 {
                     lot.Title = result.Title;
                     lot.IsSharedOwnership = result.IsSharedOwnership;
+
+                    // Определение местонахождения имущества
+                    // 1. Если классификатор нашел местонахождение в описании, используем его
+                    if (!string.IsNullOrWhiteSpace(result.PropertyRegionCode) || !string.IsNullOrWhiteSpace(result.PropertyFullAddress))
+                    {
+                        lot.PropertyRegionCode = result.PropertyRegionCode;
+                        lot.PropertyFullAddress = result.PropertyFullAddress;
+                        
+                        // Если классификатор вернул код региона, но не название - заполняем из справочника
+                        if (!string.IsNullOrWhiteSpace(result.PropertyRegionCode) && string.IsNullOrWhiteSpace(result.PropertyRegionName))
+                        {
+                            var regionInfo = RegionCodeHelper.GetRegionByCode(result.PropertyRegionCode);
+                            if (regionInfo.HasValue)
+                            {
+                                lot.PropertyRegionName = regionInfo.Value.RegionName;
+                            }
+                            else
+                            {
+                                lot.PropertyRegionName = result.PropertyRegionName; // Оставляем как есть, если не найдено
+                            }
+                        }
+                        else
+                        {
+                            lot.PropertyRegionName = result.PropertyRegionName;
+                        }
+                    }
+                    else
+                    {
+                        // 2. По умолчанию - регион регистрации должника (первые две цифры ИНН)
+                        var regionInfo = RegionCodeHelper.GetRegionByInn(lot.Bidding?.Debtor?.Inn);
+                        if (regionInfo.HasValue)
+                        {
+                            lot.PropertyRegionCode = regionInfo.Value.RegionCode;
+                            lot.PropertyRegionName = regionInfo.Value.RegionName;
+                            lot.PropertyFullAddress = null; // Полный адрес не известен
+                        }
+                    }
 
                     // обновление категорий
                     var validCategories = result.Categories.Where(c => !string.IsNullOrWhiteSpace(c)).Distinct();

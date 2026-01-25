@@ -177,7 +177,10 @@ public class LotClassifier : ILotClassifier
                 "  \"categories\": [\"Земельный участок\", \"Прочие постройки\"],\n" +
                 "  \"suggestedCategory\": null,\n" +
                 "  \"title\": \"Земельный участок 15 сот. (ИЖС) с недостроем, Московская обл., г. Химки, КН 50:00:000000:123\",\n" +
-                "  \"isSharedOwnership\": false\n" +
+                "  \"isSharedOwnership\": false,\n" +
+                "  \"propertyRegionCode\": \"50\",\n" +
+                "  \"propertyRegionName\": \"Московская область\",\n" +
+                "  \"propertyFullAddress\": \"Московская обл, г. Химки\"\n" +
                 "}"),
 
             // Пример 2: Транспорт
@@ -214,10 +217,15 @@ public class LotClassifier : ILotClassifier
                 "2. Если лот подходит под несколько категорий, верни их списком.\n" +
                 "3. Если ни одна категория не подходит, выбери 'Прочее' и заполни поле 'suggestedCategory' своим вариантом.\n" +
                 "4. Сформируй название (title). Если это доля, укажи это в названии.\n" +
-                "5. isSharedOwnership = true только для долевой собственности (1/2 и т.д.). Для совместно нажитой собственности isSharedOwnership = false\n\n" +
+                "5. isSharedOwnership = true только для долевой собственности (1/2 и т.д.). Для совместно нажитой собственности isSharedOwnership = false\n" +
+                "6. Проанализируй описание на наличие информации о местонахождении имущества:\n" +
+                "   - Если в описании указан полный адрес (область, город, улица и т.д.), заполни propertyFullAddress, propertyRegionCode (код региона из справочника ФНС) и propertyRegionName (название региона).\n" +
+                "   - Если указан только регион/область/край/республика, заполни propertyRegionCode и propertyRegionName.\n" +
+                "   - Если адрес не указан, оставь эти поля null.\n" +
+                "   - Коды регионов: 01-21 (республики), 22-27, 41, 59, 75 (края), 28-76 (области), 77 (Москва), 78 (Санкт-Петербург), 92 (Севастополь), 83, 86, 87, 89 (автономные округа), 79 (Еврейская АО), 99 (иные территории).\n\n" +
 
                 "ФОРМАТ ОТВЕТА (JSON):\n" +
-                "{ \"categories\": [], \"suggestedCategory\": null, \"title\": \"...\", \"isSharedOwnership\": false }")
+                "{ \"categories\": [], \"suggestedCategory\": null, \"title\": \"...\", \"isSharedOwnership\": false, \"propertyRegionCode\": null, \"propertyRegionName\": null, \"propertyFullAddress\": null }")
         };
 
         var chatCompletionOptions = new ChatCompletionOptions()
