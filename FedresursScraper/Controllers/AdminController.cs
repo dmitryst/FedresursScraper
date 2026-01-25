@@ -1,5 +1,8 @@
 using FedresursScraper.Services;
+using Lots.Data;
+using Lots.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace FedresursScraper.Controllers
 {
@@ -10,15 +13,18 @@ namespace FedresursScraper.Controllers
     {
         private readonly IRosreestrService _rosreestrService;
         private readonly IClassificationQueue _classificationQueue;
+        private readonly LotsDbContext _context;
         private readonly ILogger<AdminController> _logger;
 
         public AdminController(
             IRosreestrService rosreestrService,
             IClassificationQueue classificationQueue,
+            LotsDbContext context,
             ILogger<AdminController> logger)
         {
             _rosreestrService = rosreestrService;
             _classificationQueue = classificationQueue;
+            _context = context;
             _logger = logger;
         }
 
@@ -78,6 +84,85 @@ namespace FedresursScraper.Controllers
         {
             var count = _rosreestrService.GetQueueSize();
             return Ok(new { QueueSize = count });
+        }
+
+        /// <summary>
+        /// Сбрасывает флаг IsEnriched для торгов МЭТС, чтобы сервис обогащения снова обработал их.
+        /// Полезно, когда фото появились на сайте после первоначального обогащения.
+        /// </summary>
+        /// <param name="tradeNumber">Номер торгов (опционально). Если не указан, сбрасывает для всех торгов МЭТС без фото.</param>
+        [HttpPost("reset-mets-enrichment")]
+        public async Task<IActionResult> ResetMetsEnrichment([FromQuery] string? tradeNumber = null)
+        {
+            try
+            {
+                var query = _context.Biddings
+                    .Include(b => b.Lots)
+                    .Include(b => b.EnrichmentState)
+                    .Where(b => b.Platform.Contains("Межрегиональная Электронная Торговая Система"))
+                    .Where(b => b.IsEnriched == true);
+
+                // Если указан номер торгов, фильтруем по нему
+                if (!string.IsNullOrEmpty(tradeNumber))
+                {
+                    query = query.Where(b => b.TradeNumber == tradeNumber || b.TradeNumber.StartsWith(tradeNumber));
+                }
+
+                var biddings = await query.ToListAsync();
+
+                if (!biddings.Any())
+                {
+                    return Ok(new
+                    {
+                        Message = "Торги не найдены для сброса",
+                        Count = 0
+                    });
+                }
+
+                int resetCount = 0;
+                foreach (var bidding in biddings)
+                {
+                    // Проверяем, есть ли фото у лотов
+                    var hasAnyImages = bidding.Lots.Any(lot => lot.Images != null && lot.Images.Any());
+
+                    // Сбрасываем только если нет фото (или если явно указан tradeNumber)
+                    if (!hasAnyImages || !string.IsNullOrEmpty(tradeNumber))
+                    {
+                        bidding.IsEnriched = null;
+                        bidding.EnrichedAt = null;
+
+                        // Сбрасываем счетчики в EnrichmentState, чтобы сервис мог снова обработать
+                        if (bidding.EnrichmentState != null)
+                        {
+                            bidding.EnrichmentState.MissingImagesAttemptCount = 0;
+                            bidding.EnrichmentState.RetryCount = 0;
+                            bidding.EnrichmentState.LastError = null;
+                        }
+
+                        resetCount++;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation(
+                    "Сброшен флаг IsEnriched для {Count} торгов МЭТС. TradeNumber: {TradeNumber}",
+                    resetCount,
+                    tradeNumber ?? "все");
+
+                return Ok(new
+                {
+                    Message = "Флаг IsEnriched успешно сброшен",
+                    TotalFound = biddings.Count,
+                    ResetCount = resetCount,
+                    TradeNumber = tradeNumber
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при сбросе флага IsEnriched для торгов МЭТС");
+                return StatusCode(500, new { Error = "Внутренняя ошибка сервера", Message = ex.Message });
+            }
         }
     }
 }
