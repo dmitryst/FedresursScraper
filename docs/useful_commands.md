@@ -15,7 +15,7 @@ curl -X POST "http://localhost:8080/api/admin/reset-mets-enrichment?tradeNumber=
 # Сбросить все торги МЭТС без фото
 curl -X POST "http://localhost:8080/api/admin/reset-mets-enrichment"
 
-# Сбросить торги МЭТС по дате создания (от и до)
-curl -X POST "http://localhost:8080/api/admin/reset-mets-enrichment?fromDate=2026-01-01&toDate=2026-01-31"
+# Сбросить торги МЭТС по дате создания (от и до включительно)
+curl -X POST "http://localhost:8080/api/admin/reset-mets-enrichment?fromDate=2026-01-23&toDate=2026-01-23"
 ```
 

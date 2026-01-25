@@ -211,6 +211,7 @@ namespace FedresursScraper.Services
                     CadastralNumbers = lotInfo.CadastralNumbers?
                         .Select(n => new LotCadastralNumber { CadastralNumber = n })
                         .ToList() ?? [],
+                    CreatedAt = DateTime.UtcNow,
                 };
                 bidding.Lots.Add(lot);
             }

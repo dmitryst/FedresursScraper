@@ -281,6 +281,34 @@ public class LotsController : ControllerBase
         return Ok(ids);
     }
 
+    [HttpGet("sitemap-data")]
+    public async Task<IActionResult> GetSitemapData(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 40000)
+    {
+        if (pageSize > 50000)
+        {
+            pageSize = 50000;
+        }
+
+        var query = _dbContext.Lots.AsNoTracking();
+
+        var items = await query
+            .Where(l => !string.IsNullOrEmpty(l.Title))
+            .OrderByDescending(l => l.CreatedAt) // Свежие сначала
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(l => new SitemapItemDto
+            {
+                PublicId = l.PublicId,
+                Title = l.Title!,
+                CreatedAt = l.CreatedAt
+            })
+            .ToListAsync();
+
+        return Ok(items);
+    }
+
     /// <summary>
     /// Классифицирует лот по его описанию.
     /// </summary>
