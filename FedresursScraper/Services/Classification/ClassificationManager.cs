@@ -107,6 +107,7 @@ public class ClassificationManager : IClassificationManager
                 {
                     lot.Title = result.Title;
                     lot.IsSharedOwnership = result.IsSharedOwnership;
+                    lot.MarketValue = result.MarketValue;
 
                     // Определение местонахождения имущества
                     // 1. Если классификатор нашел местонахождение в описании, используем его

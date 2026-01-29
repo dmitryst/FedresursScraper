@@ -32,4 +32,10 @@ public class LotClassificationResult
     /// </summary>
     [JsonPropertyName("propertyFullAddress")]
     public string? PropertyFullAddress { get; set; }
+
+    /// <summary>
+    /// Рыночная стоимость объекта (оценка ИИ)
+    /// </summary>
+    [JsonPropertyName("marketValue")]
+    public decimal? MarketValue { get; set; }
 }

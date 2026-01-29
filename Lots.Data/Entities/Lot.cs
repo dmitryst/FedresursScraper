@@ -52,6 +52,11 @@ namespace Lots.Data.Entities
         /// </summary>
         public string? PropertyFullAddress { get; set; }
 
+        /// <summary>
+        /// Рыночная стоимость объекта (оценка ИИ)
+        /// </summary>
+        public decimal? MarketValue { get; set; }
+
         // Техническое поле для хранения поискового индекса
         public NpgsqlTsVector SearchVector { get; set; } = default!;
     }

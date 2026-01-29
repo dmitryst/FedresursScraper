@@ -223,9 +223,10 @@ public class LotClassifier : ILotClassifier
                 "   - Если указан только регион/область/край/республика, заполни propertyRegionCode и propertyRegionName.\n" +
                 "   - Если адрес не указан, оставь эти поля null.\n" +
                 "   - Коды регионов: 01-21 (республики), 22-27, 41, 59, 75 (края), 28-76 (области), 77 (Москва), 78 (Санкт-Петербург), 92 (Севастополь), 83, 86, 87, 89 (автономные округа), 79 (Еврейская АО), 99 (иные территории).\n\n" +
+                "7. Определи рыночную стоимость объекта (marketValue) в рублях (число). Если стоимость указана в тексте — используй её. Если нет — дай примерную экспертную оценку для такого имущества. Если оценить невозможно, верни null.\n\n" +
 
                 "ФОРМАТ ОТВЕТА (JSON):\n" +
-                "{ \"categories\": [], \"suggestedCategory\": null, \"title\": \"...\", \"isSharedOwnership\": false, \"propertyRegionCode\": null, \"propertyRegionName\": null, \"propertyFullAddress\": null }")
+                "{ \"categories\": [], \"suggestedCategory\": null, \"title\": \"...\", \"marketValue\": null, \"isSharedOwnership\": false, \"propertyRegionCode\": null, \"propertyRegionName\": null, \"propertyFullAddress\": null }")
         };
 
         var chatCompletionOptions = new ChatCompletionOptions()
