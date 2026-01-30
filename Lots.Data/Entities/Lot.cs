@@ -57,6 +57,11 @@ namespace Lots.Data.Entities
         /// </summary>
         public decimal? MarketValue { get; set; }
 
+        /// <summary>
+        /// Короткий инвестиционный комментарий (2–3 предложения): логика marketValue, риски, потенциал.
+        /// </summary>
+        public string? InvestmentSummary { get; set; }
+
         // Техническое поле для хранения поискового индекса
         public NpgsqlTsVector SearchVector { get; set; } = default!;
     }

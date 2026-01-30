@@ -38,4 +38,10 @@ public class LotClassificationResult
     /// </summary>
     [JsonPropertyName("marketValue")]
     public decimal? MarketValue { get; set; }
+
+    /// <summary>
+    /// Короткий инвестиционный комментарий (2–3 предложения): логика marketValue, риски, потенциал.
+    /// </summary>
+    [JsonPropertyName("investmentSummary")]
+    public string? InvestmentSummary { get; set; }
 }
