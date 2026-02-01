@@ -107,7 +107,9 @@ public class ClassificationManager : IClassificationManager
                 {
                     lot.Title = result.Title;
                     lot.IsSharedOwnership = result.IsSharedOwnership;
-                    lot.MarketValue = result.MarketValue;
+                    lot.MarketValueMin = result.MarketValueMin;
+                    lot.MarketValueMax = result.MarketValueMax;
+                    lot.PriceConfidence = result.PriceConfidence;
                     lot.InvestmentSummary = result.InvestmentSummary;
 
                     // Определение местонахождения имущества

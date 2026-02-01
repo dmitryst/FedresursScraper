@@ -34,6 +34,21 @@ public class LotDto
     public decimal? MarketValue { get; set; }
 
     /// <summary>
+    /// Нижняя граница рыночной стоимости (ликвидационная цена / быстрая продажа).
+    /// </summary>
+    public decimal? MarketValueMin { get; set; }
+
+    /// <summary>
+    /// Верхняя граница рыночной стоимости (оптимистичная / рыночная цена).
+    /// </summary>
+    public decimal? MarketValueMax { get; set; }
+
+    /// <summary>
+    /// Уровень уверенности модели в оценке: "low", "medium", "high".
+    /// </summary>
+    public string? PriceConfidence { get; set; }
+
+    /// <summary>
     /// Короткий инвестиционный комментарий (2–3 предложения): логика marketValue, риски, потенциал.
     /// </summary>
     public string? InvestmentSummary { get; set; }

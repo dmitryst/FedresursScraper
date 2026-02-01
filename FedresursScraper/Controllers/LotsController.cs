@@ -68,6 +68,9 @@ public class LotsController : ControllerBase
                 : null,
             PropertyRegionName = l.PropertyRegionName,
             MarketValue = l.MarketValue,
+            MarketValueMin = l.MarketValueMin,
+            MarketValueMax = l.MarketValueMax,
+            PriceConfidence = l.PriceConfidence,
             InvestmentSummary = l.InvestmentSummary,
             Bidding = new BiddingDto
             {
