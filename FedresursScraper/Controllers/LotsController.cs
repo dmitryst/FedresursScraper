@@ -66,6 +66,9 @@ public class LotsController : ControllerBase
             Coordinates = (l.Latitude.HasValue && l.Longitude.HasValue)
                 ? new[] { l.Latitude.Value, l.Longitude.Value }
                 : null,
+            PropertyRegionName = l.PropertyRegionName,
+            MarketValue = l.MarketValue,
+            InvestmentSummary = l.InvestmentSummary,
             Bidding = new BiddingDto
             {
                 Type = l.Bidding.Type,
@@ -134,6 +137,11 @@ public class LotsController : ControllerBase
             Coordinates = (lot.Latitude.HasValue && lot.Longitude.HasValue)
                 ? new[] { lot.Latitude.Value, lot.Longitude.Value }
                 : null,
+            PropertyRegionName = lot.PropertyRegionName,
+            PropertyFullAddress = lot.PropertyFullAddress,
+            MarketValue = lot.MarketValue,
+            InvestmentSummary = lot.InvestmentSummary,
+
             Bidding = new BiddingDto
             {
                 Type = lot.Bidding.Type,
@@ -175,7 +183,7 @@ public class LotsController : ControllerBase
                     Url = d.Url,
                     Title = d.Title,
                     Extension = d.Extension
-                }).ToList()
+                }).ToList(),
         };
 
         return Ok(lotDto);
