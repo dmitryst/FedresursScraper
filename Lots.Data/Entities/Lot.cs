@@ -79,6 +79,27 @@ namespace Lots.Data.Entities
         /// </summary>
         public string? InvestmentSummary { get; set; }
 
+        /// <summary>
+        /// Статус торгов по лоту (old.bankrot.fedresurs.ru), например:
+        /// "Завершенные", "Торги отменены", "Торги не состоялись", "Открыт прием заявок".
+        /// </summary>
+        public string? TradeStatus { get; set; }
+
+        /// <summary>
+        /// Итоговая/текущая цена по лоту (old.bankrot.fedresurs.ru).
+        /// </summary>
+        public decimal? FinalPrice { get; set; }
+
+        /// <summary>
+        /// Победитель торгов по лоту (если есть).
+        /// </summary>
+        public string? WinnerName { get; set; }
+
+        /// <summary>
+        /// ИНН победителя торгов по лоту (если есть).
+        /// </summary>
+        public string? WinnerInn { get; set; }
+
         // Техническое поле для хранения поискового индекса
         public NpgsqlTsVector SearchVector { get; set; } = default!;
     }

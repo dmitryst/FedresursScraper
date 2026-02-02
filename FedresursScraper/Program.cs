@@ -1,4 +1,4 @@
-﻿using Lots.Data;
+using Lots.Data;
 using Microsoft.EntityFrameworkCore;
 using FedresursScraper.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -26,6 +26,7 @@ builder.Services.AddSingleton<IWebDriverFactory, WebDriverFactory>();
 builder.Services.AddTransient<IBiddingScraper, BiddingScraper>();
 builder.Services.AddTransient<ILotsScraperFromBankruptMessagePage, LotsScraperFromBankruptMessagePage>();
 builder.Services.AddTransient<ILotsScraperFromLotsPage, LotsScraperFromLotsPage>();
+builder.Services.AddTransient<ITradeCardLotsStatusScraper, TradeCardLotsStatusScraper>();
 
 // Регистрация других сервисов
 builder.Services.AddTransient<ICadastralNumberExtractor, CadastralNumberExtractor>();
@@ -76,7 +77,7 @@ if (string.IsNullOrWhiteSpace(rosreestrServiceUrl))
 {
     // Можно выбросить исключение или установить значение по умолчанию для локальной разработки
     //throw new InvalidOperationException("Переменная окружения ROSREESTR_SERVICE_URL не установлена.");
-    // или: rosreestrServiceUrl = "http://localhost:8000"; // для локальной отладки
+    rosreestrServiceUrl = "http://localhost:8000"; // для локальной отладки
 }
 
 // Регистрируем типизированный HttpClient

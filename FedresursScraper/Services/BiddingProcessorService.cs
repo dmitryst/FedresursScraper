@@ -86,7 +86,6 @@ namespace FedresursScraper.Services
                 scrappedLots = await lotsScraper.ScrapeLotsAsync(driver, biddingId);
                 _logger.LogInformation("Найдено {LotCount} новых лотов.", scrappedLots.Count);
 
-
                 await SaveBiddingAndEnqueueClassificationAsync(biddingData, biddingInfo, dbContext, scrappedLots, classificationManager);
 
                 _cache.MarkAsCompleted(biddingId);
