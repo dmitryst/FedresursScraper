@@ -19,6 +19,7 @@ public class LotsWithDetailsSpecification : LotsFilterSpecification
         // Жадная загрузка
         Query
             .Include(l => l.Bidding)
+                .ThenInclude(b => b.ArbitrationManager)
             .Include(l => l.Categories)
             .Include(l => l.Images);
 

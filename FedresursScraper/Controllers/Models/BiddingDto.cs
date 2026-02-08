@@ -34,4 +34,9 @@ public class BiddingDto
     /// Порядок ознакомления с имуществом
     /// </summary>
     public string? ViewingProcedure { get; set; }
+
+    /// <summary>
+    /// Арбитражный управляющий
+    /// </summary>
+    public ArbitrationManagerDto? ArbitrationManager { get; set; }
 }

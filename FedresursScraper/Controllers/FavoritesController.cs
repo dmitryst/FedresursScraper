@@ -45,7 +45,7 @@ public class FavoritesController : ControllerBase
 
         if (!lotIds.Any())
         {
-            return Ok(new List<Lot>());
+            return Ok(new List<LotDto>());
         }
 
         var spec = new LotsByIdsSpecification(lotIds);
@@ -57,6 +57,7 @@ public class FavoritesController : ControllerBase
         var lotDtos = lots.Select(l => new LotDto
         {
             Id = l.Id,
+            PublicId = l.PublicId,
             LotNumber = l.LotNumber,
             StartPrice = l.StartPrice,
             Step = l.Step,
@@ -66,18 +67,25 @@ public class FavoritesController : ControllerBase
             ViewingProcedure = l.ViewingProcedure,
             CreatedAt = l.CreatedAt,
             Coordinates = (l.Latitude.HasValue && l.Longitude.HasValue)
-            ? new[] { l.Latitude.Value, l.Longitude.Value }
-            : null,
+                ? new[] { l.Latitude.Value, l.Longitude.Value }
+                : null,
+            PropertyRegionName = l.PropertyRegionName,
+            PropertyFullAddress = l.PropertyFullAddress,
+            MarketValue = l.MarketValue,
+            MarketValueMin = l.MarketValueMin,
+            MarketValueMax = l.MarketValueMax,
+            PriceConfidence = l.PriceConfidence,
+            InvestmentSummary = l.InvestmentSummary,
             Bidding = new BiddingDto
             {
                 Type = l.Bidding.Type,
-                ViewingProcedure = l.Bidding.ViewingProcedure
+                ViewingProcedure = l.Bidding.ViewingProcedure,
             },
             Categories = l.Categories.Select(c => new CategoryDto
             {
                 Id = c.Id,
                 Name = c.Name
-            }).ToList()
+            }).ToList(),
         }).ToList();
 
         return Ok(lotDtos);

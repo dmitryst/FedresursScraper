@@ -14,6 +14,7 @@ public class LotByIdWithDetailsSpecification : Specification<Lot>, ISingleResult
         Query
             .Where(l => l.Id == lotId)
             .Include(l => l.Bidding)
+                .ThenInclude(b => b.ArbitrationManager)
             .Include(l => l.Categories)
             .Include(x => x.PriceSchedules)
             .Include(x => x.Images)
@@ -29,6 +30,7 @@ public class LotByIdWithDetailsSpecification : Specification<Lot>, ISingleResult
         Query
             .Where(l => l.PublicId == publicId)
             .Include(l => l.Bidding)
+                .ThenInclude(b => b.ArbitrationManager)
             .Include(l => l.Categories)
             .Include(x => x.PriceSchedules)
             .Include(x => x.Images)

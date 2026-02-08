@@ -147,6 +147,9 @@ public class LotsController : ControllerBase
             PropertyRegionName = lot.PropertyRegionName,
             PropertyFullAddress = lot.PropertyFullAddress,
             MarketValue = lot.MarketValue,
+            MarketValueMin = lot.MarketValueMin,
+            MarketValueMax = lot.MarketValueMax,
+            PriceConfidence = lot.PriceConfidence,
             InvestmentSummary = lot.InvestmentSummary,
 
             Bidding = new BiddingDto
@@ -157,7 +160,15 @@ public class LotsController : ControllerBase
                 TradePeriod = lot.Bidding.TradePeriod,
                 ResultsAnnouncementDate = lot.Bidding.ResultsAnnouncementDate,
                 ViewingProcedure = lot.Bidding.ViewingProcedure,
-
+                ArbitrationManager = lot.Bidding.ArbitrationManager != null
+                    ? new ArbitrationManagerDto
+                    {
+                        Name = lot.Bidding.ArbitrationManager.Name,
+                        Inn = lot.Bidding.ArbitrationManager.Inn,
+                        Snils = lot.Bidding.ArbitrationManager.Snils,
+                        Ogrn = lot.Bidding.ArbitrationManager.Ogrn
+                    }
+                    : null
             },
             Categories = lot.Categories.Select(c => new CategoryDto
             {

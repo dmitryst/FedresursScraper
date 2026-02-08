@@ -9,11 +9,15 @@ namespace Lots.Data.Specifications
 {
     public class LotsByIdsSpecification : Specification<Lot>
     {
-        public LotsByIdsSpecification(IEnumerable<Guid> lotIds)
-        {
-            Query.Where(l => lotIds.Contains(l.Id))
-                 .Include(l => l.Bidding)
-                 .Include(l => l.Categories);
-        }
+    public LotsByIdsSpecification(IEnumerable<Guid> lotIds)
+    {
+        Query.Where(l => lotIds.Contains(l.Id))
+             .Include(l => l.Bidding)
+                .ThenInclude(b => b.ArbitrationManager)
+             .Include(l => l.Categories)
+             .Include(l => l.Images)
+             .Include(l => l.Documents)
+             .Include(l => l.PriceSchedules);
+    }
     }
 }
