@@ -52,14 +52,13 @@ namespace FedresursScraper.Services
                 var biddingScraper = scope.ServiceProvider.GetRequiredService<IBiddingScraper>();
                 var lotsScraper = scope.ServiceProvider.GetRequiredService<ILotsScraperFromLotsPage>();
                 var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
-                var classificationManager = scope.ServiceProvider.GetRequiredService<IClassificationManager>();
 
                 foreach (var biddingData in biddingsToParse)
                 {
                     if (stoppingToken.IsCancellationRequested) break;
 
                     await ProcessBiddingAsync(biddingData, driver, biddingScraper, lotsScraper, dbContext,
-                        classificationManager, stoppingToken);
+                        stoppingToken);
                 }
 
                 await Task.Delay(_interval, stoppingToken);
@@ -70,7 +69,7 @@ namespace FedresursScraper.Services
         /// Обрабатывает один конкретный торг: парсит, получает лоты и сохраняет в БД.
         /// </summary>
         private async Task ProcessBiddingAsync(BiddingData biddingData, IWebDriver driver, IBiddingScraper biddingScraper,
-            ILotsScraperFromLotsPage lotsScraper, LotsDbContext dbContext, IClassificationManager classificationManager,
+            ILotsScraperFromLotsPage lotsScraper, LotsDbContext dbContext,
             CancellationToken stoppingToken)
         {
             var biddingId = biddingData.Id;
@@ -86,7 +85,7 @@ namespace FedresursScraper.Services
                 scrappedLots = await lotsScraper.ScrapeLotsAsync(driver, biddingId);
                 _logger.LogInformation("Найдено {LotCount} новых лотов.", scrappedLots.Count);
 
-                await SaveBiddingAndEnqueueClassificationAsync(biddingData, biddingInfo, dbContext, scrappedLots, classificationManager);
+                await SaveBiddingAndEnqueueClassificationAsync(biddingData, biddingInfo, dbContext, scrappedLots);
 
                 _cache.MarkAsCompleted(biddingId);
 
@@ -102,8 +101,7 @@ namespace FedresursScraper.Services
         /// Сохраняет информацию о торгах и связанных лотах в базу данных.
         /// </summary>
         private async Task SaveBiddingAndEnqueueClassificationAsync(
-            BiddingData initialData, BiddingInfo biddingInfo, LotsDbContext db, List<LotInfo> lots,
-            IClassificationManager classificationManager)
+            BiddingData initialData, BiddingInfo biddingInfo, LotsDbContext db, List<LotInfo> lots)
         {
             // Проверка, чтобы избежать ошибки добавления дубликата
             var existingBidding = await db.Biddings.FindAsync(biddingInfo.Id);
@@ -220,16 +218,9 @@ namespace FedresursScraper.Services
 
             _logger.LogInformation("Торги {BiddingId} и {LotCount} лотов сохранены в БД.", bidding.Id, bidding.Lots.Count);
 
-            // ставим задачи на классификацию и обновление координат
+            // Задача обновления координат (классификация теперь выполняется батчами через LotRecoveryService)
             foreach (var lot in bidding.Lots)
             {
-                // Задача классификации
-                if (!string.IsNullOrEmpty(lot.Description))
-                {
-                    await classificationManager.EnqueueClassificationAsync(lot.Id, lot.Description, "Scraper");
-                }
-
-                // Задача обновления координат
                 if (lot.CadastralNumbers != null && lot.CadastralNumbers.Any())
                 {
                     var numbers = lot.CadastralNumbers.Select(x => x.CadastralNumber).ToList();

@@ -80,51 +80,23 @@ public class LotRecoveryService : BackgroundService
                     continue;
                 }
 
+                // Батчевая классификация выполняется только если набралось достаточно лотов
+                if (lotsToProcess.Count < BatchSize)
+                {
+                    _logger.LogInformation("Найдено {Count} лотов, но требуется минимум {BatchSize} для батчевой классификации. Ждем 1 час.", 
+                        lotsToProcess.Count, BatchSize);
+                    await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+                    continue;
+                }
+
                 _logger.LogInformation("Найдено {Count} лотов для восстановления классификации.", lotsToProcess.Count);
 
                 var lotIds = lotsToProcess.Select(x => x.Id).ToList();
-                var startTime = DateTime.UtcNow;
 
-                // Ставим в очередь
-                foreach (var lot in lotsToProcess)
-                {
-                    await classificationManager.EnqueueClassificationAsync(lot.Id, lot.Description!, "Recovery");
-                }
+                // Выполняем батчевую классификацию напрямую (без очереди)
+                await classificationManager.ClassifyLotsBatchAsync(lotIds, "Recovery");
 
-                // Ждем, пока эта пачка обработается
-                // Мы не можем знать наверняка, когда очередь дойдет до них, но мы можем поллить таблицу аудита
-                // Проверяем, появились ли события Success или Failure для этих ID после startTime.
-
-                bool batchCompleted = false;
-                while (!batchCompleted && !stoppingToken.IsCancellationRequested)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
-
-                    using var monitorScope = _serviceProvider.CreateScope();
-                    var monitorDb = monitorScope.ServiceProvider.GetRequiredService<LotsDbContext>();
-
-                    var processedCount = await monitorDb.LotAuditEvents
-                        .Where(e => lotIds.Contains(e.LotId)
-                                    && e.Timestamp >= startTime
-                                    && (e.Status == "Success" || e.Status == "Failure" || e.Status == "Skipped"))
-                        .CountAsync(stoppingToken);
-
-                    if (processedCount >= lotIds.Count)
-                    {
-                        batchCompleted = true;
-                        _logger.LogInformation("Пачка из {Count} лотов обработана.", lotIds.Count);
-                    }
-                    else
-                    {
-                        // Таймаут защиты от зависания: ставим 20 минут - 2 минуты на 1 лот
-                        // (в LotClassifier установлен NetworkTimeout в 2 минуты на один запрос)
-                        if ((DateTime.UtcNow - startTime).TotalMinutes > 20)
-                        {
-                            _logger.LogWarning("Время ожидания обработки пачки лотов (20 минут) истекло.");
-                            break;
-                        }
-                    }
-                }
+                _logger.LogInformation("Батчевая классификация для {Count} лотов завершена.", lotIds.Count);
             }
             catch (Exception ex)
             {
