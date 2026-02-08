@@ -287,7 +287,8 @@ public class LotClassifier : ILotClassifier
                 "8. Сформируй investmentSummary: 2–3 предложения на русском. " +
                 "Кратко объясни, какие факторы больше всего повлияли на оценочную стоимость (локация/состояние/тип/площадь/правовой статус), " +
                 "упомяни 1–2 ключевых риска/ограничения и возможный сценарий прибыли (если реалистично). " +
-                "Если priceConfidence = low — явно скажи, что оценка ориентировочная.\n\n" +
+                "Если priceConfidence = low — явно скажи, что оценка ориентировочная. " +
+                "ВАЖНО: НЕ упоминай конкретные суммы, диапазоны цен или числовые значения стоимости в investmentSummary.\n\n" +
 
                 "ФОРМАТ ОТВЕТА (JSON):\n" +
                 "{ " +
@@ -490,7 +491,8 @@ public class LotClassifier : ILotClassifier
                 "8. Сформируй investmentSummary: 2–3 предложения на русском. " +
                 "Кратко объясни, какие факторы больше всего повлияли на оценочную стоимость (локация/состояние/тип/площадь/правовой статус), " +
                 "упомяни 1–2 ключевых риска/ограничения и возможный сценарий прибыли (если реалистично). " +
-                "Если priceConfidence = low — явно скажи, что оценка ориентировочная.\n\n" +
+                "Если priceConfidence = low — явно скажи, что оценка ориентировочная. " +
+                "ВАЖНО: НЕ упоминай конкретные суммы, диапазоны цен или числовые значения стоимости в investmentSummary.\n\n" +
                 "ФОРМАТ ОТВЕТА (JSON объект, где ключи - это ID лотов в формате строки):\n" +
                 "{\n" +
                 string.Join(",\n", lotIds.Select(id => $"  \"{id}\": {{ \"categories\": [], \"suggestedCategory\": null, \"title\": \"...\", \"marketValueMin\": null, \"marketValueMax\": null, \"priceConfidence\": \"low\", \"investmentSummary\": null, \"isSharedOwnership\": false, \"propertyRegionCode\": null, \"propertyRegionName\": null, \"propertyFullAddress\": null }}")) +
