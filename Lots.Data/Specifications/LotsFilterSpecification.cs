@@ -64,5 +64,9 @@ public class LotsFilterSpecification : Specification<Lot>
         {
             Query.Where(l => l.IsSharedOwnership == isSharedOwnership.Value);
         }
+
+        // показываем только классифицированные лоты
+        // Лот считается классифицированным, если у него есть Title
+        Query.Where(l => !string.IsNullOrEmpty(l.Title));
     }
 }

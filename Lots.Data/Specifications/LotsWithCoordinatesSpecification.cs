@@ -15,6 +15,10 @@ public class LotsWithCoordinatesSpecification : Specification<Lot>
         {
             Query.Where(lot => lot.Categories.Any(c => categories.Contains(c.Name)));
         }
+
+        // показываем только классифицированные лоты
+        // Лот считается классифицированным, если у него есть Title
+        Query.Where(l => !string.IsNullOrEmpty(l.Title));
         
         Query.AsNoTracking();
     }
