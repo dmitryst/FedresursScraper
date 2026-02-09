@@ -13,7 +13,6 @@ namespace Lots.Data.Specifications
     {
         Query.Where(l => lotIds.Contains(l.Id))
              .Include(l => l.Bidding)
-                .ThenInclude(b => b.ArbitrationManager)
              .Include(l => l.Categories)
              .Include(l => l.Images)
              .Include(l => l.Documents)

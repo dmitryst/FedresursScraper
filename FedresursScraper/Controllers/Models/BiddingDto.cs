@@ -39,4 +39,9 @@ public class BiddingDto
     /// Арбитражный управляющий
     /// </summary>
     public ArbitrationManagerDto? ArbitrationManager { get; set; }
+
+    /// <summary>
+    /// Должник
+    /// </summary>
+    public DebtorDto? Debtor { get; set; }
 }

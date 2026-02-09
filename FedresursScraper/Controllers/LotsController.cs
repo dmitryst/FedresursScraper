@@ -41,7 +41,7 @@ public class LotsController : ControllerBase
         [FromQuery] decimal? priceTo = null,
         [FromQuery] bool? isSharedOwnership = null)
     {
-        var spec = new LotsWithDetailsSpecification(
+        var spec = new LotsListSpecification(
             page, pageSize, categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership);
 
         var filterSpec = new LotsFilterSpecification(
@@ -167,6 +167,15 @@ public class LotsController : ControllerBase
                         Inn = lot.Bidding.ArbitrationManager.Inn,
                         Snils = lot.Bidding.ArbitrationManager.Snils,
                         Ogrn = lot.Bidding.ArbitrationManager.Ogrn
+                    }
+                    : null,
+                Debtor = lot.Bidding.Debtor != null
+                    ? new DebtorDto
+                    {
+                        Name = lot.Bidding.Debtor.Name,
+                        Inn = lot.Bidding.Debtor.Inn,
+                        Snils = lot.Bidding.Debtor.Snils,
+                        Ogrn = lot.Bidding.Debtor.Ogrn
                     }
                     : null
             },

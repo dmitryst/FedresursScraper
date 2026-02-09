@@ -3,9 +3,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Lots.Data.Specifications;
 
-public class LotsWithDetailsSpecification : LotsFilterSpecification
+/// <summary>
+/// Спецификация для загрузки списка лотов с базовыми данными для отображения в карточках
+/// </summary>
+public class LotsListSpecification : LotsFilterSpecification
 {
-    public LotsWithDetailsSpecification(
+    public LotsListSpecification(
         int page,
         int pageSize,
         string[]? categories,
@@ -16,10 +19,9 @@ public class LotsWithDetailsSpecification : LotsFilterSpecification
         bool? isSharedOwnership = null)
         : base(categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership)
     {
-        // Жадная загрузка
+        // Жадная загрузка базовых данных для списка лотов
         Query
             .Include(l => l.Bidding)
-                .ThenInclude(b => b.ArbitrationManager)
             .Include(l => l.Categories)
             .Include(l => l.Images);
 
