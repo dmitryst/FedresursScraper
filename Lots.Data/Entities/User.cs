@@ -7,5 +7,6 @@ namespace Lots.Data.Entities
         public string PasswordHash { get; set; } = default!;
         public bool IsSubscriptionActive { get; set; } = false;
         public DateTime? SubscriptionEndDate { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

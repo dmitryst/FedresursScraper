@@ -41,7 +41,8 @@ public class AuthController : ControllerBase
         var newUser = new User
         {
             Email = request.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+            CreatedAt = DateTime.UtcNow
         };
 
         _context.Users.Add(newUser);
