@@ -39,13 +39,14 @@ public class LotsController : ControllerBase
         [FromQuery] string? biddingType = null,
         [FromQuery] decimal? priceFrom = null,
         [FromQuery] decimal? priceTo = null,
-        [FromQuery] bool? isSharedOwnership = null)
+        [FromQuery] bool? isSharedOwnership = null,
+        [FromQuery] string[]? regions = null)
     {
         var spec = new LotsListSpecification(
-            page, pageSize, categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership);
+            page, pageSize, categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership, regions);
 
         var filterSpec = new LotsFilterSpecification(
-            categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership);
+            categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership, regions);
 
         var totalCount = await _dbContext.Lots.WithSpecification(filterSpec).CountAsync();
 

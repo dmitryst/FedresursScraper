@@ -16,8 +16,9 @@ public class LotsListSpecification : LotsFilterSpecification
         string? biddingType = null,
         decimal? priceFrom = null,
         decimal? priceTo = null,
-        bool? isSharedOwnership = null)
-        : base(categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership)
+        bool? isSharedOwnership = null,
+        string[]? regions = null)
+        : base(categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership, regions)
     {
         // Жадная загрузка базовых данных для списка лотов
         Query

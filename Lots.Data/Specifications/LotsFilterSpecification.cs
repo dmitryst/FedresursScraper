@@ -12,7 +12,8 @@ public class LotsFilterSpecification : Specification<Lot>
         string? biddingType = null,
         decimal? priceFrom = null,
         decimal? priceTo = null,
-        bool? isSharedOwnership = null)
+        bool? isSharedOwnership = null,
+        string[]? regions = null)
     {
         // Полнотекстовый поиск + Кадастровые номера
         if (!string.IsNullOrWhiteSpace(searchQuery))
@@ -63,6 +64,12 @@ public class LotsFilterSpecification : Specification<Lot>
         if (isSharedOwnership.HasValue)
         {
             Query.Where(l => l.IsSharedOwnership == isSharedOwnership.Value);
+        }
+
+        // Фильтр по регионам (местонахождение имущества)
+        if (regions != null && regions.Length > 0)
+        {
+            Query.Where(l => !string.IsNullOrEmpty(l.PropertyRegionName) && regions.Contains(l.PropertyRegionName));
         }
 
         // показываем только классифицированные лоты
