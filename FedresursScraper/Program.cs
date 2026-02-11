@@ -66,6 +66,8 @@ builder.Services.AddScoped<IClassificationManager, ClassificationManager>();
 builder.Services.AddHostedService<LotClassificationService>();
 builder.Services.AddHostedService<LotRecoveryService>();
 
+builder.Services.AddScoped<ILotEvaluationService, LotEvaluationService>();
+
 var rosreestrServiceUrl = Environment.GetEnvironmentVariable("ROSREESTR_SERVICE_URL");
 
 builder.Services.AddSingleton<IFileStorageService, S3FileStorageService>();
