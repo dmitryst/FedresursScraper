@@ -21,6 +21,8 @@ public class LotsDbContext : DbContext
     public DbSet<LotDocument> Documents { get; set; }
     public DbSet<LotPriceSchedule> LotPriceSchedules { get; set; }
     public DbSet<LotEvaluation> LotEvaluations { get; set; }
+    public DbSet<LotEvaluationUserRunStatistics> LotEvaluationUserRunStatistics { get; set; } = default!;
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
