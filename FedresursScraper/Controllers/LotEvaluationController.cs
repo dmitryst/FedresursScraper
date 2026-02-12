@@ -97,8 +97,37 @@ namespace FedresursScraper.Controllers
                 // Если не запускал — проверяем лимиты (но пока не списываем их)
                 if (!hasRunEvaluationBefore)
                 {
-                    // Проверяем квоту: считаем запуски за текущий месяц
+                    // Проверяем, не частит ли пользователь (защита от скликивания и DDOS баланса)
+                    var cooldownError = await CheckRequestCooldown(userId);
+                    if (cooldownError != null)
+                    {
+                        // 429 Too Many Requests
+                        return StatusCode(429, new { message = cooldownError });
+                    }
+
                     var nowUtc = DateTime.UtcNow;
+
+                    // --- ЗАЩИТА ОТ БОТОВ И ЗЛОУПОТРЕБЛЕНИЙ (ДАЖЕ ДЛЯ PRO) ---
+                    // Считаем, сколько новых анализов пользователь запустил за последние 24 часа
+                    var last24Hours = nowUtc.AddHours(-24);
+                    var runsLast24Hours = await _dbContext.LotEvaluationUserRunStatistics
+                        .Where(r => r.UserId == userId && r.CreatedAt >= last24Hours)
+                        .CountAsync();
+
+                    // Лимит для PRO: например, 20 новых лотов в сутки
+                    const int DAILY_LIMIT = 20;
+
+                    if (runsLast24Hours >= DAILY_LIMIT)
+                    {
+                        return StatusCode(429, new
+                        {
+                            message = "Превышен суточный лимит генераций (20 лотов). Пожалуйста, вернитесь завтра.",
+                            limitReached = true
+                        });
+                    }
+
+                    // ОСНОВНАЯ ЛОГИКА:
+                    // Проверяем квоту: считаем запуски за текущий месяц
                     var monthStartUtc = new DateTime(nowUtc.Year, nowUtc.Month, 1, 0, 0, 0, DateTimeKind.Utc);
                     var nextMonthStartUtc = monthStartUtc.AddMonths(1);
 
@@ -181,7 +210,36 @@ namespace FedresursScraper.Controllers
             }
         }
 
-        // Вспомогательные методы
+        /// <summary>
+        /// Вспомогательный метод для проверки частоты запросов (защита от спама/скликивания)
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        private async Task<string?> CheckRequestCooldown(Guid userId)
+        {
+            // Время в секундах, которое пользователь должен ждать между запусками новых анализов
+            const int COOLDOWN_SECONDS = 40;
+
+            // Берем самый последний запуск этого пользователя
+            var lastRun = await _dbContext.LotEvaluationUserRunStatistics
+                .Where(r => r.UserId == userId)
+                .OrderByDescending(r => r.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (lastRun != null)
+            {
+                var timeSinceLastRun = DateTime.UtcNow - lastRun.CreatedAt;
+
+                if (timeSinceLastRun.TotalSeconds < COOLDOWN_SECONDS)
+                {
+                    var secondsToWait = (int)(COOLDOWN_SECONDS - timeSinceLastRun.TotalSeconds);
+                    return $"Пожалуйста, подождите {secondsToWait} сек. перед запуском следующего анализа.";
+                }
+            }
+
+            return null;
+        }
+
         private Guid GetUserId()
         {
             var claim = User.FindFirst(ClaimTypes.NameIdentifier)
