@@ -14,16 +14,21 @@ namespace FedresursScraper.Controllers
     {
         private readonly ILotEvaluationService _evaluationService;
         private readonly LotsDbContext _dbContext;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public LotEvaluationController(ILotEvaluationService evaluationService, LotsDbContext dbContext)
+        public LotEvaluationController(
+            ILotEvaluationService evaluationService,
+            LotsDbContext dbContext,
+            IServiceScopeFactory scopeFactory)
         {
             _evaluationService = evaluationService;
             _dbContext = dbContext;
+            _scopeFactory = scopeFactory;
         }
 
         /// <summary>
         /// Получить оценку. 
-        /// Возвращает данные ТОЛЬКО если пользователь уже "покупал" (запускал) анализ этого лота.
+        /// Возвращает данные только если пользователь уже "покупал" (запускал) анализ этого лота.
         /// </summary>
         [Authorize]
         [HttpGet("{id}/evaluation")]
@@ -163,7 +168,7 @@ namespace FedresursScraper.Controllers
                     }
                 }
 
-                // Проверяем, есть ли уже детальная оценка для этого лота (кэш)
+                // Проверяем, есть ли уже готовая оценка для этого лота (кэш)
                 var existingEvaluation = await _dbContext.LotEvaluations
                     .Where(e => e.LotId == lotId)
                     .OrderByDescending(e => e.CreatedAt)
@@ -191,18 +196,37 @@ namespace FedresursScraper.Controllers
                 }
 
                 // Сценарий Б: Оценки нет, идём в DeepSeek
-                var result = await _evaluationService.EvaluateLotAsync(lotId);
-                if (result == null)
-                {
-                    return NotFound("Лот не найден или оценка завершилась ошибкой");
-                }
-
+                // Сначала фиксируем "оплату", чтобы повторный клик был бесплатным
                 if (!hasRunEvaluationBefore)
                 {
                     await RecordUserRun(userId, lotId);
                 }
 
-                return Ok(result);
+                // Запускаем задачу в фоне (Fire-and-Forget)
+                _ = Task.Run(async () =>
+                {
+                    // Создаем новый скоуп, так как DbContext нельзя использовать в другом потоке
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        var scopedService = scope.ServiceProvider.GetRequiredService<ILotEvaluationService>();
+                        var logger = scope.ServiceProvider.GetRequiredService<ILogger<LotEvaluationController>>();
+                        
+                        try
+                        {
+                            logger.LogInformation("Начало фонового анализа лота {LotId} для пользователя {UserId}", lotId, userId);
+
+                            await scopedService.EvaluateLotAsync(lotId);
+
+                            logger.LogInformation("Фоновый анализ лота {LotId} успешно завершен", lotId);
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogError(ex, "Ошибка при фоновом анализе лота {LotId}. Пользователь: {UserId}", lotId, userId);
+                        }
+                    }
+                });
+
+                return StatusCode(202, new { message = "Запрос принят, ждите", status = "processing" });
             }
             catch (Exception ex)
             {
