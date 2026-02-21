@@ -127,6 +127,8 @@ builder.Services.AddHttpClient("FedresursScraper", client =>
     };
 });
 
+builder.Services.AddHttpClient<IIndexNowService, IndexNowService>();
+
 // настройка аутентификации
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

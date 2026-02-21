@@ -13,6 +13,7 @@ public class LotDto
     public string? WinnerName { get; set; }
     public string? WinnerInn { get; set; }
     public string? Title { get; set; }
+    public string? Slug { get; set; }
     public string? Description { get; set; }
     public string? ViewingProcedure { get; set; }
     public DateTime CreatedAt { get; set; }

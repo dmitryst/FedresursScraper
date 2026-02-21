@@ -63,6 +63,7 @@ public class FavoritesController : ControllerBase
             Step = l.Step,
             Deposit = l.Deposit,
             Title = l.Title ?? l.Description,
+            Slug = l.Slug,
             Description = l.Description,
             ViewingProcedure = l.ViewingProcedure,
             CreatedAt = l.CreatedAt,
@@ -93,6 +94,7 @@ public class FavoritesController : ControllerBase
 
     // GET: api/favorites/ids
     // Возвращает список GUID
+    [Obsolete]
     [HttpGet("ids")]
     public async Task<ActionResult<List<Guid>>> GetFavoriteIds()
     {

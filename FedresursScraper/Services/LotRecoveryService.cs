@@ -15,7 +15,7 @@ public class LotRecoveryService : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<LotRecoveryService> _logger;
     private readonly IConfiguration _configuration;
-    private const int BatchSize = 10;
+    private const int BatchSize = 20;
     private const int MaxAttempts = 1; // Лимит попыток перед отправкой на "ручной разбор"
 
     public LotRecoveryService(
@@ -46,6 +46,7 @@ public class LotRecoveryService : BackgroundService
                 using var scope = _serviceProvider.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
                 var classificationManager = scope.ServiceProvider.GetRequiredService<IClassificationManager>();
+                var indexNowService = scope.ServiceProvider.GetService<IIndexNowService>();
 
                 var retryDelay = DateTime.UtcNow.AddHours(-1); // Не трогать лот, если пробовали за последний час
 
@@ -83,9 +84,9 @@ public class LotRecoveryService : BackgroundService
                 // Батчевая классификация выполняется только если набралось достаточно лотов
                 if (lotsToProcess.Count < BatchSize)
                 {
-                    _logger.LogInformation("Найдено {Count} лотов, но требуется минимум {BatchSize} для батчевой классификации. Ждем 1 час.", 
+                    _logger.LogInformation("Найдено {Count} лотов, но требуется минимум {BatchSize} для батчевой классификации. Ждем 1 час.",
                         lotsToProcess.Count, BatchSize);
-                    await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+                    await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken);
                     continue;
                 }
 
@@ -97,12 +98,85 @@ public class LotRecoveryService : BackgroundService
                 await classificationManager.ClassifyLotsBatchAsync(lotIds, "Recovery");
 
                 _logger.LogInformation("Батчевая классификация для {Count} лотов завершена.", lotIds.Count);
+
+                // Отправляем url лотов в IndexNow
+                if (indexNowService != null)
+                {
+                    await SubmitToIndexNowAsync(dbContext, indexNowService, lotIds, stoppingToken);
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка в цикле восстановления лотов.");
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
+        }
+    }
+
+    /// <summary>
+    /// Формирует URL для обновленных лотов и отправляет их в IndexNow.
+    /// </summary>
+    private async Task SubmitToIndexNowAsync(
+        LotsDbContext dbContext,
+        IIndexNowService indexNowService,
+        List<Guid> lotIds,
+        CancellationToken stoppingToken)
+    {
+        try
+        {
+            // Получаем лоты для обновления
+            var updatedLots = await dbContext.Lots
+                .Where(l => lotIds.Contains(l.Id))
+                .ToListAsync(stoppingToken);
+
+            if (!updatedLots.Any())
+            {
+                _logger.LogWarning("IndexNow: Не удалось найти лоты после классификации.");
+                return;
+            }
+
+            var urlsToSubmit = new List<string>();
+            var baseUrl = _configuration["App:BaseUrl"] ?? "https://s-lot.ru";
+            var lotsToUpdate = false;
+
+            foreach (var lot in updatedLots)
+            {
+                if (string.IsNullOrEmpty(lot.Slug))
+                {
+                    var textForSlug = lot.Title ?? lot.Description;
+
+                    if (string.IsNullOrEmpty(lot.Title))
+                    {
+                        _logger.LogWarning("Внимание: Лот {LotId} остался без Title после классификации! Slug сгенерирован из Description.", lot.Id);
+                    }
+
+                    // Генерируем Slug
+                    lot.Slug = SlugHelper.GenerateSlug(textForSlug!);
+                    lotsToUpdate = true;
+                }
+
+                // Формируем URL, используя сохраненный Slug
+                var url = $"{baseUrl}/lot/{lot.Slug}-{lot.PublicId}";
+                urlsToSubmit.Add(url);
+            }
+
+            // Сохраняем Slug в БД, если были изменения
+            if (lotsToUpdate)
+            {
+                await dbContext.SaveChangesAsync(stoppingToken);
+                _logger.LogInformation("Slug сгенерированы и сохранены для {Count} лотов.",
+                    updatedLots.Count(l => !string.IsNullOrEmpty(l.Slug)));
+            }
+
+            // Отправляем в IndexNow
+            if (urlsToSubmit.Any())
+            {
+                await indexNowService.SubmitUrlsAsync(urlsToSubmit);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при генерации Slug или отправке в IndexNow.");
         }
     }
 }

@@ -25,6 +25,13 @@ namespace Lots.Data.Entities
         public decimal? Deposit { get; set; }
         public string? Description { get; set; }
         public string? Title { get; set; }
+
+        // <summary>
+        /// URL-friendly название лота. Используется для формирования SEO-ссылок.
+        /// </summary>
+        [MaxLength(200)] // С запасом, хотя мы режем до 60
+        public string? Slug { get; set; }
+
         public bool IsSharedOwnership { get; set; }
         public string? ViewingProcedure { get; set; }
         public List<LotCategory> Categories { get; set; } = new();
