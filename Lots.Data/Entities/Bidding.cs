@@ -107,5 +107,11 @@ namespace Lots.Data.Entities
         /// Стейт обогощения торгов (со страницы площадки)
         /// </summary>
         public virtual EnrichmentState? EnrichmentState { get; set; }
+
+        /// <summary>
+        /// Признак того, что статусы по всем лотам этих торгов были обновлены до конечного 
+        /// ("Завершенные", "Торги отменены", "Торги не состоялись").
+        /// </summary>
+        public bool IsTradeStatusesFinalized { get; set; }
     }
 }

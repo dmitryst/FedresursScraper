@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using FedresursScraper.Extensions;
+using FedresursScraper.BackgroundServices;
 
 // Используем WebApplicationBuilder для создания веб-приложения
 var builder = WebApplication.CreateBuilder(args);
@@ -65,6 +66,7 @@ builder.Services.AddScoped<IClassificationManager, ClassificationManager>();
 
 builder.Services.AddHostedService<LotClassificationService>();
 builder.Services.AddHostedService<LotRecoveryService>();
+builder.Services.AddHostedService<TradeStatusesUpdateBackgroundService>();
 
 builder.Services.AddScoped<ILotEvaluationService, LotEvaluationService>();
 

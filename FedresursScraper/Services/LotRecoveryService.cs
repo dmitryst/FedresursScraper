@@ -7,7 +7,7 @@ using Lots.Data;
 namespace FedresursScraper.Services;
 
 /// <summary>
-/// Фоновый процесс реализует логику "взять 100 неклассифицированных лотов из БД — 
+/// Фоновый процесс реализует логику "взять 10 неклассифицированных лотов из БД — 
 /// обработать (наполнить очередь) — ждать завершения — взять следующие".
 /// </summary>
 public class LotRecoveryService : BackgroundService
@@ -15,7 +15,7 @@ public class LotRecoveryService : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<LotRecoveryService> _logger;
     private readonly IConfiguration _configuration;
-    private const int BatchSize = 20;
+    private const int BatchSize = 10;
     private const int MaxAttempts = 1; // Лимит попыток перед отправкой на "ручной разбор"
 
     public LotRecoveryService(
@@ -84,7 +84,7 @@ public class LotRecoveryService : BackgroundService
                 // Батчевая классификация выполняется только если набралось достаточно лотов
                 if (lotsToProcess.Count < BatchSize)
                 {
-                    _logger.LogInformation("Найдено {Count} лотов, но требуется минимум {BatchSize} для батчевой классификации. Ждем 1 час.",
+                    _logger.LogInformation("Найдено {Count} лотов, но требуется минимум {BatchSize} для батчевой классификации. Ждем 30 минут.",
                         lotsToProcess.Count, BatchSize);
                     await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken);
                     continue;
