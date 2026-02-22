@@ -121,42 +121,50 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
     {
         try
         {
-            // Считываем размер батча из конфигурации. Если настройки нет, по умолчанию берем 100
             var batchSize = _configuration.GetValue<int>("BackgroundServices:TradeStatusesUpdate:BatchSize", 10);
-
-            // Расширяем массив конечных статусов локально для проверки внутри метода
             var extendedFinalStatuses = FinalStatuses.Concat(new[] { "Торги завершены (нет данных)" }).ToArray();
 
-            _logger.LogInformation("Начинается обработка очереди торгов. Размер батча: {BatchSize}.", batchSize);
+            List<Guid> allBiddingIdsToProcess;
 
-            while (!stoppingToken.IsCancellationRequested)
+            // Единоразово получаем все ID торгов для проверки в этой сессии
+            using (var initialScope = _serviceProvider.CreateScope())
             {
-                // ВАЖНО: Создаем scope на каждый батч. 
-                // Это очищает Change Tracker и предотвращает утечку памяти (Memory Leak) при обработке большого количества лотов
+                var dbContext = initialScope.ServiceProvider.GetRequiredService<LotsDbContext>();
+
+                allBiddingIdsToProcess = await dbContext.Biddings
+                    .Where(b => !b.IsTradeStatusesFinalized &&
+                                b.TradePeriod == null &&
+                                b.Lots.Any(l => l.LotNumber != null && l.LotNumber != ""))
+                    .Select(b => b.Id)
+                    .ToListAsync(stoppingToken);
+            }
+
+            if (allBiddingIdsToProcess.Count == 0)
+            {
+                _logger.LogInformation("Очередь пуста. Нет торгов для обновления статусов.");
+                return;
+            }
+
+            _logger.LogInformation("Найдено торгов для проверки: {TotalCount}. Размер батча: {BatchSize}.",
+                allBiddingIdsToProcess.Count, batchSize);
+
+            // Идем циклом по полученному списку ID, разбивая его на батчи
+            for (int i = 0; i < allBiddingIdsToProcess.Count; i += batchSize)
+            {
+                if (stoppingToken.IsCancellationRequested) break;
+
+                // Берем следующую порцию ID из нашего списка
+                var batchIds = allBiddingIdsToProcess.Skip(i).Take(batchSize).ToList();
+
+                _logger.LogInformation("Взята партия из {Count} торгов (Прогресс: {Current}/{Total}).",
+                    batchIds.Count, i, allBiddingIdsToProcess.Count);
+
+                // Создаем Scope специально для текущего батча, чтобы не забить память (Change Tracker)
                 using var scope = _serviceProvider.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
                 var scraper = scope.ServiceProvider.GetRequiredService<ITradeCardLotsStatusScraper>();
 
-                // Получаем очередную партию торгов
-                var biddingIds = await dbContext.Biddings
-                    .Where(b => !b.IsTradeStatusesFinalized &&
-                        b.TradePeriod == null &&
-                        b.Lots.Any(l => l.LotNumber != null && l.LotNumber != ""))
-                    .Select(b => b.Id)
-                    .Take(batchSize)
-                    .ToListAsync(stoppingToken);
-
-                // Если торгов больше нет — выходим из цикла
-                if (biddingIds.Count == 0)
-                {
-                    _logger.LogInformation("Все доступные торги успешно обработаны. Очередь пуста.");
-                    break;
-                }
-
-                _logger.LogInformation("Взята партия из {Count} торгов для обновления статусов.", biddingIds.Count);
-
-                // Обрабатываем текущий батч
-                foreach (var biddingId in biddingIds)
+                foreach (var biddingId in batchIds)
                 {
                     if (stoppingToken.IsCancellationRequested) break;
 
@@ -241,6 +249,8 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
                 // На всякий случай добавляем небольшую паузу между батчами
                 await Task.Delay(5000, stoppingToken);
             }
+
+            _logger.LogInformation("Обновление статусов торгов успешно завершено.");
         }
         catch (Exception ex)
         {
