@@ -126,6 +126,9 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
 
             List<Guid> allBiddingIdsToProcess;
 
+            // Определяем начало текущих суток (в UTC, так как лучше хранить даты в UTC)
+            var today = DateTime.UtcNow.Date;
+
             // Единоразово получаем все ID торгов для проверки в этой сессии
             using (var initialScope = _serviceProvider.CreateScope())
             {
@@ -134,6 +137,8 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
                 allBiddingIdsToProcess = await dbContext.Biddings
                     .Where(b => !b.IsTradeStatusesFinalized &&
                                 b.TradePeriod == null &&
+                                // Проверяем, что статусы этих торгов сегодня еще не проверялись
+                                (b.LastStatusCheckAt == null || b.LastStatusCheckAt.Value.Date < today) &&
                                 b.Lots.Any(l => l.LotNumber != null && l.LotNumber != ""))
                     .Select(b => b.Id)
                     .ToListAsync(stoppingToken);
@@ -239,6 +244,9 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
                         bidding.IsTradeStatusesFinalized = true;
                         _logger.LogInformation("Все лоты для торгов {BiddingId} перешли в конечные статусы. Торги закрыты для парсера.", biddingId);
                     }
+
+                    // --- ВАЖНО: Фиксируем дату и время текущей проверки ---
+                    bidding.LastStatusCheckAt = DateTime.UtcNow;
 
                     await dbContext.SaveChangesAsync(stoppingToken);
 

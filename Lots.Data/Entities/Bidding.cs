@@ -113,5 +113,10 @@ namespace Lots.Data.Entities
         /// ("Завершенные", "Торги отменены", "Торги не состоялись").
         /// </summary>
         public bool IsTradeStatusesFinalized { get; set; }
+
+        /// <summary>
+        /// Дата и время последней проверки статуса торгов фоновым сервисом
+        /// </summary>
+        public DateTime? LastStatusCheckAt { get; set; }
     }
 }
