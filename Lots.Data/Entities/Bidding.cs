@@ -133,6 +133,8 @@ public class Bidding
     /// </summary>
     public void ScheduleNextCheck(DateTime now)
     {
+        var utcNow = now.Kind == DateTimeKind.Utc ? now : now.ToUniversalTime();
+
         var typeStr = Type?.ToLower() ?? "";
         bool isPublicOffer = typeStr.Contains("публичное предложение");
 
@@ -140,31 +142,35 @@ public class Bidding
         {
             var startAcceptanceDate = TryParseBidAcceptancePeriodStart();
             
-            if (startAcceptanceDate.HasValue && startAcceptanceDate.Value > now)
+            if (startAcceptanceDate.HasValue && startAcceptanceDate.Value > utcNow)
             {
                 NextStatusCheckAt = startAcceptanceDate.Value.AddDays(1);
             }
             else
             {
-                NextStatusCheckAt = now.AddDays(7);
+                NextStatusCheckAt = utcNow.AddDays(7);
             }
         }
         else
         {
             if (ResultsAnnouncementDate.HasValue)
             {
-                if (ResultsAnnouncementDate.Value > now)
+                var resultsDateUtc = ResultsAnnouncementDate.Value.Kind == DateTimeKind.Utc 
+                    ? ResultsAnnouncementDate.Value 
+                    : ResultsAnnouncementDate.Value.ToUniversalTime();
+
+                if (resultsDateUtc > utcNow)
                 {
-                    NextStatusCheckAt = ResultsAnnouncementDate.Value.AddDays(1);
+                    NextStatusCheckAt = resultsDateUtc.AddDays(1);
                 }
                 else
                 {
-                    NextStatusCheckAt = now.AddDays(7);
+                    NextStatusCheckAt = utcNow.AddDays(7);
                 }
             }
             else
             {
-                NextStatusCheckAt = now.AddDays(7);
+                NextStatusCheckAt = utcNow.AddDays(7);
             }
         }
     }
@@ -181,7 +187,7 @@ public class Bidding
                 System.Globalization.CultureInfo.InvariantCulture, 
                 System.Globalization.DateTimeStyles.AssumeUniversal, out var startDate))
             {
-                return startDate;
+                return DateTime.SpecifyKind(startDate, DateTimeKind.Utc);
             }
         }
         return null;
