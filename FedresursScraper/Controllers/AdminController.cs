@@ -13,18 +13,18 @@ namespace FedresursScraper.Controllers
     {
         private readonly IRosreestrService _rosreestrService;
         private readonly IClassificationQueue _classificationQueue;
-        private readonly LotsDbContext _context;
+        private readonly LotsDbContext _dbContext;
         private readonly ILogger<AdminController> _logger;
 
         public AdminController(
             IRosreestrService rosreestrService,
             IClassificationQueue classificationQueue,
-            LotsDbContext context,
+            LotsDbContext dbContext,
             ILogger<AdminController> logger)
         {
             _rosreestrService = rosreestrService;
             _classificationQueue = classificationQueue;
-            _context = context;
+            _dbContext = dbContext;
             _logger = logger;
         }
 
@@ -105,7 +105,7 @@ namespace FedresursScraper.Controllers
         {
             try
             {
-                var query = _context.Biddings
+                var query = _dbContext.Biddings
                     .Include(b => b.Lots)
                     .Include(b => b.EnrichmentState)
                     .Where(b => b.Platform.Contains("Межрегиональная Электронная Торговая Система"))
@@ -136,7 +136,7 @@ namespace FedresursScraper.Controllers
                 // Если указан диапазон publicId, находим торги, у которых есть хотя бы один лот в этом диапазоне
                 if (fromPublicId.HasValue || toPublicId.HasValue)
                 {
-                    var lotQuery = _context.Lots.AsQueryable();
+                    var lotQuery = _dbContext.Lots.AsQueryable();
 
                     if (fromPublicId.HasValue)
                     {
@@ -192,7 +192,7 @@ namespace FedresursScraper.Controllers
                     }
                 }
 
-                await _context.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
 
                 _logger.LogInformation(
                     "Сброшен флаг IsEnriched для {Count} торгов МЭТС. TradeNumber: {TradeNumber}, FromDate: {FromDate}, ToDate: {ToDate}, FromPublicId: {FromPublicId}, ToPublicId: {ToPublicId}",
@@ -223,6 +223,59 @@ namespace FedresursScraper.Controllers
                 _logger.LogError(ex, "Ошибка при сбросе флага IsEnriched для торгов МЭТС");
                 return StatusCode(500, new { Error = "Внутренняя ошибка сервера", Message = ex.Message });
             }
+        }
+
+        /// <summary>
+        /// Одноразовый скрипт (эндпоинт) для инициализации расписания парсинга (NextStatusCheckAt) для исторических торгов.
+        /// 
+        /// Проходит по всем нефинализированным торгам с пустым расписанием и вычисляет дату следующей проверки 
+        /// с помощью доменной логики сущности Bidding. Для торгов, проверка которых отложена на стандартные 7 дней, 
+        /// добавляет случайный разброс (jitter) от 0 до 7 дней. 
+        /// 
+        /// Это необходимо для "размазывания" нагрузки на фоновый сервис и целевую площадку (Федресурс), 
+        /// чтобы избежать пиковой отправки десятков тысяч запросов в первый день запуска обновленного сервиса.
+        /// После успешного применения на проде этот метод можно будет удалить.
+        /// </summary>
+
+        [HttpPost("init-schedules")]
+        public async Task<IActionResult> InitBiddingSchedules(CancellationToken token)
+        {
+            var now = DateTime.UtcNow;
+            var batchSize = 1000;
+            int updatedCount = 0;
+            var random = new Random();
+
+            while (true)
+            {
+                // Берем батч торгов, у которых расписание еще не задано
+                var biddings = await _dbContext.Biddings
+                    .Where(b => !b.IsTradeStatusesFinalized && b.NextStatusCheckAt == null)
+                    .Take(batchSize)
+                    .ToListAsync(token);
+
+                if (biddings.Count == 0) break;
+
+                foreach (var bidding in biddings)
+                {
+                    // Используем вашу новую доменную логику
+                    bidding.ScheduleNextCheck(now);
+
+                    // Распределяем нагрузку для старых зависших торгов.
+                    // Если логика решила отложить проверку на 7 дней (торги идут), 
+                    // мы размазываем этот первый запуск случайным образом от 0 до 7 дней, 
+                    // чтобы не создать "ударную волну" из 30 000 запросов ровно через неделю.
+                    if (bidding.NextStatusCheckAt.HasValue && bidding.NextStatusCheckAt.Value.Date == now.AddDays(7).Date)
+                    {
+                        int randomDays = random.Next(0, 8); // от 0 до 7
+                        bidding.NextStatusCheckAt = now.AddDays(randomDays);
+                    }
+                }
+
+                await _dbContext.SaveChangesAsync(token);
+                updatedCount += biddings.Count;
+            }
+
+            return Ok(new { message = $"Успешно инициализировано расписание для {updatedCount} торгов." });
         }
     }
 }
