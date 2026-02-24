@@ -213,10 +213,14 @@ namespace FedresursScraper.Services
                 bidding.Lots.Add(lot);
             }
 
+            // вычисляем и задаем расписание для проверки результатов торгов
+            bidding.ScheduleNextCheck(DateTime.UtcNow);
+
             db.Biddings.Add(bidding);
             await db.SaveChangesAsync();
 
-            _logger.LogInformation("Торги {BiddingId} и {LotCount} лотов сохранены в БД.", bidding.Id, bidding.Lots.Count);
+            _logger.LogInformation("Торги {BiddingId} и {LotCount} лотов сохранены в БД. Следующая проверка статуса запланирована на {NextCheck}", 
+                bidding.Id, bidding.Lots.Count, bidding.NextStatusCheckAt);
 
             // Задача обновления координат (классификация теперь выполняется батчами через LotRecoveryService)
             foreach (var lot in bidding.Lots)
