@@ -93,12 +93,23 @@ public class LotsDbContext : DbContext
             .HasIndex(e => new { e.LotId, e.EventType })
             .HasDatabaseName("IX_LotAuditEvents_LotId_EventType");
 
-            // Настройка связи 1 к 1
+        // Настройка связи 1 к 1
         modelBuilder.Entity<Bidding>()
             .HasOne(b => b.EnrichmentState)
             .WithOne(s => s.Bidding)
             .HasForeignKey<EnrichmentState>(s => s.BiddingId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // --- ДОБАВЛЯЕМ ЧАСТИЧНЫЙ ИНДЕКС ДЛЯ АКТИВНЫХ ЛОТОВ ---
+        // Формируем SQL-строку для условия. 
+        // В PostgreSQL пустая строка ('') и NULL - это разные вещи.
+        // Мы исключаем из индекса все лоты с финальными статусами.
+        var finalStatusesSql = string.Join(", ", Lot.FinalTradeStatuses.Select(s => $"'{s}'"));
+
+        modelBuilder.Entity<Lot>()
+            .HasIndex(l => l.TradeStatus)
+            .HasDatabaseName("IX_Lots_ActiveTradeStatus")
+            .HasFilter($"\"TradeStatus\" IS NULL OR \"TradeStatus\" = '' OR \"TradeStatus\" NOT IN ({finalStatusesSql})");
     }
 }
 
