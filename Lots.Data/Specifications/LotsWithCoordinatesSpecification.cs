@@ -5,7 +5,7 @@ namespace Lots.Data.Specifications;
 
 public class LotsWithCoordinatesSpecification : Specification<Lot>
 {
-    public LotsWithCoordinatesSpecification(string[]? categories)
+    public LotsWithCoordinatesSpecification(string[]? categories, bool onlyActive = true)
     {
         Query.Where(lot => lot.Latitude.HasValue && lot.Longitude.HasValue);
 
@@ -17,8 +17,16 @@ public class LotsWithCoordinatesSpecification : Specification<Lot>
         }
 
         // показываем только классифицированные лоты
-        // Лот считается классифицированным, если у него есть Title
+        // лот считается классифицированным, если у него есть Title
         Query.Where(l => !string.IsNullOrEmpty(l.Title));
+
+        // фильтрация по активности
+        if (onlyActive)
+        {
+            // берем только те лоты, у которых статус либо пустой, либо не входит в список финальных
+            Query.Where(l => l.TradeStatus == null || l.TradeStatus == "" || 
+                             !Lot.FinalTradeStatuses.Contains(l.TradeStatus));
+        }
         
         Query.AsNoTracking();
     }

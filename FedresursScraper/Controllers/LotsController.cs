@@ -225,7 +225,9 @@ public class LotsController : ControllerBase
     /// Для пользователей с активной подпиской возвращает все лоты.
     /// </summary>
     [HttpGet("with-coordinates")]
-    public async Task<IActionResult> GetLotsWithCoordinates([FromQuery] string[]? categories = null)
+    public async Task<IActionResult> GetLotsWithCoordinates(
+        [FromQuery] string[]? categories = null,
+        [FromQuery] bool onlyActive = true)
     {
         AccessLevel accessLevel = AccessLevel.Anonymous;
 
@@ -256,7 +258,7 @@ public class LotsController : ControllerBase
             }
         }
 
-        var spec = new LotsWithCoordinatesSpecification(categories);
+        var spec = new LotsWithCoordinatesSpecification(categories, onlyActive);
         var query = _dbContext.Lots.WithSpecification(spec);
 
         var totalCount = await query.CountAsync();
