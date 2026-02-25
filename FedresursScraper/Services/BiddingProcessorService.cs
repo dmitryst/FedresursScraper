@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using FedresursScraper.Services.Models;
 using OpenQA.Selenium;
+using FedresursScraper.Services.Utils;
 
 namespace FedresursScraper.Services
 {
@@ -219,7 +220,7 @@ namespace FedresursScraper.Services
             db.Biddings.Add(bidding);
             await db.SaveChangesAsync();
 
-            _logger.LogInformation("Торги {BiddingId} и {LotCount} лотов сохранены в БД. Следующая проверка статуса запланирована на {NextCheck}", 
+            _logger.LogInformation("Торги {BiddingId} и {LotCount} лотов сохранены в БД. Следующая проверка статуса запланирована на {NextCheck}",
                 bidding.Id, bidding.Lots.Count, bidding.NextStatusCheckAt);
 
             // Задача обновления координат (классификация теперь выполняется батчами через LotRecoveryService)
@@ -249,18 +250,32 @@ namespace FedresursScraper.Services
 
                 try
                 {
-                    var coords = await rosreestrService.FindFirstCoordinatesAsync(cadastralNumbers);
-
-                    if (coords != null)
+                    var cadastralInfos = await rosreestrService.FindAllCadastralInfosAsync(cadastralNumbers);
+                    if (cadastralInfos.Any())
                     {
-                        var lotToUpdate = await dbContext.Lots.FindAsync(new object[] { lotId }, token);
+                        var lotToUpdate = await dbContext.Lots
+                            .Include(l => l.CadastralInfos)
+                            .FirstOrDefaultAsync(l => l.Id == lotId, token);
+
                         if (lotToUpdate != null)
                         {
-                            lotToUpdate.Latitude = coords.Latitude;
-                            lotToUpdate.Longitude = coords.Longitude;
+                            // Сохраняем новые полные данные
+                            foreach (var info in cadastralInfos)
+                            {
+                                lotToUpdate.AddCadastralInfo(info);
+                            }
+
+                            // Обратная совместимость: сохраняем первую точку в сам лот
+                            var firstInfo = cadastralInfos.First();
+                            var point = GeoJsonUtils.ExtractPointFromGeoJson(firstInfo.RawGeoJson);
+
+                            if (point != null)
+                            {
+                                lotToUpdate.SetCoordinatesIfEmpty(point.Value.Lat, point.Value.Lon);
+                            }
 
                             await dbContext.SaveChangesAsync(token);
-                            scopedLogger.LogInformation("Координаты обновлены для лота {LotId}", lotId);
+                            scopedLogger.LogInformation("Данные Росреестра успешно сохранены для лота {LotId}", lotId);
                         }
                     }
                 }

@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json;
 using Polly;
 using Polly.Retry;
 
@@ -14,6 +15,8 @@ public interface IRosreestrServiceClient
     /// <param name="cadastralNumber">Кадастровый номер.</param>
     /// <returns>Массив [lat, lon] или <c>null</c> при статусах 404/403.</returns>
     Task<double[]?> GetCoordinatesAsync(string cadastralNumber);
+
+    Task<CadastralInfoDto?> GetCadastralInfoAsync(string cadastralNumber);
 }
 
 /// <summary>
@@ -86,5 +89,46 @@ public class RosreestrServiceClient : IRosreestrServiceClient
 
         // rosreestr-service возвращает [latitude, longitude]
         return await response.Content.ReadFromJsonAsync<double[]>();
+    }
+
+    public async Task<CadastralInfoDto?> GetCadastralInfoAsync(string cadastralNumber)
+    {
+        var requestUrl = $"cadastral-info/{Uri.EscapeDataString(cadastralNumber)}";
+        var context = new Context { ["CadastralNumber"] = cadastralNumber };
+
+        var response = await _retryPolicy.ExecuteAsync(async (ctx) =>
+        {
+            return await _httpClient.GetAsync(requestUrl);
+        }, context);
+
+        if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
+            return null;
+
+        response.EnsureSuccessStatusCode();
+
+        // Читаем как JsonDocument, чтобы извлечь нужные поля из "properties" и сохранить сырой JSON
+        var jsonString = await response.Content.ReadAsStringAsync();
+        using var document = JsonDocument.Parse(jsonString);
+        var root = document.RootElement;
+
+        var dto = new CadastralInfoDto { RawGeoJson = jsonString };
+
+        // Парсим свойства (из properties -> options)
+        if (root.TryGetProperty("properties", out var props))
+        {
+            if (props.TryGetProperty("readable_address", out var addr)) dto.Address = addr.GetString();
+            if (props.TryGetProperty("categoryName", out var cat)) dto.Category = cat.GetString();
+
+            if (props.TryGetProperty("options", out var options))
+            {
+                if (options.TryGetProperty("area", out var area) && area.ValueKind == JsonValueKind.Number) dto.Area = area.GetDouble();
+                else if (options.TryGetProperty("specified_area", out var sArea) && sArea.ValueKind == JsonValueKind.Number) dto.Area = sArea.GetDouble();
+
+                if (options.TryGetProperty("cost_value", out var cost) && cost.ValueKind == JsonValueKind.Number) dto.CadastralCost = cost.GetDecimal();
+                if (options.TryGetProperty("permitted_use_established_by_document", out var use)) dto.PermittedUse = use.GetString();
+            }
+        }
+
+        return dto;
     }
 }

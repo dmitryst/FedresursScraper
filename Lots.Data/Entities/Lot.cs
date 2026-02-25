@@ -41,6 +41,12 @@ public class Lot
     public ICollection<LotPriceSchedule> PriceSchedules { get; set; } = new List<LotPriceSchedule>();
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
+
+    /// <summary>
+    /// Данные из Росреестра по кадастровым номерам, входящим в лот
+    /// </summary>
+    public ICollection<CadastralInfo> CadastralInfos { get; set; } = new List<CadastralInfo>();
+
     public DateTime CreatedAt { get; set; }
     public Guid BiddingId { get; set; }
     public Bidding Bidding { get; set; } = default!;
@@ -134,5 +140,37 @@ public class Lot
 
         // Если статус содержится в списке финальных, значит лот НЕ активен
         return !FinalTradeStatuses.Contains(TradeStatus, StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Добавляет информацию из Росреестра, защищая от дубликатов.
+    /// </summary>
+    public void AddCadastralInfo(CadastralInfo newInfo)
+    {
+        ArgumentNullException.ThrowIfNull(newInfo);
+
+        // Защита инварианта: проверка на дубликат внутри самого агрегата
+        bool isDuplicate = CadastralInfos.Any(c => c.CadastralNumber == newInfo.CadastralNumber);
+
+        if (!isDuplicate)
+        {
+            // EF Core автоматически проставит LotId при сохранении, 
+            // но для консистентности объекта в памяти мы можем задать его явно
+            newInfo.LotId = this.Id;
+            CadastralInfos.Add(newInfo);
+        }
+    }
+
+    /// <summary>
+    /// Устанавливает координаты для совместимости с Яндекс.Картами, 
+    /// только если они еще не были заданы.
+    /// </summary>
+    public void SetCoordinatesIfEmpty(double lat, double lon)
+    {
+        if (!Latitude.HasValue && !Longitude.HasValue)
+        {
+            Latitude = lat;
+            Longitude = lon;
+        }
     }
 }

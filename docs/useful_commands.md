@@ -19,8 +19,10 @@ curl -X POST "http://localhost:8080/api/admin/reset-mets-enrichment"
 curl -X POST "http://localhost:8080/api/admin/reset-mets-enrichment?fromDate=2026-01-23&toDate=2026-01-23"
 ```
 
-# Проверить метод получения координат сервисом rosreestr-service (из другого пода)```bash
+# Проверить методы получения координат и данных Росреестра сервисом rosreestr-service (из другого пода)
+```bash
 kubectl exec -it <имя-пода> -- /bin/sh
 apt-get update && apt-get install -y curl
 curl http://rosreestr-service/coordinates/40:08:020401:94
+curl http://rosreestr-service/cadastral-info/40:08:020401:94
 ```

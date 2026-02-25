@@ -71,6 +71,7 @@ WORKDIR /src
 COPY ["FedresursSolution.sln", "."]
 COPY ["FedresursScraper/FedresursScraper.csproj", "FedresursScraper/"]
 COPY ["Lots.Data/Lots.Data.csproj", "Lots.Data/"]
+COPY ["FedresursScraper.Tests/FedresursScraper.Tests.csproj", "FedresursScraper.Tests/"]
 
 # Восстанавливаем зависимости всего решения
 RUN dotnet restore "FedresursSolution.sln"

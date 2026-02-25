@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Lots.Data.Entities;
 
 namespace FedresursScraper.Services
 {
@@ -47,6 +48,8 @@ namespace FedresursScraper.Services
         /// </summary>
         /// <returns>Целое число, показывающее размер очереди.</returns>
         int GetQueueSize();
+
+        Task<List<CadastralInfo>> FindAllCadastralInfosAsync(IEnumerable<string> cadastralNumbers);
     }
 
     /// <summary>
@@ -171,6 +174,42 @@ namespace FedresursScraper.Services
         }
 
         public int GetQueueSize() => _retryQueue.Count;
+
+        public async Task<List<CadastralInfo>> FindAllCadastralInfosAsync(IEnumerable<string> cadastralNumbers)
+        {
+            var results = new List<CadastralInfo>();
+            if (cadastralNumbers == null) return results;
+
+            foreach (var number in cadastralNumbers)
+            {
+                if (string.IsNullOrWhiteSpace(number)) continue;
+
+                try
+                {
+                    var infoDto = await _client.GetCadastralInfoAsync(number);
+                    if (infoDto != null)
+                    {
+                        results.Add(new CadastralInfo
+                        {
+                            CadastralNumber = number,
+                            RawGeoJson = infoDto.RawGeoJson,
+                            Area = infoDto.Area,
+                            CadastralCost = infoDto.CadastralCost,
+                            Category = infoDto.Category,
+                            PermittedUse = infoDto.PermittedUse,
+                            Address = infoDto.Address
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Ошибка получения инфо для {Number}", number);
+                    _retryQueue.Enqueue(number);
+                }
+            }
+            return results;
+        }
+
     }
 }
 
