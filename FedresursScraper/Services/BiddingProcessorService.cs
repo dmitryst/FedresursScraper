@@ -229,15 +229,16 @@ namespace FedresursScraper.Services
                 if (lot.CadastralNumbers != null && lot.CadastralNumbers.Any())
                 {
                     var numbers = lot.CadastralNumbers.Select(x => x.CadastralNumber).ToList();
-                    await EnqueueCadastralDataFetchAsync(lot.Id, numbers);
+                    await EnqueueRosreestrEnrichmentAsync(lot.Id, numbers);
                 }
             }
         }
 
         /// <summary>
-        /// Добавляет задачу на получение информации об объекте по КН из Росреестра (в очередь для выполнения)
+        /// Добавляет задачу на обогащение лота информацией из Росреестра (в фоновую очередь).
+        /// Скачивает GeoJSON, характеристики участка и обновляет координаты на карте.
         /// </summary>
-        private async Task EnqueueCadastralDataFetchAsync(Guid lotId, List<string> cadastralNumbers)
+        private async Task EnqueueRosreestrEnrichmentAsync(Guid lotId, List<string> cadastralNumbers)
         {
             _logger.LogInformation("Добавление в очередь Росреестра для лота ID: {LotId}", lotId);
 
