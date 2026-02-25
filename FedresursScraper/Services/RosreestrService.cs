@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using FedresursScraper.Services.Utils;
 using Lots.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace FedresursScraper.Services
 {
@@ -50,6 +52,20 @@ namespace FedresursScraper.Services
         int GetQueueSize();
 
         Task<List<CadastralInfo>> FindAllCadastralInfosAsync(IEnumerable<string> cadastralNumbers);
+
+        /// <summary>
+        /// Полностью обогащает указанный лот данными из Росреестра.
+        /// Запрашивает данные по всем кадастровым номерам лота и обновляет саму сущность в БД.
+        /// </summary>
+        /// <param name="lotId">ID лота</param>
+        /// <param name="cadastralNumbers">Список кадастровых номеров</param>
+        /// <param name="forceUpdateCoordinates">Если true, старые координаты будут перезаписаны</param>
+        /// <param name="cancellationToken">Токен отмены</param>
+        Task EnrichLotWithRosreestrDataAsync(
+            Guid lotId,
+            IEnumerable<string> cadastralNumbers,
+            bool forceUpdateCoordinates,
+            CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -61,13 +77,74 @@ namespace FedresursScraper.Services
     {
         private readonly IRosreestrServiceClient _client;
         private readonly ILogger<RosreestrService> _logger;
+        private readonly IServiceScopeFactory _scopeFactory;
 
         private static readonly ConcurrentQueue<string> _retryQueue = new();
 
-        public RosreestrService(IRosreestrServiceClient client, ILogger<RosreestrService> logger)
+        public RosreestrService(
+            IRosreestrServiceClient client,
+            ILogger<RosreestrService> logger,
+            IServiceScopeFactory scopeFactory)
         {
             _client = client;
             _logger = logger;
+            _scopeFactory = scopeFactory;
+        }
+
+        public async Task EnrichLotWithRosreestrDataAsync(
+            Guid lotId,
+            IEnumerable<string> cadastralNumbers,
+            bool forceUpdateCoordinates,
+            CancellationToken cancellationToken = default)
+        {
+            if (cadastralNumbers == null || !cadastralNumbers.Any()) return;
+
+            var cadastralInfos = await FindAllCadastralInfosAsync(cadastralNumbers);
+            if (!cadastralInfos.Any())
+            {
+                _logger.LogWarning("Не удалось получить данные Росреестра для лота {LotId}", lotId);
+                return;
+            }
+
+            // Создаем свой scope, чтобы безопасно работать с БД в любом контексте
+            using var scope = _scopeFactory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
+
+            var lotToUpdate = await dbContext.Lots
+                .Include(l => l.CadastralInfos)
+                .FirstOrDefaultAsync(l => l.Id == lotId, cancellationToken);
+
+            if (lotToUpdate == null)
+            {
+                _logger.LogWarning("Лот {LotId} не найден при обогащении Росреестром.", lotId);
+                return;
+            }
+
+            // Обогащаем (защита от дубликатов внутри AddCadastralInfo)
+            foreach (var info in cadastralInfos)
+            {
+                lotToUpdate.AddCadastralInfo(info);
+            }
+
+            // Обновляем координаты
+            var firstInfo = cadastralInfos.First();
+            var point = GeoJsonUtils.ExtractPointFromGeoJson(firstInfo.RawGeoJson);
+
+            if (point != null)
+            {
+                if (forceUpdateCoordinates)
+                {
+                    lotToUpdate.Latitude = point.Value.Lat;
+                    lotToUpdate.Longitude = point.Value.Lon;
+                }
+                else
+                {
+                    lotToUpdate.SetCoordinatesIfEmpty(point.Value.Lat, point.Value.Lon);
+                }
+            }
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Лот {LotId} успешно обогащен данными из Росреестра.", lotId);
         }
 
         public async Task<Coordinates?> FindFirstCoordinatesAsync(IEnumerable<string> cadastralNumbers)

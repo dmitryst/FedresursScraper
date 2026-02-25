@@ -15,17 +15,20 @@ namespace FedresursScraper.Controllers
         private readonly IClassificationQueue _classificationQueue;
         private readonly LotsDbContext _dbContext;
         private readonly ILogger<AdminController> _logger;
+        private readonly IRosreestrQueue _rosreestrQueue;
 
         public AdminController(
             IRosreestrService rosreestrService,
             IClassificationQueue classificationQueue,
             LotsDbContext dbContext,
-            ILogger<AdminController> logger)
+            ILogger<AdminController> logger,
+            IRosreestrQueue rosreestrQueue)
         {
             _rosreestrService = rosreestrService;
             _classificationQueue = classificationQueue;
             _dbContext = dbContext;
             _logger = logger;
+            _rosreestrQueue = rosreestrQueue;
         }
 
         /// <summary>
@@ -85,6 +88,43 @@ namespace FedresursScraper.Controllers
             var count = _rosreestrService.GetQueueSize();
             return Ok(new { QueueSize = count });
         }
+
+        [HttpPost("lots/{publicId:int}/refresh-rosreestr")]
+        public async Task<IActionResult> RefreshRosreestrData(int publicId)
+        {
+            var lot = await _dbContext.Lots
+                .Include(l => l.CadastralNumbers)
+                .FirstOrDefaultAsync(l => l.PublicId == publicId);
+
+            if (lot == null) return NotFound(new { Message = $"Лот {publicId} не найден." });
+
+            var numbers = lot.CadastralNumbers?
+                .Select(x => x.CadastralNumber)
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .ToList() ?? [];
+
+            var lotId = lot.Id;
+
+            if (numbers.Count == 0) return BadRequest(new { Message = $"У лота {lotId} нет кадастровых номеров." });
+
+            await _rosreestrQueue.QueueWorkItemAsync(async (serviceProvider, token) =>
+            {
+                var rosreestrService = serviceProvider.GetRequiredService<IRosreestrService>();
+                var scopedLogger = serviceProvider.GetRequiredService<ILogger<AdminController>>();
+
+                try
+                {
+                    await rosreestrService.EnrichLotWithRosreestrDataAsync(lotId, numbers, forceUpdateCoordinates: true, token);
+                }
+                catch (Exception ex)
+                {
+                    scopedLogger.LogError(ex, "Admin: Ошибка при ручном обновлении Росреестра для лота {LotId}.", lotId);
+                }
+            });
+
+            return Accepted(new { Message = $"Задача поставлена в очередь.", LotId = lotId, CadastralNumbers = numbers });
+        }
+
 
         /// <summary>
         /// Сбрасывает флаг IsEnriched для торгов МЭТС, чтобы сервис обогащения снова обработал их.

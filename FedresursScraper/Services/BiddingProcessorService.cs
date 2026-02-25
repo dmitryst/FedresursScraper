@@ -229,15 +229,15 @@ namespace FedresursScraper.Services
                 if (lot.CadastralNumbers != null && lot.CadastralNumbers.Any())
                 {
                     var numbers = lot.CadastralNumbers.Select(x => x.CadastralNumber).ToList();
-                    await EnqueueCoordinateUpdateTaskAsync(lot.Id, numbers);
+                    await EnqueueCadastralDataFetchAsync(lot.Id, numbers);
                 }
             }
         }
 
         /// <summary>
-        /// Добавляет задачу на обновление координат в очередь Росреестра
+        /// Добавляет задачу на получение информации об объекте по КН из Росреестра (в очередь для выполнения)
         /// </summary>
-        private async Task EnqueueCoordinateUpdateTaskAsync(Guid lotId, List<string> cadastralNumbers)
+        private async Task EnqueueCadastralDataFetchAsync(Guid lotId, List<string> cadastralNumbers)
         {
             _logger.LogInformation("Добавление в очередь Росреестра для лота ID: {LotId}", lotId);
 
@@ -246,38 +246,11 @@ namespace FedresursScraper.Services
                 // Сервисы уже в Scope, созданном воркером
                 var scopedLogger = serviceProvider.GetRequiredService<ILogger<BiddingProcessorService>>();
                 var rosreestrService = serviceProvider.GetRequiredService<IRosreestrService>();
-                var dbContext = serviceProvider.GetRequiredService<LotsDbContext>();
 
                 try
                 {
-                    var cadastralInfos = await rosreestrService.FindAllCadastralInfosAsync(cadastralNumbers);
-                    if (cadastralInfos.Any())
-                    {
-                        var lotToUpdate = await dbContext.Lots
-                            .Include(l => l.CadastralInfos)
-                            .FirstOrDefaultAsync(l => l.Id == lotId, token);
-
-                        if (lotToUpdate != null)
-                        {
-                            // Сохраняем новые полные данные
-                            foreach (var info in cadastralInfos)
-                            {
-                                lotToUpdate.AddCadastralInfo(info);
-                            }
-
-                            // Обратная совместимость: сохраняем первую точку в сам лот
-                            var firstInfo = cadastralInfos.First();
-                            var point = GeoJsonUtils.ExtractPointFromGeoJson(firstInfo.RawGeoJson);
-
-                            if (point != null)
-                            {
-                                lotToUpdate.SetCoordinatesIfEmpty(point.Value.Lat, point.Value.Lon);
-                            }
-
-                            await dbContext.SaveChangesAsync(token);
-                            scopedLogger.LogInformation("Данные Росреестра успешно сохранены для лота {LotId}", lotId);
-                        }
-                    }
+                    await rosreestrService.EnrichLotWithRosreestrDataAsync(
+                        lotId, cadastralNumbers, forceUpdateCoordinates: false, token);
                 }
                 catch (Exception ex)
                 {
