@@ -6,6 +6,8 @@ using System.Text.Json;
 using System.Text.Encodings.Web;
 using FedresursScraper.Services.Utils;
 using System.Linq;
+using System.Globalization;
+using System.Text;
 
 namespace FedresursScraper.Services;
 
@@ -119,7 +121,7 @@ public class ClassificationManager : IClassificationManager
                     {
                         lot.PropertyRegionCode = result.PropertyRegionCode;
                         lot.PropertyFullAddress = result.PropertyFullAddress;
-                        
+
                         // Если классификатор вернул код региона, но не название - заполняем из справочника
                         if (!string.IsNullOrWhiteSpace(result.PropertyRegionCode) && string.IsNullOrWhiteSpace(result.PropertyRegionName))
                         {
@@ -224,10 +226,24 @@ public class ClassificationManager : IClassificationManager
         var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
         var classifier = scope.ServiceProvider.GetRequiredService<ILotClassifier>();
 
-        // Получаем описания лотов из БД
+        // Получаем описания лотов из БД вместе с информацией по КН из Росреестра
         var lots = await dbContext.Lots
             .Where(l => lotIds.Contains(l.Id) && !string.IsNullOrEmpty(l.Description))
-            .Select(l => new { l.Id, l.Description })
+            .Select(l => new
+            {
+                l.Id,
+                l.Description,
+                CadastralInfos = l.CadastralInfos.Select(ci => new
+                {
+                    ci.CadastralNumber,
+                    ci.Area,
+                    ci.CadastralCost,
+                    ci.Category,
+                    ci.PermittedUse,
+                    ci.Address,
+                    ci.Status
+                }).ToList()
+            })
             .ToListAsync();
 
         if (lots.Count == 0)
@@ -236,8 +252,26 @@ public class ClassificationManager : IClassificationManager
             return;
         }
 
-        // Создаем словарь ID -> описание
-        var lotDescriptions = lots.ToDictionary(l => l.Id, l => l.Description!);
+        // Собираем Dictionary<Guid, string> уже с обогащённым текстом
+        var lotDescriptions = lots.ToDictionary(
+            x => x.Id,
+            x =>
+            {
+                // Маппим анонимки в "временные" CadastralInfo только для BuildPromptText
+                var infos = x.CadastralInfos.Select(ci => new CadastralInfo
+                {
+                    CadastralNumber = ci.CadastralNumber,
+                    Area = ci.Area,
+                    CadastralCost = ci.CadastralCost,
+                    Category = ci.Category,
+                    PermittedUse = ci.PermittedUse,
+                    Address = ci.Address,
+                    Status = ci.Status
+                }).ToList();
+
+                return BuildPromptText(x.Description!, infos);
+            }
+        );
 
         _logger.LogInformation("Начинаем батчевую классификацию {Count} лотов (Источник: {Source})", lotDescriptions.Count, source);
 
@@ -392,6 +426,54 @@ public class ClassificationManager : IClassificationManager
             _logger.LogError(ex, "Ошибка батчевой классификации");
             await MarkLotsAsFailedAsync(dbContext, lotDescriptions.Keys.ToList(), source, ex.Message);
         }
+    }
+
+    private static string BuildPromptText(string description, IReadOnlyCollection<CadastralInfo>? infos)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine(description?.Trim() ?? string.Empty);
+
+        if (infos == null || infos.Count == 0)
+            return sb.ToString();
+
+        // Чтобы не раздувать промпт: максимум 3 объекта Росреестра
+        var topInfos = infos
+            .Where(i => !string.IsNullOrWhiteSpace(i.CadastralNumber))
+            .Take(3)
+            .ToList();
+
+        if (topInfos.Count == 0)
+            return sb.ToString();
+
+        sb.AppendLine();
+        sb.AppendLine("Данные Росреестра (если есть — считать фактом, не выдумывать):");
+
+        foreach (var i in topInfos)
+        {
+            sb.Append("- КН: ").Append(i.CadastralNumber);
+
+            if (i.Area.HasValue)
+                sb.Append($", площадь: {i.Area.Value.ToString("0.##", CultureInfo.InvariantCulture)} м²");
+
+            if (i.CadastralCost.HasValue)
+                sb.Append($", кадастровая стоимость: {i.CadastralCost.Value.ToString(CultureInfo.InvariantCulture)} руб.");
+
+            if (!string.IsNullOrWhiteSpace(i.Category))
+                sb.Append($", категория: {i.Category}");
+
+            if (!string.IsNullOrWhiteSpace(i.PermittedUse))
+                sb.Append($", ВРИ: {i.PermittedUse}");
+
+            if (!string.IsNullOrWhiteSpace(i.Address))
+                sb.Append($", адрес: {i.Address}");
+
+            if (!string.IsNullOrWhiteSpace(i.Status))
+                sb.Append($", статус: {i.Status}");
+
+            sb.AppendLine();
+        }
+
+        return sb.ToString();
     }
 
     private async Task MarkLotAsFailedAsync(LotsDbContext dbContext, Guid lotId, string source, string details)
