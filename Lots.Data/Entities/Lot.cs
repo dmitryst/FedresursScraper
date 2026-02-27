@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 using NpgsqlTypes;
 
 namespace Lots.Data.Entities;
@@ -141,6 +142,12 @@ public class Lot
         // Если статус содержится в списке финальных, значит лот НЕ активен
         return !FinalTradeStatuses.Contains(TradeStatus, StringComparer.OrdinalIgnoreCase);
     }
+
+    /// <summary>
+    /// Expression для использования в LINQ to Entities (EF Core)
+    /// </summary>
+    public static Expression<Func<Lot, bool>> IsActiveExpression =>
+        l => l.TradeStatus == null || l.TradeStatus == "" || !FinalTradeStatuses.Contains(l.TradeStatus);
 
     /// <summary>
     /// Добавляет информацию из Росреестра, защищая от дубликатов.

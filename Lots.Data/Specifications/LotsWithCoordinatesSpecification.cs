@@ -23,9 +23,8 @@ public class LotsWithCoordinatesSpecification : Specification<Lot>
         // фильтрация по активности
         if (onlyActive)
         {
-            // берем только те лоты, у которых статус либо пустой, либо не входит в список финальных
-            Query.Where(l => l.TradeStatus == null || l.TradeStatus == "" || 
-                             !Lot.FinalTradeStatuses.Contains(l.TradeStatus));
+            // Используем доменный Expression
+            Query.Where(Lot.IsActiveExpression);
         }
         
         Query.AsNoTracking();
