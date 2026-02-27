@@ -17,6 +17,7 @@ namespace FedresursScraper.Controllers
         private readonly ITradeCardLotsStatusScraper _tradeCardLotsStatusScraper;
         private readonly LotsDbContext _dbContext;
         private readonly ILogger<ScrapeController> _logger;
+        private readonly ICdtTradeStatusScraper _cdtTradeStatusScraper;
 
         public ScrapeController(
             IBiddingScraper biddingScraper,
@@ -25,7 +26,8 @@ namespace FedresursScraper.Controllers
             IWebDriverFactory driverFactory,
             ITradeCardLotsStatusScraper tradeCardLotsStatusScraper,
             LotsDbContext dbContext,
-            ILogger<ScrapeController> logger)
+            ILogger<ScrapeController> logger,
+            ICdtTradeStatusScraper cdtTradeStatusScraper)
         {
             _biddingScraper = biddingScraper;
             _lotsScraper = lotsScraper;
@@ -34,6 +36,7 @@ namespace FedresursScraper.Controllers
             _tradeCardLotsStatusScraper = tradeCardLotsStatusScraper;
             _dbContext = dbContext;
             _logger = logger;
+            _cdtTradeStatusScraper = cdtTradeStatusScraper;
         }
 
         [HttpGet("{biddingId}")]
@@ -180,6 +183,45 @@ namespace FedresursScraper.Controllers
             {
                 _logger.LogError(ex, "Ошибка при парсинге статусов TradeCard для торгов {biddingId}", biddingId);
                 return StatusCode(500, "An internal server error occurred while scraping trade statuses.");
+            }
+        }
+
+        /// <summary>
+        /// Тестовый метод для парсинга общего статуса торгов с площадки ЦДТ.
+        /// </summary>
+        [HttpGet("{tradeNumber}/cdt-status")]
+        [ProducesResponseType(typeof(object), 200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<IActionResult> GetCdtTradeStatusAsync(string tradeNumber, CancellationToken token)
+        {
+            if (string.IsNullOrWhiteSpace(tradeNumber))
+            {
+                return BadRequest("Номер торгов не может быть пустым.");
+            }
+
+            try
+            {
+                _logger.LogInformation("Запрос API на получение статуса ЦДТ для торгов {TradeNumber}", tradeNumber);
+
+                var status = await _cdtTradeStatusScraper.GetTradeStatusAsync(tradeNumber, token);
+
+                if (string.IsNullOrEmpty(status))
+                {
+                    return NotFound(new { message = $"Статус для торгов ЦДТ {tradeNumber} не найден или страница недоступна." });
+                }
+
+                return Ok(new
+                {
+                    tradeNumber,
+                    platform = "Центр дистанционных торгов",
+                    parsedStatus = status
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при парсинге статуса ЦДТ для торгов {TradeNumber}", tradeNumber);
+                return StatusCode(500, "An internal server error occurred while scraping CDT trade status.");
             }
         }
     }

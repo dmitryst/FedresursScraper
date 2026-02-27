@@ -5,7 +5,7 @@ using Lots.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace FedresursScraper.BackgroundServices;
+namespace FedresursScraper.TradeStatuses;
 
 /// <summary>
 /// Фоновый сервис для автоматического обновления результатов торгов по лотам.
@@ -165,6 +165,7 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
                 using var scope = _serviceProvider.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
                 var scraper = scope.ServiceProvider.GetRequiredService<ITradeCardLotsStatusScraper>();
+                var cdtTradeStatusScraper = scope.ServiceProvider.GetRequiredService<ICdtTradeStatusScraper>();
 
                 foreach (var biddingId in batchIds)
                 {
@@ -201,8 +202,6 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
                             biddingId, string.Join(", ", missingLots));
                     }
 
-                    bool allLotsFinalized = true;
-
                     // Обрабатываем все лоты (и найденные, и missing)
                     foreach (var lot in lotsWithNumbers)
                     {
@@ -216,27 +215,40 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
                             lot.WinnerName = parsedStatus.WinnerName;
                             lot.WinnerInn = parsedStatus.WinnerInn;
                         }
-                        else
-                        {
-                            // Лот не найден — проставляем технический статус "заглушку"
-                            lot.TradeStatus = "Торги завершены (нет данных)";
+                    }
 
-                            // Очищаем остальные поля на всякий случай
-                            lot.FinalPrice = null;
-                            lot.WinnerName = null;
-                            lot.WinnerInn = null;
-                        }
+                    // ДООБОГАЩЕНИЕ ДЛЯ ЦДТ (ЕСЛИ ФЕДРЕСУРС НЕ ДАЛ ФИНАЛЬНЫЙ СТАТУС)
+                    bool isCdtPlatform = bidding.Platform != null && bidding.Platform.Contains("Центр дистанционных торгов", StringComparison.OrdinalIgnoreCase);
 
-                        // Проверяем, перешел ли лот в конечный статус (с учетом нашего нового технического статуса)
-                        if (string.IsNullOrWhiteSpace(lot.TradeStatus) ||
-                            !extendedFinalStatuses.Contains(lot.TradeStatus, StringComparer.OrdinalIgnoreCase))
+                    if (isCdtPlatform)
+                    {
+                        var activeCdtLots = lotsWithNumbers.Where(l => l.IsActive()).ToList();
+
+                        if (activeCdtLots.Any() && IsOverdueForCdt(bidding, DateTime.UtcNow))
                         {
-                            allLotsFinalized = false;
+                            // Запрашиваем общий статус торгов (Один запрос вместо списка лотов)
+                            var cdtStatus = await cdtTradeStatusScraper.GetTradeStatusAsync(bidding.TradeNumber, stoppingToken);
+
+                            if (!string.IsNullOrEmpty(cdtStatus))
+                            {
+                                // Применяем этот статус ко всем зависшим лотам этих торгов
+                                foreach (var lot in activeCdtLots)
+                                {
+                                    if (lot.TryMarkAsFailedOrCancelled(cdtStatus, "CdtTradeStatusScraper", out var auditEvent))
+                                    {
+                                        if (auditEvent != null)
+                                        {
+                                            dbContext.LotAuditEvents.Add(auditEvent);
+                                        }
+                                        _logger.LogInformation("Лот {LotId} дообогащен с ЦДТ общим статусом торгов: {Status}", lot.Id, cdtStatus);
+                                    }
+                                }
+                            }
                         }
                     }
 
                     // Если по всем лотам этих торгов статусы обновились до конечного
-                    if (allLotsFinalized)
+                    if (lotsWithNumbers.All(l => !l.IsActive()))
                     {
                         bidding.IsTradeStatusesFinalized = true;
                         bidding.NextStatusCheckAt = null; // Больше не проверяем
@@ -264,5 +276,35 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
         {
             _logger.LogError(ex, "Произошла критическая ошибка при фоновом обновлении статусов торгов.");
         }
+    }
+
+    /// <summary>
+    /// Проверяет пришло ли время опрашивать статус торгов.
+    /// </summary>
+    /// <param name="bidding"></param>
+    /// <param name="now"></param>
+    /// <returns></returns>
+    private bool IsOverdueForCdt(Bidding bidding, DateTime now)
+    {
+        // Условие 1: Есть дата объявления результатов
+        if (bidding.ResultsAnnouncementDate.HasValue)
+        {
+            return bidding.ResultsAnnouncementDate.Value.AddDays(1) < now;
+        }
+
+        // Условие 2: Даты результатов нет, но есть период приема заявок
+        if (!string.IsNullOrWhiteSpace(bidding.BidAcceptancePeriod))
+        {
+            // Вытаскиваем DD.MM.YYYY HH:mm в конце строки
+            var match = Regex.Match(bidding.BidAcceptancePeriod.Trim(), @"(\d{2}\.\d{2}\.\d{4}\s+\d{2}:\d{2})$");
+            if (match.Success && DateTime.TryParseExact(match.Groups[1].Value, "dd.MM.yyyy HH:mm",
+                System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var endDate))
+            {
+                return endDate.AddDays(1) < now;
+            }
+        }
+
+        // Условие 3: Нет ни даты результатов, ни периода приема заявок
+        return true;
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using FedresursScraper.Extensions;
-using FedresursScraper.BackgroundServices;
+using FedresursScraper.TradeStatuses;
 
 // Используем WebApplicationBuilder для создания веб-приложения
 var builder = WebApplication.CreateBuilder(args);
@@ -130,6 +130,7 @@ builder.Services.AddHttpClient("FedresursScraper", client =>
 });
 
 builder.Services.AddHttpClient<IIndexNowService, IndexNowService>();
+builder.Services.AddHttpClient<ICdtTradeStatusScraper, CdtTradeStatusScraper>();
 
 // настройка аутентификации
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

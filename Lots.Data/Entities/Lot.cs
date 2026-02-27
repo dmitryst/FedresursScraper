@@ -173,4 +173,47 @@ public class Lot
             Longitude = lon;
         }
     }
+
+    /// <summary>
+    /// Пытается перевести лот в статус "Торги не состоялись" или "Торги отменены".
+    /// Используется для дообогащения данных с площадки, если Федресурс задерживает публикацию результатов торгов.
+    /// </summary>
+    public bool TryMarkAsFailedOrCancelled(string newStatus, string source, out LotAuditEvent? auditEvent)
+    {
+        auditEvent = null;
+        var normalizedStatus = newStatus?.Trim();
+
+        // Защита инварианта: разрешаем только эти два статуса
+        if (normalizedStatus != "Торги не состоялись" && normalizedStatus != "Торги отменены")
+        {
+            return false;
+        }
+
+        // Если статус уже такой, ничего не делаем
+        if (string.Equals(TradeStatus, normalizedStatus, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var oldStatus = TradeStatus;
+
+        // Обновляем состояние
+        TradeStatus = normalizedStatus;
+        FinalPrice = null;
+        WinnerName = null;
+        WinnerInn = null;
+
+        // Генерируем событие аудита прямо в доменной модели
+        auditEvent = new LotAuditEvent
+        {
+            LotId = this.Id,
+            EventType = "TradeStatusEnrichment",
+            Status = "Success",
+            Source = source,
+            Timestamp = DateTime.UtcNow,
+            Details = $"Статус уточнен с ЭТП. Предыдущий: '{oldStatus}'. Новый: '{normalizedStatus}'."
+        };
+
+        return true;
+    }
 }
