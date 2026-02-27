@@ -17,9 +17,12 @@ public class LotsListSpecification : LotsFilterSpecification
         decimal? priceFrom = null,
         decimal? priceTo = null,
         bool? isSharedOwnership = null,
-        string[]? regions = null)
-        : base(categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership, regions)
+        string[]? regions = null,
+        bool onlyActive = true)
+        : base(categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership, regions, onlyActive)
     {
+        Query.AsNoTracking();
+        
         // Жадная загрузка базовых данных для списка лотов
         Query
             .Include(l => l.Bidding)

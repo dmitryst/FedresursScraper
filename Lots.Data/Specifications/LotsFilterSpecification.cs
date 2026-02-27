@@ -13,7 +13,8 @@ public class LotsFilterSpecification : Specification<Lot>
         decimal? priceFrom = null,
         decimal? priceTo = null,
         bool? isSharedOwnership = null,
-        string[]? regions = null)
+        string[]? regions = null,
+        bool onlyActive = true)
     {
         // Полнотекстовый поиск + Кадастровые номера
         if (!string.IsNullOrWhiteSpace(searchQuery))
@@ -75,5 +76,11 @@ public class LotsFilterSpecification : Specification<Lot>
         // показываем только классифицированные лоты
         // Лот считается классифицированным, если у него есть Title
         Query.Where(l => !string.IsNullOrEmpty(l.Title));
+
+        // Фильтрация по активности
+        if (onlyActive)
+        {
+            Query.Where(Lot.IsActiveExpression);
+        }
     }
 }
