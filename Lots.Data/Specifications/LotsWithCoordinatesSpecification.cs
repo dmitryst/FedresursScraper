@@ -1,15 +1,14 @@
 using Ardalis.Specification;
 using Lots.Data.Entities;
+using Lots.Data.Models;
 
 namespace Lots.Data.Specifications;
 
-public class LotsWithCoordinatesSpecification : Specification<Lot>
+public class LotsWithCoordinatesSpecification : Specification<Lot, LotGeoResult>
 {
     public LotsWithCoordinatesSpecification(string[]? categories, bool onlyActive = true)
     {
         Query.Where(lot => lot.Latitude.HasValue && lot.Longitude.HasValue);
-
-        Query.Include(l => l.Categories);
 
         if (categories != null && categories.Length > 0)
         {
@@ -26,6 +25,15 @@ public class LotsWithCoordinatesSpecification : Specification<Lot>
             // Используем доменный Expression
             Query.Where(Lot.IsActiveExpression);
         }
+
+        Query.Select(lot => new LotGeoResult
+        {
+            Id = lot.Id,
+            Title = lot.Title ?? lot.Description,
+            StartPrice = lot.StartPrice,
+            Latitude = lot.Latitude!.Value, 
+            Longitude = lot.Longitude!.Value,
+        });
         
         Query.AsNoTracking();
     }

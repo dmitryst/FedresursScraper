@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Lots.Data.Entities;
 using Ardalis.Specification;
+using Lots.Data.Models;
 
 
 namespace FedresursScraper.Controllers;
@@ -260,30 +261,31 @@ public class LotsController : ControllerBase
         }
 
         var spec = new LotsWithCoordinatesSpecification(categories, onlyActive);
-        var query = _dbContext.Lots.WithSpecification(spec);
 
-        var totalCount = await query.CountAsync();
+        // Подсчитываем общее количество до применения пагинации/лимитов
+        var totalCount = await _dbContext.Lots.WithSpecification(spec).CountAsync();
 
-        List<Lot> lotsToShow;
+        // Получаем результаты проекции из БД
+        List<LotGeoResult> dbResults;
 
         if (accessLevel == AccessLevel.Full)
         {
-            lotsToShow = await query.ToListAsync();
+            dbResults = await _dbContext.Lots.WithSpecification(spec).ToListAsync();
         }
         else
         {
             // Если нет подписки или пользователь анонимный, берем только первые 100
-            lotsToShow = await query.Take(100).ToListAsync();
+            dbResults = await _dbContext.Lots.WithSpecification(spec).Take(100).ToListAsync();
         }
 
-        var lotsForMap = lotsToShow
-            .Select(lot => new LotGeoDto
+        var lotsForMap = dbResults
+            .Select(r => new LotGeoDto
             {
-                Id = lot.Id,
-                Title = lot.Title ?? lot.Description,
-                StartPrice = lot.StartPrice,
-                Latitude = lot.Latitude.GetValueOrDefault(),
-                Longitude = lot.Longitude.GetValueOrDefault(),
+                Id = r.Id,
+                Title = r.Title,
+                StartPrice = r.StartPrice,
+                Latitude = r.Latitude,
+                Longitude = r.Longitude,
             }).ToList();
 
         var response = new MapLotsResponse
