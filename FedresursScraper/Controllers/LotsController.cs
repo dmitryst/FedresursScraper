@@ -282,6 +282,7 @@ public class LotsController : ControllerBase
             .Select(r => new LotGeoDto
             {
                 Id = r.Id,
+                Type = r.Type,
                 Title = r.Title,
                 StartPrice = r.StartPrice,
                 Latitude = r.Latitude,

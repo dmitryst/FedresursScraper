@@ -29,6 +29,7 @@ public class LotsWithCoordinatesSpecification : Specification<Lot, LotGeoResult>
         Query.Select(lot => new LotGeoResult
         {
             Id = lot.Id,
+            Type = lot.Bidding.Type,
             Title = lot.Title ?? lot.Description,
             StartPrice = lot.StartPrice,
             Latitude = lot.Latitude!.Value, 
