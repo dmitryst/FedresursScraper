@@ -48,6 +48,7 @@ public class LotEvaluationService : ILotEvaluationService
         var lot = await _dbContext.Lots
             .Include(l => l.Bidding)
             .Include(l => l.Categories)
+            .Include(l => l.CadastralInfos)
             .FirstOrDefaultAsync(l => l.Id == lotId);
 
         if (lot == null)
@@ -61,17 +62,47 @@ public class LotEvaluationService : ILotEvaluationService
         var startPrice = lot.StartPrice;
         var region = lot.PropertyRegionName;
 
+        // Формируем блок с данными из Росреестра
+        var cadastralSb = new System.Text.StringBuilder();
+        if (lot.CadastralInfos != null && lot.CadastralInfos.Any())
+        {
+            cadastralSb.AppendLine("Данные из Росреестра (кадастровая информация):");
+            foreach (var info in lot.CadastralInfos)
+            {
+                cadastralSb.Append($"- Кадастровый номер: {info.CadastralNumber}");
+                if (info.Area.HasValue) cadastralSb.Append($", Площадь: {info.Area.Value}");
+                if (info.CadastralCost.HasValue) cadastralSb.Append($", Кадастровая стоимость: {info.CadastralCost.Value}");
+                if (!string.IsNullOrWhiteSpace(info.Category)) cadastralSb.Append($", Категория: {info.Category}");
+                if (!string.IsNullOrWhiteSpace(info.PermittedUse)) cadastralSb.Append($", ВРИ: {info.PermittedUse}");
+                if (!string.IsNullOrWhiteSpace(info.Address)) cadastralSb.Append($", Адрес: {info.Address}");
+                if (!string.IsNullOrWhiteSpace(info.Status)) cadastralSb.Append($", Статус: {info.Status}");
+                cadastralSb.AppendLine();
+            }
+        }
+        else
+        {
+            cadastralSb.AppendLine("Данные из Росреестра отсутствуют.");
+        }
+
         var prompt = $@"
 Проанализируй данный лот с торгов по банкротству.
 Название: {title}
 Описание: {description}
-Начальная цена: {startPrice}
+Начальная цена торгов: {startPrice} руб.
 Регион: {region}
 Категории: {string.Join(", ", lot.Categories.Select(c => c.Name))}
 
+{cadastralSb.ToString()}
+
+ИНСТРУКЦИЯ ПО ОЦЕНКЕ СТОИМОСТИ:
+1. 'Начальная цена торгов' — твой главный ориентир для оценки рыночной стоимости.
+2. 'Кадастровая стоимость' (если есть) дана справочно. Если она расходится с начальной ценой в несколько раз (что часто бывает в РФ), приоритет отдавай начальной цене как более близкой к рыночной реальности.
+3. Если есть данные о площади (из описания или Росреестра) и локации, рассчитай примерную стоимость за квадратный метр (или сотку для земли) и умножь на площадь. 
+4. Сделай поправки на состояние объекта, риски торгов, обременения.
+
 Твоя задача:
-1. Провести детальный пошаговый анализ (reasoning) инвестиционной привлекательности. Перечисли факторы, влияющие на цену (локация, состояние, документы, риски, ликвидность).
-2. Оценить реальную рыночную стоимость (одним числом).
+1. Провести детальный пошаговый анализ (reasoning). Опиши логику расчета стоимости по шагам: оценка локации, вычисление стоимости за единицу площади (если применимо), сравнение начальной и кадастровой стоимости.
+2. Оценить реальную рыночную стоимость (estimatedPrice) одним числом в рублях.
 3. Оценить ликвидность по шкале от 1 до 10 (где 10 - уйдет моментально, 1 - невозможно продать).
 4. Написать краткое инвестиционное резюме (Investment Summary).
 

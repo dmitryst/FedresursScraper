@@ -233,6 +233,7 @@ public class ClassificationManager : IClassificationManager
             {
                 l.Id,
                 l.Description,
+                l.StartPrice,
                 CadastralInfos = l.CadastralInfos.Select(ci => new
                 {
                     ci.CadastralNumber,
@@ -269,7 +270,7 @@ public class ClassificationManager : IClassificationManager
                     Status = ci.Status
                 }).ToList();
 
-                return BuildPromptText(x.Description!, infos);
+                return BuildPromptText(x.Description!, x.StartPrice, infos);
             }
         );
 
@@ -428,10 +429,15 @@ public class ClassificationManager : IClassificationManager
         }
     }
 
-    private static string BuildPromptText(string description, IReadOnlyCollection<CadastralInfo>? infos)
+    private static string BuildPromptText(string description, decimal? startPrice, IReadOnlyCollection<CadastralInfo>? infos)
     {
         var sb = new StringBuilder();
         sb.AppendLine(description?.Trim() ?? string.Empty);
+
+        if (startPrice.HasValue)
+        {
+            sb.AppendLine($"Начальная цена лота: {startPrice.Value.ToString("N2", CultureInfo.InvariantCulture)} руб.");
+        }
 
         if (infos == null || infos.Count == 0)
             return sb.ToString();
