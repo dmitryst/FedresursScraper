@@ -1,3 +1,6 @@
+## Обновление статуса лота и присваивание торгам финализированного статуса (если только один лот у торгов)
+```sql
+
 -- 1. Сначала обновляем лот
 UPDATE "Lots"
 SET "TradeStatus" = 'Торги отменены'
@@ -20,3 +23,5 @@ SET "IsTradeStatusesFinalized" = true
 FROM LotCounts lc
 WHERE b."Id" = lc."BiddingId" 
   AND lc.cnt = 1;
+
+```

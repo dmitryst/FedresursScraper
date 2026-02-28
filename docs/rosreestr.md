@@ -6,7 +6,7 @@ https://github.com/yazmolod/pynspd
 
 Создание секрета 
 
-kubectl create secret generic proxy-credentials --from-literal=PROXY_USER=DmitrystepanovaD5 --from-literal=PROXY_PASS=0d31echK0 --from-literal=PROXY_HOST=193.23.50.203 --from-literal=PROXY_PORT=10083 --dry-run=client -o yaml | kubectl apply -f -
+kubectl create secret generic proxy-credentials --from-literal=PROXY_USER=DmitrystepanovaD5 --from-literal=PROXY_PASS=0d31echK0 --from-literal=PROXY_HOST=45.81.32.154 --from-literal=PROXY_PORT=10083 --dry-run=client -o yaml | kubectl apply -f -
 
 Проверка создания
 

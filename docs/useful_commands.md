@@ -26,3 +26,10 @@ apt-get update && apt-get install -y curl
 curl http://rosreestr-service/coordinates/40:08:020401:94
 curl http://rosreestr-service/cadastral-info/40:08:020401:94
 ```
+
+# Поставить в очередь задачу на получение данных из Росреестра
+
+```bash
+# Поставить в очередь задачу на получение данных из Росреестра
+curl -X POST "http://localhost:8080/api/admin/lots/90209/refresh-rosreestr"
+```
