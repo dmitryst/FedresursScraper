@@ -16,7 +16,7 @@ public class LotRecoveryService : BackgroundService
     private readonly ILogger<LotRecoveryService> _logger;
     private readonly IConfiguration _configuration;
     private const int BatchSize = 10;
-    private const int MaxAttempts = 1; // Лимит попыток перед отправкой на "ручной разбор"
+    private const int MaxAttempts = 2; // Лимит попыток перед отправкой на "ручной разбор"
 
     public LotRecoveryService(
         IServiceProvider serviceProvider,
@@ -51,6 +51,8 @@ public class LotRecoveryService : BackgroundService
                 var retryDelay = DateTime.UtcNow.AddHours(-1); // Не трогать лот, если пробовали за последний час
 
                 var lotsToProcess = await dbContext.Lots
+                    // временно ставим условие > 50000, чтобы не делать классификацию уже старых лотов
+                    .Where(l => l.PublicId > 50000)
                     // Берем лоты без категорий и тайтла, но с описанием
                     .Where(l => !l.Categories.Any() &&
                         string.IsNullOrEmpty(l.Title) &&
@@ -76,8 +78,8 @@ public class LotRecoveryService : BackgroundService
 
                 if (lotsToProcess.Count == 0)
                 {
-                    _logger.LogInformation("Нет лотов на классификацию. Ждем 1 час.");
-                    await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+                    _logger.LogInformation("Нет лотов на классификацию. Ждем 30 минут.");
+                    await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken);
                     continue;
                 }
 
