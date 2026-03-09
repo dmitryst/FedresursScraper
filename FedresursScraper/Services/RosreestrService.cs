@@ -51,7 +51,7 @@ namespace FedresursScraper.Services
         /// <returns>Целое число, показывающее размер очереди.</returns>
         int GetQueueSize();
 
-        Task<List<CadastralInfo>> FindAllCadastralInfosAsync(IEnumerable<string> cadastralNumbers);
+        Task<List<CadastralInfo>> FindAllCadastralInfosAsync(IEnumerable<string> cadastralNumbers, Guid? lotId = null);
 
         /// <summary>
         /// Полностью обогащает указанный лот данными из Росреестра.
@@ -99,7 +99,7 @@ namespace FedresursScraper.Services
         {
             if (cadastralNumbers == null || !cadastralNumbers.Any()) return;
 
-            var cadastralInfos = await FindAllCadastralInfosAsync(cadastralNumbers);
+            var cadastralInfos = await FindAllCadastralInfosAsync(cadastralNumbers, lotId);
             if (!cadastralInfos.Any())
             {
                 _logger.LogWarning("Не удалось получить данные Росреестра для лота {LotId}", lotId);
@@ -252,41 +252,108 @@ namespace FedresursScraper.Services
 
         public int GetQueueSize() => _retryQueue.Count;
 
-        public async Task<List<CadastralInfo>> FindAllCadastralInfosAsync(IEnumerable<string> cadastralNumbers)
+        public async Task<List<CadastralInfo>> FindAllCadastralInfosAsync(IEnumerable<string> cadastralNumbers, Guid? lotId = null)
         {
             var results = new List<CadastralInfo>();
             if (cadastralNumbers == null) return results;
 
-            foreach (var number in cadastralNumbers)
-            {
-                if (string.IsNullOrWhiteSpace(number)) continue;
+            LotsDbContext? dbContext = null;
+            IServiceScope? scope = null;
 
-                try
+            // Инициализируем контекст БД, если передан LotId для логирования
+            if (lotId.HasValue)
+            {
+                scope = _scopeFactory.CreateScope();
+                dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
+            }
+
+            try
+            {
+                foreach (var number in cadastralNumbers)
                 {
-                    var infoDto = await _client.GetCadastralInfoAsync(number);
-                    if (infoDto != null)
+                    if (string.IsNullOrWhiteSpace(number)) continue;
+
+                    try
                     {
-                        results.Add(new CadastralInfo
+                        var infoDto = await _client.GetCadastralInfoAsync(number);
+                        if (infoDto != null)
                         {
-                            CadastralNumber = number,
-                            RawGeoJson = infoDto.RawGeoJson,
-                            Area = infoDto.Area,
-                            CadastralCost = infoDto.CadastralCost,
-                            Category = infoDto.Category,
-                            PermittedUse = infoDto.PermittedUse,
-                            Address = infoDto.Address
-                        });
+                            results.Add(new CadastralInfo
+                            {
+                                CadastralNumber = number,
+                                RawGeoJson = infoDto.RawGeoJson,
+                                Area = infoDto.Area,
+                                CadastralCost = infoDto.CadastralCost,
+                                Category = infoDto.Category,
+                                PermittedUse = infoDto.PermittedUse,
+                                Address = infoDto.Address
+                            });
+
+                            // Логируем успешную попытку
+                            if (dbContext != null && lotId.HasValue)
+                            {
+                                dbContext.Set<LotAuditEvent>().Add(new LotAuditEvent
+                                {
+                                    LotId = lotId.Value,
+                                    EventType = "RosreestrFetch",
+                                    Status = "Success",
+                                    Source = "RosreestrService",
+                                    Details = $"Успешно получены данные для {number}",
+                                    Timestamp = DateTime.UtcNow
+                                });
+                            }
+                        }
+                        else
+                        {
+                            // Логируем случай, когда данных нет (404/403)
+                            if (dbContext != null && lotId.HasValue)
+                            {
+                                dbContext.Set<LotAuditEvent>().Add(new LotAuditEvent
+                                {
+                                    LotId = lotId.Value,
+                                    EventType = "RosreestrFetch",
+                                    Status = "Failure",
+                                    Source = "RosreestrService",
+                                    Details = $"Данные не найдены или доступ запрещен (404/403) для {number}",
+                                    Timestamp = DateTime.UtcNow
+                                });
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Ошибка получения инфо для {Number}", number);
+                        _retryQueue.Enqueue(number);
+
+                        // Логируем техническую ошибку (например, 500)
+                        if (dbContext != null && lotId.HasValue)
+                        {
+                            dbContext.Set<LotAuditEvent>().Add(new LotAuditEvent
+                            {
+                                LotId = lotId.Value,
+                                EventType = "RosreestrFetch",
+                                Status = "Failure",
+                                Source = "RosreestrService",
+                                Details = $"Ошибка запроса для {number}: {ex.Message}",
+                                Timestamp = DateTime.UtcNow
+                            });
+                        }
                     }
                 }
-                catch (Exception ex)
+
+                // Сохраняем все накопленные события аудита
+                if (dbContext != null)
                 {
-                    _logger.LogError(ex, "Ошибка получения инфо для {Number}", number);
-                    _retryQueue.Enqueue(number);
+                    await dbContext.SaveChangesAsync();
                 }
             }
+            finally
+            {
+                scope?.Dispose();
+            }
+
             return results;
         }
-
     }
 }
 
