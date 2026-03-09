@@ -141,7 +141,7 @@ public class Bidding
         if (isPublicOffer)
         {
             var startAcceptanceDate = TryParseBidAcceptancePeriodStart();
-            
+
             if (startAcceptanceDate.HasValue && startAcceptanceDate.Value > utcNow)
             {
                 NextStatusCheckAt = startAcceptanceDate.Value.AddDays(1);
@@ -155,8 +155,8 @@ public class Bidding
         {
             if (ResultsAnnouncementDate.HasValue)
             {
-                var resultsDateUtc = ResultsAnnouncementDate.Value.Kind == DateTimeKind.Utc 
-                    ? ResultsAnnouncementDate.Value 
+                var resultsDateUtc = ResultsAnnouncementDate.Value.Kind == DateTimeKind.Utc
+                    ? ResultsAnnouncementDate.Value
                     : ResultsAnnouncementDate.Value.ToUniversalTime();
 
                 if (resultsDateUtc > utcNow)
@@ -175,6 +175,37 @@ public class Bidding
         }
     }
 
+    /// <summary>
+    /// Проверяет, превышен ли лимит времени ожидания результатов торгов.
+    /// </summary>
+    public bool IsExpired(DateTime now, TimeSpan timeout)
+    {
+        var utcNow = now.Kind == DateTimeKind.Utc ? now : now.ToUniversalTime();
+
+        // Проверяем по дате объявления результатов
+        if (ResultsAnnouncementDate.HasValue)
+        {
+            var resultsDateUtc = ResultsAnnouncementDate.Value.Kind == DateTimeKind.Utc
+                ? ResultsAnnouncementDate.Value
+                : ResultsAnnouncementDate.Value.ToUniversalTime();
+
+            return (utcNow - resultsDateUtc) > timeout;
+        }
+
+        // Проверяем по дате окончания приема заявок (используем новый метод)
+        var endAcceptanceDate = TryParseBidAcceptancePeriodEnd();
+        if (endAcceptanceDate.HasValue)
+        {
+            return (utcNow - endAcceptanceDate.Value) > timeout;
+        }
+
+        // Fallback: если дат нет, отсчитываем от даты создания или объявления
+        var fallbackDate = AnnouncedAt ?? CreatedAt;
+        var fallbackDateUtc = fallbackDate.Kind == DateTimeKind.Utc ? fallbackDate : fallbackDate.ToUniversalTime();
+
+        return (utcNow - fallbackDateUtc) > timeout;
+    }
+
     private DateTime? TryParseBidAcceptancePeriodStart()
     {
         if (string.IsNullOrWhiteSpace(BidAcceptancePeriod)) return null;
@@ -183,11 +214,31 @@ public class Bidding
         if (parts.Length > 0)
         {
             var startStr = parts[0].Trim();
-            if (DateTime.TryParseExact(startStr, "dd.MM.yyyy HH:mm", 
-                System.Globalization.CultureInfo.InvariantCulture, 
+            if (DateTime.TryParseExact(startStr, "dd.MM.yyyy HH:mm",
+                System.Globalization.CultureInfo.InvariantCulture,
                 System.Globalization.DateTimeStyles.AssumeUniversal, out var startDate))
             {
                 return DateTime.SpecifyKind(startDate, DateTimeKind.Utc);
+            }
+        }
+        return null;
+    }
+
+    private DateTime? TryParseBidAcceptancePeriodEnd()
+    {
+        if (string.IsNullOrWhiteSpace(BidAcceptancePeriod)) return null;
+
+        var parts = BidAcceptancePeriod.Split(new[] { '-', '—', '–' }, StringSplitOptions.RemoveEmptyEntries);
+
+        // Если есть хотя бы две части (начало и конец), берем последнюю
+        if (parts.Length > 1)
+        {
+            var endStr = parts[parts.Length - 1].Trim();
+            if (DateTime.TryParseExact(endStr, "dd.MM.yyyy HH:mm",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.AssumeUniversal, out var endDate))
+            {
+                return DateTime.SpecifyKind(endDate, DateTimeKind.Utc);
             }
         }
         return null;

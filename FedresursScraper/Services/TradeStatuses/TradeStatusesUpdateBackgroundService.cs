@@ -39,13 +39,15 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<TradeStatusesUpdateBackgroundService> _logger;
     private readonly IConfiguration _configuration;
+    private readonly TimeSpan _stuckTimeout;
 
     // Конечные статусы торгов
     private static readonly string[] FinalStatuses =
     {
         "Завершенные",
         "Торги отменены",
-        "Торги не состоялись"
+        "Торги не состоялись",
+        "Аннулированные"
     };
 
     public TradeStatusesUpdateBackgroundService(
@@ -56,6 +58,9 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
         _serviceProvider = serviceProvider;
         _logger = logger;
         _configuration = configuration;
+
+        int timeoutDays = configuration.GetValue<int>("BackgroundServices:TradeStatusesUpdate:StuckBiddingTimeoutDays", 30);
+        _stuckTimeout = TimeSpan.FromDays(timeoutDays);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -185,6 +190,13 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
 
                     if (lotNumbers.Count == 0) continue;
 
+                    // Проверяем, не зависли ли торги. Если зависли и были закрыты по таймауту, 
+                    // пропускаем парсинг (идем к следующим торгам)
+                    if (await HandleStuckBiddingAsync(bidding, dbContext))
+                    {
+                        continue;
+                    }
+
                     // Парсим статусы
                     var statuses = await scraper.ScrapeLotsStatusesAsync(biddingId, lotNumbers, stoppingToken);
 
@@ -306,5 +318,43 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
 
         // Условие 3: Нет ни даты результатов, ни периода приема заявок
         return true;
+    }
+
+    private async Task<bool> HandleStuckBiddingAsync(Bidding bidding, LotsDbContext dbContext)
+    {
+        // Проверяем, истек ли таймаут ожидания результатов
+        if (!bidding.IsExpired(DateTime.UtcNow, _stuckTimeout))
+        {
+            return false; // Торги еще не "зависли", продолжаем нормальную работу
+        }
+
+        _logger.LogInformation("Торги {BiddingId} превысили таймаут ожидания результатов ({Days} дней). Запускается принудительное закрытие.",
+            bidding.Id, _stuckTimeout.TotalDays);
+
+        // Получаем активные лоты
+        var activeLots = bidding.Lots.Where(l => l.IsActive()).ToList();
+        bool hasChanges = false;
+
+        foreach (var lot in activeLots)
+        {
+            if (lot.TryMarkAsFinalizedWithoutData("TradeStatusesUpdateBackgroundService", out var auditEvent))
+            {
+                if (auditEvent != null)
+                {
+                    dbContext.LotAuditEvents.Add(auditEvent);
+                }
+                _logger.LogInformation("Лот {PublicId} (Id: {LotId}) принудительно переведен в 'Торги завершены (нет данных)'", lot.PublicId, lot.Id);
+                hasChanges = true;
+            }
+        }
+
+        if (hasChanges)
+        {
+            bidding.IsTradeStatusesFinalized = true;
+            bidding.NextStatusCheckAt = null;
+            await dbContext.SaveChangesAsync();
+        }
+
+        return true; // Торги были обработаны как "зависшие"
     }
 }

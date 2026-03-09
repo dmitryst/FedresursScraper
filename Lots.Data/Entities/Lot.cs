@@ -223,4 +223,36 @@ public class Lot
 
         return true;
     }
+
+    /// <summary>
+    /// Принудительно переводит лот в статус "Торги завершены (нет данных)",
+    /// если результаты торгов зависли и не обновляются длительное время.
+    /// </summary>
+    public bool TryMarkAsFinalizedWithoutData(string source, out LotAuditEvent? auditEvent)
+    {
+        auditEvent = null;
+
+        if (!IsActive())
+            return false;
+
+        var oldStatus = TradeStatus;
+        var targetStatus = "Торги завершены (нет данных)";
+
+        TradeStatus = targetStatus;
+        FinalPrice = null;
+        WinnerName = null;
+        WinnerInn = null;
+
+        auditEvent = new LotAuditEvent
+        {
+            LotId = this.Id,
+            EventType = "TradeStatusTimeout",
+            Status = "Success",
+            Source = source,
+            Timestamp = DateTime.UtcNow,
+            Details = $"Автоматическое закрытие по таймауту. Предыдущий статус: '{oldStatus ?? "пусто"}'. Новый: '{targetStatus}'."
+        };
+
+        return true;
+    }
 }
