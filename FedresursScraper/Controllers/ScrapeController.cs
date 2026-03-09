@@ -18,6 +18,7 @@ namespace FedresursScraper.Controllers
         private readonly LotsDbContext _dbContext;
         private readonly ILogger<ScrapeController> _logger;
         private readonly ICdtTradeStatusScraper _cdtTradeStatusScraper;
+        private readonly RadParserService _radParserService;
 
         public ScrapeController(
             IBiddingScraper biddingScraper,
@@ -27,7 +28,8 @@ namespace FedresursScraper.Controllers
             ITradeCardLotsStatusScraper tradeCardLotsStatusScraper,
             LotsDbContext dbContext,
             ILogger<ScrapeController> logger,
-            ICdtTradeStatusScraper cdtTradeStatusScraper)
+            ICdtTradeStatusScraper cdtTradeStatusScraper,
+            RadParserService radParserService)
         {
             _biddingScraper = biddingScraper;
             _lotsScraper = lotsScraper;
@@ -37,6 +39,7 @@ namespace FedresursScraper.Controllers
             _dbContext = dbContext;
             _logger = logger;
             _cdtTradeStatusScraper = cdtTradeStatusScraper;
+            _radParserService = radParserService;
         }
 
         [HttpGet("{biddingId}")]
@@ -222,6 +225,38 @@ namespace FedresursScraper.Controllers
             {
                 _logger.LogError(ex, "Ошибка при парсинге статуса ЦДТ для торгов {TradeNumber}", tradeNumber);
                 return StatusCode(500, "An internal server error occurred while scraping CDT trade status.");
+            }
+        }
+
+        /// <summary>
+        /// Парсинг списка ссылок с конкретной страницы каталога РАД
+        /// </summary>
+        /// <param name="page">Номер страницы (по умолчанию 1)</param>
+        [HttpGet("rad/catalog-urls")]
+        public async Task<IActionResult> ScrapeRadCatalogUrls([FromQuery] int page = 1)
+        {
+            try
+            {
+                _logger.LogInformation("Начинаем парсинг ссылок РАД со страницы {Page}", page);
+
+                // Базовый URL с добавлением параметра page
+                string targetUrl = $"index.php?dispatch=categories.view&category_id=9876&features_hash=172-186359_174-31371-31357&filter_fields[is_archive]=false&page={page}";
+
+                var urls = await _radParserService.GetLotUrlsFromCatalogAsync(targetUrl);
+
+                _logger.LogInformation("Успешно спарсили {Count} ссылок", urls.Count);
+
+                return Ok(new
+                {
+                    Page = page,
+                    TotalFound = urls.Count,
+                    Urls = urls
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при парсинге каталога РАД");
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
     }
