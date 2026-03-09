@@ -125,6 +125,11 @@ public class Bidding
     /// </summary>
     public DateTime? NextStatusCheckAt { get; set; }
 
+    /// <summary>
+    /// Флаг: указывает, что торги были обработаны, но лотов на площадке реально нет
+    /// </summary>
+    public bool HasNoLots { get; set; } = false; 
+
     // Domain Logic
 
     // <summary>

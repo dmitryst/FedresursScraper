@@ -78,13 +78,31 @@ namespace FedresursScraper.Services
 
             try
             {
-                _logger.LogInformation("Парсинг страницы торгов: {url}", url);
+                biddingData.ParsingAttempts++;
+
+                _logger.LogInformation("Парсинг страницы торгов: {url} (Попытка {Attempt})", url, biddingData.ParsingAttempts);
 
                 var biddingInfo = await biddingScraper.ScrapeBiddingInfoAsync(driver, biddingId);
                 var scrappedLots = new List<LotInfo>();
 
                 scrappedLots = await lotsScraper.ScrapeLotsAsync(driver, biddingId);
                 _logger.LogInformation("Найдено {LotCount} новых лотов.", scrappedLots.Count);
+
+                // Логика обработки нулевого количества лотов
+                if (scrappedLots.Count == 0)
+                {
+                    if (biddingData.ParsingAttempts < 3)
+                    {
+                        // Бросаем исключение: транзакция прервется, в БД ничего не запишется, 
+                        // торги останутся в кэше и парсер попробует снова в следующем цикле.
+                        throw new Exception($"Не удалось спарсить лоты для торгов {biddingId}. Возможно, страница не загрузилась полностью.");
+                    }
+                    else
+                    {
+                        // Лимит попыток исчерпан. Пропускаем ошибку и идем сохранять "пустые" торги.
+                        _logger.LogWarning("Для торгов {biddingId} не найдено лотов после {Attempts} попыток. Сохраняем как пустые.", biddingId, biddingData.ParsingAttempts);
+                    }
+                }
 
                 await SaveBiddingAndEnqueueClassificationAsync(biddingData, biddingInfo, dbContext, scrappedLots);
 
@@ -193,7 +211,9 @@ namespace FedresursScraper.Services
                 ViewingProcedure = biddingInfo.ViewingProcedure,
 
                 CreatedAt = DateTime.UtcNow,
-                Lots = []
+                Lots = [],
+
+                HasNoLots = lots.Count == 0 
             };
 
             foreach (var lotInfo in lots)

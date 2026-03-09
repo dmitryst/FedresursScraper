@@ -18,4 +18,9 @@ public class BiddingData
     /// Площадка
     /// </summary>
     public string Platform { get; set; } = default!;
+
+    /// <summary>
+    // Счетчик попыток парсинга торгов
+    /// </summary>
+    public int ParsingAttempts { get; set; } = 0; 
 }
