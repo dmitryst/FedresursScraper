@@ -452,7 +452,7 @@ public class ClassificationManager : IClassificationManager
             return sb.ToString();
 
         sb.AppendLine();
-        sb.AppendLine("Данные Росреестра (если есть — считать фактом, не выдумывать):");
+        sb.AppendLine("Данные Росреестра:");
 
         foreach (var i in topInfos)
         {
