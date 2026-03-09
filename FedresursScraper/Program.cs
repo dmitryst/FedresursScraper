@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using FedresursScraper.Extensions;
 using FedresursScraper.TradeStatuses;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 // Используем WebApplicationBuilder для создания веб-приложения
 var builder = WebApplication.CreateBuilder(args);
@@ -18,7 +19,12 @@ var connectionString = configuration.GetConnectionString("Postgres");
 
 // Регистрация DbContext
 builder.Services.AddDbContext<LotsDbContext>(options =>
-    options.UseNpgsql(connectionString));
+{
+    options.UseNpgsql(connectionString);
+    options.ConfigureWarnings(warnings =>
+        warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+});
+
 
 // Регистрация фабрики для создания ChromeDriver
 builder.Services.AddSingleton<IWebDriverFactory, WebDriverFactory>();
