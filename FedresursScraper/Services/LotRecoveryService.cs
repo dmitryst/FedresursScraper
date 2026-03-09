@@ -15,8 +15,6 @@ public class LotRecoveryService : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<LotRecoveryService> _logger;
     private readonly IConfiguration _configuration;
-    private const int BatchSize = 10;
-    private const int MaxAttempts = 2; // Лимит попыток перед отправкой на "ручной разбор"
 
     public LotRecoveryService(
         IServiceProvider serviceProvider,
@@ -34,7 +32,7 @@ public class LotRecoveryService : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            if (!_configuration.GetValue<bool>("Features:EnableLotRecovery", true))
+            if (!_configuration.GetValue("BackgroundServices:LotRecoveryService:Enabled", false))
             {
                 _logger.LogInformation("LotRecoveryService отключен в конфигурации. Сплю 1 минуту.");
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
@@ -50,8 +48,11 @@ public class LotRecoveryService : BackgroundService
 
                 var retryDelay = DateTime.UtcNow.AddHours(-1); // Не трогать лот, если пробовали за последний час
 
+                var batchSize = _configuration.GetValue("BackgroundServices:LotRecoveryService:BatchSize", 10);
+                var maxAttempts = _configuration.GetValue("BackgroundServices:LotRecoveryService:MaxAttempts", 1);
+
                 var lotsToProcess = await dbContext.Lots
-                    // временно ставим условие > 50000, чтобы не делать классификацию уже старых лотов
+                    // временно ставим условие > 50000, чтобы не делать классификацию слишком старых лотов
                     .Where(l => l.PublicId > 50000)
                     // Берем лоты без категорий и тайтла, но с описанием
                     .Where(l => !l.Categories.Any() &&
@@ -70,25 +71,25 @@ public class LotRecoveryService : BackgroundService
                     // Исключаем лоты, у которых уже накопилось слишком много неудачных попыток
                     // Такие лоты потом можно найти отдельным SQL-запросом для ручного разбора
                     .Where(l => dbContext.LotAuditEvents
-                        .Count(e => e.LotId == l.Id && e.EventType == "Classification" && e.Status == "Failure") < MaxAttempts)
+                        .Count(e => e.LotId == l.Id && e.EventType == "Classification" && e.Status == "Failure") < maxAttempts)
                     .OrderBy(l => l.Id) // Важно для детерминированности
-                    .Take(BatchSize)
+                    .Take(batchSize)
                     .Select(l => new { l.Id, l.Description })
                     .ToListAsync(stoppingToken);
 
                 if (lotsToProcess.Count == 0)
                 {
-                    _logger.LogInformation("Нет лотов на классификацию. Ждем 30 минут.");
-                    await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken);
+                    _logger.LogInformation("Нет лотов на классификацию. Ждем 20 минут.");
+                    await Task.Delay(TimeSpan.FromMinutes(20), stoppingToken);
                     continue;
                 }
 
                 // Батчевая классификация выполняется только если набралось достаточно лотов
-                if (lotsToProcess.Count < BatchSize)
+                if (lotsToProcess.Count < batchSize)
                 {
-                    _logger.LogInformation("Найдено {Count} лотов, но требуется минимум {BatchSize} для батчевой классификации. Ждем 30 минут.",
-                        lotsToProcess.Count, BatchSize);
-                    await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken);
+                    _logger.LogInformation("Найдено {Count} лотов, но требуется минимум {BatchSize} для батчевой классификации. Ждем 20 минут.",
+                        lotsToProcess.Count, batchSize);
+                    await Task.Delay(TimeSpan.FromMinutes(20), stoppingToken);
                     continue;
                 }
 
