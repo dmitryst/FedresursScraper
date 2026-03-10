@@ -1,8 +1,15 @@
 using Lots.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
+/// <summary>
+/// Основной контекст базы данных для работы с лотами и связанными сущностями.
+/// </summary>
 public class LotsDbContext : DbContext
 {
+    /// <summary>
+    /// Инициализирует новый экземпляр контекста базы данных.
+    /// </summary>
+    /// <param name="options">Настройки подключения и конфигурации EF Core.</param>
     public LotsDbContext(DbContextOptions<LotsDbContext> options) : base(options)
     {
     }
@@ -23,7 +30,14 @@ public class LotsDbContext : DbContext
     public DbSet<LotEvaluation> LotEvaluations { get; set; }
     public DbSet<LotEvaluationUserRunStatistics> LotEvaluationUserRunStatistics { get; set; } = default!;
 
+    /// <summary>
+    /// Таблица состояний классификации лотов (используется как очередь для фоновых задач).
+    /// </summary>
+    public DbSet<LotClassificationState> LotClassificationStates { get; set; }
 
+    /// <summary>
+    /// Настраивает модели, связи и индексы при создании контекста.
+    /// </summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasSequence<int>("lots_public_id_seq")
@@ -110,6 +124,21 @@ public class LotsDbContext : DbContext
             .HasIndex(l => l.TradeStatus)
             .HasDatabaseName("IX_Lots_ActiveTradeStatus")
             .HasFilter($"\"TradeStatus\" IS NULL OR \"TradeStatus\" = '' OR \"TradeStatus\" NOT IN ({finalStatusesSql})");
+
+        modelBuilder.Entity<LotClassificationState>(entity =>
+        {
+            entity.HasKey(e => e.LotId);
+
+            entity.HasOne(e => e.Lot)
+                  .WithOne()
+                  .HasForeignKey<LotClassificationState>(e => e.LotId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // Частичный индекс только для активных задач очереди (статусы 0=Pending, 1=Processing, 3=Failed)
+            entity.HasIndex(e => new { e.Status, e.NextAttemptAt })
+                  .HasDatabaseName("IX_ClassificationStates_Queue")
+                  .HasFilter("\"Status\" IN (0, 1, 3)");
+        });
     }
 }
 

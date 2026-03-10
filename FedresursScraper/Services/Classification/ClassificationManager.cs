@@ -15,7 +15,7 @@ namespace FedresursScraper.Services;
 /// Сервис постановки задач на классификацию лотов. 
 /// </summary>
 /// <remarks>
-/// Отвечает за создание записи Enqueued/Start, выполнение классификации и запись результата.
+/// Отвечает за взаимодействие с AI-классификатором, парсинг ответов и обновление состояний.
 /// </remarks>
 public class ClassificationManager : IClassificationManager
 {
@@ -33,6 +33,9 @@ public class ClassificationManager : IClassificationManager
         _logger = logger;
     }
 
+    /// <summary>
+    /// Ставит одиночный лот в фоновую очередь обработки.
+    /// </summary>
     public async Task EnqueueClassificationAsync(Guid lotId, string description, string source)
     {
         // Сразу пишем в БД, что лот "Запланирован"
@@ -48,6 +51,24 @@ public class ClassificationManager : IClassificationManager
                 Timestamp = DateTime.UtcNow
             };
             db.LotAuditEvents.Add(audit);
+
+            // Инициализация состояния
+            var state = await db.LotClassificationStates.FirstOrDefaultAsync(s => s.LotId == lotId);
+            if (state == null)
+            {
+                db.LotClassificationStates.Add(new LotClassificationState
+                {
+                    LotId = lotId,
+                    Status = ClassificationStatus.Processing, // Сразу берем в работу
+                    Attempts = 1
+                });
+            }
+            else
+            {
+                state.Status = ClassificationStatus.Processing;
+                state.Attempts++;
+            }
+
             await db.SaveChangesAsync();
         }
 
@@ -173,6 +194,10 @@ public class ClassificationManager : IClassificationManager
                     });
 
                     await dbContext.SaveChangesAsync(token);
+
+                    // Успешное обновление инфраструктурного состояния
+                    await UpdateLotClassificationStateAsync(dbContext, new List<Guid> { lotId }, ClassificationStatus.Success);
+
                     logger.LogInformation("Лот {LotId} успешно классифицирован.", lotId);
                 }
             }
@@ -190,6 +215,9 @@ public class ClassificationManager : IClassificationManager
                 });
                 await dbContext.SaveChangesAsync(token);
 
+                // При CircuitBreaker возвращаем в Pending с небольшой задержкой
+                await UpdateLotClassificationStateAsync(dbContext, new List<Guid> { lotId }, ClassificationStatus.Pending, DateTime.UtcNow.AddMinutes(5));
+
                 // притормаживаем немного
                 // это заставит поток обработки очереди "уснуть" и не брать новые задачи 
                 // следующие 5-10 секунд. Этого достаточно, чтобы не спамить базу
@@ -198,18 +226,7 @@ public class ClassificationManager : IClassificationManager
             catch (Exception ex)
             {
                 logger.LogError(ex, "Ошибка классификации лота {LotId}", lotId);
-
-                // Аудит: Ошибка
-                dbContext.LotAuditEvents.Add(new LotAuditEvent
-                {
-                    LotId = lotId,
-                    EventType = "Classification",
-                    Status = "Failure",
-                    Source = source,
-                    Timestamp = DateTime.UtcNow,
-                    Details = ex.Message
-                });
-                await dbContext.SaveChangesAsync(token);
+                await MarkLotAsFailedAsync(dbContext, lotId, source, ex.Message);
             }
         });
     }
@@ -249,7 +266,7 @@ public class ClassificationManager : IClassificationManager
 
         if (lots.Count == 0)
         {
-            _logger.LogWarning("Не найдено лотов с описаниями для батчевой классификации.");
+            await MarkLotsAsFailedAsync(dbContext, lotIds, source, "Описания лотов не найдены");
             return;
         }
 
@@ -315,15 +332,12 @@ public class ClassificationManager : IClassificationManager
                 .Where(l => results.Keys.Contains(l.Id))
                 .ToListAsync();
 
-            var successCount = 0;
-            var failureCount = 0;
+            var successIds = new List<Guid>();
 
             foreach (var lot in lotsToUpdate)
             {
                 if (!results.TryGetValue(lot.Id, out var result) || result == null)
                 {
-                    _logger.LogWarning("Результат классификации отсутствует для лота {LotId}", lot.Id);
-                    failureCount++;
                     await MarkLotAsFailedAsync(dbContext, lot.Id, source, "Результат классификации отсутствует");
                     continue;
                 }
@@ -403,19 +417,22 @@ public class ClassificationManager : IClassificationManager
                         Source = source,
                         Timestamp = DateTime.UtcNow
                     });
+                    await dbContext.SaveChangesAsync();
 
-                    successCount++;
+                    successIds.Add(lot.Id);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Ошибка обработки результата классификации для лота {LotId}", lot.Id);
-                    failureCount++;
                     await MarkLotAsFailedAsync(dbContext, lot.Id, source, ex.Message);
                 }
             }
 
-            await dbContext.SaveChangesAsync();
-            _logger.LogInformation("Батчевая классификация завершена: успешно {SuccessCount}, ошибок {FailureCount}", successCount, failureCount);
+            // Массовое обновление успешных состояний
+            if (successIds.Any())
+            {
+                await UpdateLotClassificationStateAsync(dbContext, successIds, ClassificationStatus.Success);
+            }
         }
         catch (CircuitBreakerOpenException)
         {
@@ -429,6 +446,9 @@ public class ClassificationManager : IClassificationManager
         }
     }
 
+    /// <summary>
+    /// Формирует текст промпта с добавлением данных из Росреестра.
+    /// </summary>
     private static string BuildPromptText(string description, decimal? startPrice, IReadOnlyCollection<CadastralInfo>? infos)
     {
         var sb = new StringBuilder();
@@ -482,6 +502,9 @@ public class ClassificationManager : IClassificationManager
         return sb.ToString();
     }
 
+    /// <summary>
+    /// Фиксирует ошибку обработки одного лота и отодвигает время следующей попытки.
+    /// </summary>
     private async Task MarkLotAsFailedAsync(LotsDbContext dbContext, Guid lotId, string source, string details)
     {
         dbContext.LotAuditEvents.Add(new LotAuditEvent
@@ -494,8 +517,12 @@ public class ClassificationManager : IClassificationManager
             Details = details
         });
         await dbContext.SaveChangesAsync();
+        await UpdateLotClassificationStateAsync(dbContext, new List<Guid> { lotId }, ClassificationStatus.Failed, DateTime.UtcNow.AddMinutes(30));
     }
 
+    /// <summary>
+    /// Фиксирует ошибку обработки для списка лотов.
+    /// </summary>
     private async Task MarkLotsAsFailedAsync(LotsDbContext dbContext, List<Guid> lotIds, string source, string details)
     {
         var events = lotIds.Select(lotId => new LotAuditEvent
@@ -510,8 +537,12 @@ public class ClassificationManager : IClassificationManager
 
         dbContext.LotAuditEvents.AddRange(events);
         await dbContext.SaveChangesAsync();
+        await UpdateLotClassificationStateAsync(dbContext, lotIds, ClassificationStatus.Failed, DateTime.UtcNow.AddMinutes(30));
     }
 
+    /// <summary>
+    /// Фиксирует пропуск лотов из-за недоступности API и возвращает их в статус Pending.
+    /// </summary>
     private async Task MarkLotsAsSkippedAsync(LotsDbContext dbContext, List<Guid> lotIds, string source, string details)
     {
         var events = lotIds.Select(lotId => new LotAuditEvent
@@ -526,5 +557,23 @@ public class ClassificationManager : IClassificationManager
 
         dbContext.LotAuditEvents.AddRange(events);
         await dbContext.SaveChangesAsync();
+        // Возвращаем в Pending с задержкой 5 минут
+        await UpdateLotClassificationStateAsync(dbContext, lotIds, ClassificationStatus.Pending, DateTime.UtcNow.AddMinutes(5));
+    }
+
+    /// <summary>
+    /// Атомарно обновляет инфраструктурную сущность состояния лота.
+    /// </summary>
+    /// <param name="dbContext">Контекст базы данных.</param>
+    /// <param name="lotIds">Список идентификаторов лотов.</param>
+    /// <param name="status">Новый статус классификации.</param>
+    /// <param name="nextAttemptAt">Время следующей попытки (при необходимости).</param>
+    private async Task UpdateLotClassificationStateAsync(LotsDbContext dbContext, List<Guid> lotIds, ClassificationStatus status, DateTime? nextAttemptAt = null)
+    {
+        await dbContext.LotClassificationStates
+            .Where(s => lotIds.Contains(s.LotId))
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(state => state.Status, status)
+                .SetProperty(state => state.NextAttemptAt, nextAttemptAt));
     }
 }
