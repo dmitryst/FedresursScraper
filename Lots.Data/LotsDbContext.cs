@@ -36,6 +36,16 @@ public class LotsDbContext : DbContext
     public DbSet<LotClassificationState> LotClassificationStates { get; set; }
 
     /// <summary>
+    /// Настройки поиска лотов под запросы пользователей.
+    /// </summary>
+    public DbSet<LotAlert> LotAlerts { get; set; }
+
+    /// <summary>
+    /// Очередь найденных лотов на отправку пользователю.
+    /// </summary>
+    public DbSet<LotAlertMatch> LotAlertMatches { get; set; }
+
+    /// <summary>
     /// Настраивает модели, связи и индексы при создании контекста.
     /// </summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -138,6 +148,32 @@ public class LotsDbContext : DbContext
             entity.HasIndex(e => new { e.Status, e.NextAttemptAt })
                   .HasDatabaseName("IX_ClassificationStates_Queue")
                   .HasFilter("\"Status\" IN (0, 1, 3)");
+        });
+
+        modelBuilder.Entity<LotAlert>(entity =>
+        {
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<LotAlertMatch>(entity =>
+        {
+            entity.HasOne(e => e.LotAlert)
+                  .WithMany()
+                  .HasForeignKey(e => e.LotAlertId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Lot)
+                  .WithMany()
+                  .HasForeignKey(e => e.LotId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // Индекс для быстрого поиска неотправленных уведомлений (для Delivery Worker)
+            entity.HasIndex(e => e.IsSent)
+                  .HasDatabaseName("IX_LotAlertMatches_Unsent")
+                  .HasFilter("\"IsSent\" = FALSE");
         });
     }
 }

@@ -7,6 +7,8 @@ using System.Text;
 using FedresursScraper.Extensions;
 using FedresursScraper.TradeStatuses;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using FedresursScraper.Services.LotAlerts;
+using FedresursScraper.Services.Email;
 
 // Используем WebApplicationBuilder для создания веб-приложения
 var builder = WebApplication.CreateBuilder(args);
@@ -73,6 +75,11 @@ builder.Services.AddScoped<IClassificationManager, ClassificationManager>();
 builder.Services.AddHostedService<LotClassificationService>();
 builder.Services.AddHostedService<LotRecoveryService>();
 builder.Services.AddHostedService<TradeStatusesUpdateBackgroundService>();
+builder.Services.AddHostedService<LotAlertMatchingWorker>();
+builder.Services.AddHostedService<LotAlertDeliveryWorker>();
+
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 
 builder.Services.AddScoped<ILotEvaluationService, LotEvaluationService>();
 
