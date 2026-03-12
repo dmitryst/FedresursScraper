@@ -13,46 +13,58 @@ using System.Security.Claims;
 public class FavoritesController : ControllerBase
 {
     private readonly LotsDbContext _context;
+    private const int MAX_FAVORITES_PER_USER = 200; // Лимит избранных лотов
 
     public FavoritesController(LotsDbContext context)
     {
         _context = context;
     }
 
-    /// <summary>
-    /// Возвращает список лотов, добавленных текущим авторизованным пользователем в "Избранное".
+    //// <summary>
+    /// Возвращает пагинированный список лотов, добавленных в "Избранное".
     /// </summary>
-    /// <remarks>
-    /// Выполняет поиск записей в таблице избранного для текущего пользователя,
-    /// а затем загружает полные данные по найденным лотам (включая связи с торгами и категориями)
-    /// с использованием спецификации <see cref="LotsByIdsSpecification"/>.
-    /// </remarks>
-    /// <returns>Коллекция DTO лотов, находящихся в избранном.</returns>
-    /// <response code="200">Успешный запрос. Возвращает список лотов (может быть пустым).</response>
-    /// <response code="401">Пользователь не авторизован.</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<IEnumerable<LotDto>>> GetFavorites()
+    public async Task<ActionResult<PaginatedResult<LotDto>>> GetFavorites(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20
+    )
     {
         var userId = GetCurrentUserId();
         if (userId == null) return Unauthorized();
 
-        var lotIds = await _context.Favorites
+        // Получаем все ID избранных лотов (их максимум 200, так что это быстро)
+        var allFavoriteLotIds = await _context.Favorites
             .Where(f => f.UserId == userId)
+            .OrderByDescending(f => f.CreatedAt)
             .Select(f => f.LotId)
             .ToListAsync();
 
-        if (!lotIds.Any())
+        var totalCount = allFavoriteLotIds.Count;
+
+        if (totalCount == 0)
         {
-            return Ok(new List<LotDto>());
+            return Ok(new PaginatedResult<LotDto>([], 0, 1, pageSize));
         }
 
-        var spec = new LotsByIdsSpecification(lotIds);
+        // Применяем пагинацию к списку ID
+        var pagedLotIds = allFavoriteLotIds
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
 
+        // Загружаем сами лоты через спецификацию
+        var spec = new LotsByIdsSpecification(pagedLotIds);
         var lots = await _context.Lots
             .WithSpecification(spec)
             .ToListAsync();
+
+        // Сортируем загруженные лоты в том же порядке, в котором они лежат в pagedLotIds
+        var sortedLots = pagedLotIds
+            .Select(id => lots.FirstOrDefault(l => l.Id == id))
+            .Where(l => l != null)
+            .ToList();
 
         var lotDtos = lots.Select(l => new LotDto
         {
@@ -89,7 +101,9 @@ public class FavoritesController : ControllerBase
             }).ToList(),
         }).ToList();
 
-        return Ok(lotDtos);
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+        return Ok(new PaginatedResult<LotDto>(lotDtos, totalCount, page, pageSize));
     }
 
     // GET: api/favorites/ids
@@ -128,6 +142,13 @@ public class FavoritesController : ControllerBase
         }
         else
         {
+            // Проверка лимита перед добавлением
+            var currentCount = await _context.Favorites.CountAsync(f => f.UserId == userId);
+            if (currentCount >= MAX_FAVORITES_PER_USER)
+            {
+                return BadRequest(new { message = $"Нельзя добавить больше {MAX_FAVORITES_PER_USER} лотов в избранное." });
+            }
+
             var favorite = new Favorite { UserId = userId.Value, LotId = lotId };
             _context.Favorites.Add(favorite);
             await _context.SaveChangesAsync();
