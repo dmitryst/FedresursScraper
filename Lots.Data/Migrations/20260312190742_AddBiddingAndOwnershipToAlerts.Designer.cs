@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -11,9 +12,11 @@ using NpgsqlTypes;
 namespace Lots.Data.Migrations
 {
     [DbContext(typeof(LotsDbContext))]
-    partial class LotsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260312190742_AddBiddingAndOwnershipToAlerts")]
+    partial class AddBiddingAndOwnershipToAlerts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -334,10 +337,6 @@ namespace Lots.Data.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DeliveryTimeStr")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");

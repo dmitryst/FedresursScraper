@@ -17,6 +17,17 @@ public class LotAlert
     
     public decimal? MinPrice { get; set; }
     public decimal? MaxPrice { get; set; }
+
+    public string? BiddingType { get; set; }
+    public bool? IsSharedOwnership { get; set; }
+
+    /// <summary>
+    /// Время отправки (например: 09:00) 
+    /// </summary>
+    /// <remarks>
+    /// Для простоты храним строку "09:00" и на фронте просим указывать время по МСК.
+    /// </remarks>
+    public string DeliveryTimeStr { get; set; } = "09:00"; 
     
     /// <summary>
     /// Включено ли оповещение пользователем

@@ -37,8 +37,8 @@ public class LotAlertsController : ControllerBase
     {
         var user = await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null) return false;
-        
-        return user.IsSubscriptionActive && 
+
+        return user.IsSubscriptionActive &&
                (user.SubscriptionEndDate == null || user.SubscriptionEndDate > DateTime.UtcNow);
     }
 
@@ -58,6 +58,9 @@ public class LotAlertsController : ControllerBase
                 Categories = a.Categories,
                 MinPrice = a.MinPrice,
                 MaxPrice = a.MaxPrice,
+                BiddingType = a.BiddingType,
+                IsSharedOwnership = a.IsSharedOwnership,
+                DeliveryTimeStr = a.DeliveryTimeStr,
                 IsActive = a.IsActive,
                 CreatedAt = a.CreatedAt
             })
@@ -74,8 +77,20 @@ public class LotAlertsController : ControllerBase
         // Проверяем Pro-доступ
         if (!await CheckUserProStatusAsync(userId))
         {
-            return StatusCode(StatusCodes.Status403Forbidden, 
+            return StatusCode(StatusCodes.Status403Forbidden,
                 "Создание подписок доступно только пользователям с PRO-доступом.");
+        }
+
+        // Защита от дурака
+        bool isAllCategories = request.Categories == null || request.Categories.Count() == 0;
+        bool isAllRegions = request.RegionCodes == null || request.RegionCodes.Count() == 0;
+
+        if (isAllCategories && isAllRegions)
+        {
+            return BadRequest(new
+            {
+                message = "Подписка слишком широкая. Укажите хотя бы одну категорию или регион."
+            });
         }
 
         // Лимит на количество подписок (например, не больше 10 на человека)
@@ -93,6 +108,9 @@ public class LotAlertsController : ControllerBase
             Categories = request.Categories?.Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().ToArray(),
             MinPrice = request.MinPrice,
             MaxPrice = request.MaxPrice,
+            BiddingType = request.BiddingType,
+            IsSharedOwnership = request.IsSharedOwnership,
+            DeliveryTimeStr = request.DeliveryTimeStr,
             IsActive = request.IsActive,
             CreatedAt = DateTime.UtcNow
         };
@@ -107,6 +125,9 @@ public class LotAlertsController : ControllerBase
             Categories = alert.Categories,
             MinPrice = alert.MinPrice,
             MaxPrice = alert.MaxPrice,
+            BiddingType = alert.BiddingType,
+            IsSharedOwnership = alert.IsSharedOwnership,
+            DeliveryTimeStr = alert.DeliveryTimeStr,
             IsActive = alert.IsActive,
             CreatedAt = alert.CreatedAt
         });
@@ -117,6 +138,18 @@ public class LotAlertsController : ControllerBase
     {
         var userId = GetCurrentUserId();
 
+        // Защита от дурака
+        bool isAllCategories = request.Categories == null || request.Categories.Count() == 0;
+        bool isAllRegions = request.RegionCodes == null || request.RegionCodes.Count() == 0;
+
+        if (isAllCategories && isAllRegions)
+        {
+            return BadRequest(new
+            {
+                message = "Подписка слишком широкая. Укажите хотя бы одну категорию или регион."
+            });
+        }
+
         var alert = await _dbContext.LotAlerts.FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
         if (alert == null) return NotFound();
 
@@ -124,6 +157,9 @@ public class LotAlertsController : ControllerBase
         alert.Categories = request.Categories?.Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().ToArray();
         alert.MinPrice = request.MinPrice;
         alert.MaxPrice = request.MaxPrice;
+        alert.BiddingType = request.BiddingType;
+        alert.IsSharedOwnership = request.IsSharedOwnership;
+        alert.DeliveryTimeStr = request.DeliveryTimeStr;
         alert.IsActive = request.IsActive;
 
         await _dbContext.SaveChangesAsync();

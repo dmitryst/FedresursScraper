@@ -18,7 +18,7 @@ public class LotAlertMatchingWorker : BackgroundService
     private readonly TimeSpan _checkInterval = TimeSpan.FromMinutes(20); // Как часто проверять новые лоты
 
     // Сохраняем время последней проверки, чтобы не брать одни и те же лоты дважды
-    private DateTime _lastCheckTime = DateTime.UtcNow.AddHours(-1); 
+    private DateTime _lastCheckTime = DateTime.UtcNow.AddHours(-1);
 
     public LotAlertMatchingWorker(IServiceProvider serviceProvider, ILogger<LotAlertMatchingWorker> logger)
     {
@@ -53,8 +53,8 @@ public class LotAlertMatchingWorker : BackgroundService
                     // Загружаем все активные алерты вместе с проверкой PRO-доступа (User)
                     var activeAlerts = await dbContext.LotAlerts
                         .Include(a => a.User)
-                        .Where(a => a.IsActive 
-                                    && a.User.IsSubscriptionActive 
+                        .Where(a => a.IsActive
+                                    && a.User.IsSubscriptionActive
                                     && (a.User.SubscriptionEndDate == null || a.User.SubscriptionEndDate > now))
                         .ToListAsync(stoppingToken);
 
@@ -85,6 +85,21 @@ public class LotAlertMatchingWorker : BackgroundService
                             if (alert.MinPrice.HasValue && lot.StartPrice < alert.MinPrice.Value) continue;
                             if (alert.MaxPrice.HasValue && lot.StartPrice > alert.MaxPrice.Value) continue;
 
+                            // Проверка вида торгов
+                            // Если в алерте указан конкретный тип торгов (и он не пустой), а у лота тип другой -> пропускаем
+                            if (!string.IsNullOrEmpty(alert.BiddingType) &&
+                                !string.Equals(alert.BiddingType, lot.Bidding?.Type, StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
+
+                            // Проверка доли
+                            // Если в алерте явно указано Искать только доли (true) или Искать только целиком (false)
+                            if (alert.IsSharedOwnership.HasValue && alert.IsSharedOwnership.Value != lot.IsSharedOwnership)
+                            {
+                                continue;
+                            }
+
                             // Если все проверки пройдены, создаем Match
                             newMatches.Add(new LotAlertMatch
                             {
@@ -101,8 +116,8 @@ public class LotAlertMatchingWorker : BackgroundService
                     {
                         dbContext.LotAlertMatches.AddRange(newMatches);
                         await dbContext.SaveChangesAsync(stoppingToken);
-                        
-                        _logger.LogInformation("Найдено {Count} совпадений по подпискам для {LotCount} новых лотов.", 
+
+                        _logger.LogInformation("Найдено {Count} совпадений по подпискам для {LotCount} новых лотов.",
                             newMatches.Count, freshLots.Count);
                     }
                 }
