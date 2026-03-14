@@ -36,16 +36,23 @@ public class LotAlertsController : ControllerBase
     private async Task<bool> CheckUserProStatusAsync(Guid userId)
     {
         var user = await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
-        if (user == null) return false;
+        if (user == null || !user.HasProAccess)
+            return false;
 
-        return user.IsSubscriptionActive &&
-               (user.SubscriptionEndDate == null || user.SubscriptionEndDate > DateTime.UtcNow);
+        return true;
     }
 
     [HttpGet]
     public async Task<ActionResult<List<LotAlertDto>>> GetMyAlerts()
     {
         var userId = GetCurrentUserId();
+
+        // ПРОВЕРКА PRO / ТРИАЛ ДОСТУПА
+        if (!await CheckUserProStatusAsync(userId))
+        {
+            // Возвращаем 403, чтобы фронтенд показал заглушку "isProError"
+            return StatusCode(403, new { message = "Требуется Pro подписка" });
+        }
 
         var alerts = await _dbContext.LotAlerts
             .AsNoTracking()
