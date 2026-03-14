@@ -13,27 +13,43 @@ public record AuthDto(string Email, string Password);
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly LotsDbContext _context;
+    private readonly LotsDbContext _dbContext;
     private readonly IConfiguration _configuration;
 
     public AuthController(LotsDbContext context, IConfiguration configuration)
     {
-        _context = context;
+        _dbContext = context;
         _configuration = configuration;
     }
 
     [HttpGet("me")]
     [Authorize]
-    public IActionResult GetMe()
+    public async Task<IActionResult> GetMe()
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value;
-        return Ok(new { email });
+        // Берем ID пользователя из токена/куки
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (!Guid.TryParse(userIdString, out Guid userId)) return Unauthorized();
+
+        // Идем в базу за свежей информацией
+        var user = await _dbContext.Users.FindAsync(userId);
+        if (user == null) return Unauthorized();
+
+        return Ok(new
+        {
+            id = user.Id,
+            email = user.Email,
+            isSubscriptionActive = user.HasProAccess,
+            isOnTrial = user.IsOnTrial,
+            subscriptionEndDate = user.SubscriptionEndDate,
+            createdAt = user.CreatedAt
+        });
     }
+
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(AuthDto request)
     {
-        if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+        if (await _dbContext.Users.AnyAsync(u => u.Email == request.Email))
         {
             return BadRequest("Пользователь с таким email уже существует.");
         }
@@ -45,8 +61,8 @@ public class AuthController : ControllerBase
             CreatedAt = DateTime.UtcNow
         };
 
-        _context.Users.Add(newUser);
-        await _context.SaveChangesAsync();
+        _dbContext.Users.Add(newUser);
+        await _dbContext.SaveChangesAsync();
 
         return Ok("Регистрация прошла успешно.");
     }
@@ -54,7 +70,7 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(AuthDto request)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
