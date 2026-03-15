@@ -55,9 +55,13 @@ public class LotAlertMatchingWorker : BackgroundService
                     var activeAlerts = await dbContext.LotAlerts
                         .AsNoTracking()
                         .Include(a => a.User)
-                        .Where(a => a.IsActive
-                                    && a.User.HasProAccess)
+                        .Where(a => a.IsActive && 
+                            // Либо активна платная подписка...
+                            ((a.User.IsSubscriptionActive && (a.User.SubscriptionEndDate == null || a.User.SubscriptionEndDate > now)) 
+                            // ...либо пользователь на триале (с момента регистрации прошло 7 дней или меньше)
+                            || a.User.CreatedAt >= now.AddDays(-7)))
                         .ToListAsync(stoppingToken);
+
 
                     // Получаем ID всех свежих лотов
                     var freshLotIds = freshLots.Select(l => l.Id).ToList();

@@ -12,6 +12,9 @@ namespace Lots.Data.Entities
         /// <summary>
         /// Возвращает true, если подписка куплена или у пользователя триальный период
         /// </summary>
+        /// <remarks>
+        /// Это поле нельзя использовать в LINQ запросах к БД (оно существует только в памяти)
+        /// </remarks>
         public bool HasProAccess =>
             (IsSubscriptionActive && (!SubscriptionEndDate.HasValue || SubscriptionEndDate.Value > DateTime.UtcNow))
             ||
