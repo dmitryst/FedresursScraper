@@ -28,6 +28,8 @@ public class SmtpEmailSender : IEmailSender
     {
         using var client = new SmtpClient(_settings.Host, _settings.Port)
         {
+            DeliveryMethod = SmtpDeliveryMethod.Network,
+            UseDefaultCredentials = false,
             Credentials = new NetworkCredential(_settings.Username, _settings.Password),
             EnableSsl = true
         };

@@ -65,7 +65,7 @@ public class LotAlertDeliveryWorker : BackgroundService
         var now = DateTime.UtcNow;
 
         // Определяем текущий час по МСК
-        //var mskTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"); 
+        // var mskTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"); 
         // Если хостимся в Linux/Docker, используем строку ниже, иначе строку выше
         var mskTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow");
 
@@ -109,7 +109,7 @@ public class LotAlertDeliveryWorker : BackgroundService
 
             // Проверяем, что у пользователя все еще активен Pro-доступ 
             // (на случай, если подписка истекла между фазой матчинга и фазой отправки)
-            if (!user.IsSubscriptionActive || (user.SubscriptionEndDate.HasValue && user.SubscriptionEndDate < now))
+            if (!user.HasProAccess)
             {
                 _logger.LogInformation("Пропуск отправки для пользователя {UserId}: нет Pro-доступа.", user.Id);
 

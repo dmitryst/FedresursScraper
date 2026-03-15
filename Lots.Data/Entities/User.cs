@@ -10,12 +10,12 @@ namespace Lots.Data.Entities
         public DateTime CreatedAt { get; set; }
 
         /// <summary>
-        /// Возвращает true, если подписка куплена ИЛИ если не прошло 7 дней с момента регистрации
+        /// Возвращает true, если подписка куплена или у пользователя триальный период
         /// </summary>
         public bool HasProAccess =>
             (IsSubscriptionActive && (!SubscriptionEndDate.HasValue || SubscriptionEndDate.Value > DateTime.UtcNow))
             ||
-            (DateTime.UtcNow <= CreatedAt.AddDays(7));
+            IsOnTrial;
 
         /// <summary>
         /// Возвращает true, если пользователь пользуется именно триалом (подписки нет, но 7 дней еще не вышли)

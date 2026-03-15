@@ -91,7 +91,15 @@ public class AuthController : ControllerBase
             //SameSite = SameSiteMode.Strict, // или Lax
         });
 
-        return Ok(new { message = "Вход выполнен успешно.", email = user.Email });
+        return Ok(new
+        {
+            id = user.Id,
+            email = user.Email,
+            isSubscriptionActive = user.HasProAccess,
+            isOnTrial = user.IsOnTrial,
+            subscriptionEndDate = user.SubscriptionEndDate,
+            createdAt = user.CreatedAt
+        });
     }
 
     [HttpPost("logout")]
