@@ -42,6 +42,7 @@ public class LotAlertMatchingWorker : BackgroundService
                 // Получаем свежие лоты, которые были успешно классифицированы с момента прошлой проверки
                 // Мы берем их из таблицы состояний, используя навигационное свойство Lot.
                 var freshLots = await dbContext.LotClassificationStates
+                    .AsNoTracking()
                     .Include(s => s.Lot)
                         .ThenInclude(l => l.Categories)
                     .Where(s => s.Status == ClassificationStatus.Success && s.Lot.CreatedAt > _lastCheckTime)
@@ -52,11 +53,26 @@ public class LotAlertMatchingWorker : BackgroundService
                 {
                     // Загружаем все активные алерты вместе с проверкой PRO-доступа (User)
                     var activeAlerts = await dbContext.LotAlerts
+                        .AsNoTracking()
                         .Include(a => a.User)
                         .Where(a => a.IsActive
-                                    && a.User.IsSubscriptionActive
-                                    && (a.User.SubscriptionEndDate == null || a.User.SubscriptionEndDate > now))
+                                    && a.User.HasProAccess)
                         .ToListAsync(stoppingToken);
+
+                    // Получаем ID всех свежих лотов
+                    var freshLotIds = freshLots.Select(l => l.Id).ToList();
+
+                    // Ищем в БД уже созданные совпадения для этих лотов (чтобы не дублировать после рестарта)
+                    var existingMatchesList = await dbContext.LotAlertMatches
+                        .AsNoTracking()
+                        .Where(m => freshLotIds.Contains(m.LotId))
+                        .Select(m => new { m.LotId, m.LotAlertId })
+                        .ToListAsync(stoppingToken);
+
+                    // Кладем их в HashSet (Кортеж: LotId + LotAlertId) для быстрого поиска
+                    var existingMatchSet = existingMatchesList
+                        .Select(m => (m.LotId, m.LotAlertId))
+                        .ToHashSet();
 
                     var newMatches = new List<LotAlertMatch>();
 
@@ -100,7 +116,13 @@ public class LotAlertMatchingWorker : BackgroundService
                                 continue;
                             }
 
-                            // Если все проверки пройдены, создаем Match
+                            // Проверка на дубликат
+                            if (existingMatchSet.Contains((lot.Id, alert.Id)))
+                            {
+                                continue; // Такое совпадение уже было записано в БД до рестарта парсера
+                            }
+
+                            // Если все проверки пройдены и это не дубликат, создаем Match
                             newMatches.Add(new LotAlertMatch
                             {
                                 LotAlertId = alert.Id,
