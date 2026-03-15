@@ -66,7 +66,7 @@ public class LotRecoveryService : BackgroundService
                     LEFT JOIN ""LotClassificationStates"" s ON l.""Id"" = s.""LotId""
                     WHERE l.""PublicId"" > 50000 
                       AND (l.""Title"" IS NULL OR l.""Title"" = '')
-                      AND l.""Description"" IS NOT NULL
+                      AND l.""Description"" IS NOT NULL AND TRIM(l.""Description"") <> ''
                       AND s.""LotId"" IS NULL
                     LIMIT {batchSize * 2}
                     ON CONFLICT (""LotId"") DO NOTHING;";
