@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FedresursScraper.Services;
 using Lots.Data;
 using Lots.Data.Entities;
@@ -16,19 +17,22 @@ namespace FedresursScraper.Controllers
         private readonly LotsDbContext _dbContext;
         private readonly ILogger<AdminController> _logger;
         private readonly IRosreestrQueue _rosreestrQueue;
+        private readonly IRosreestrServiceClient _rosreestrClient;
 
         public AdminController(
             IRosreestrService rosreestrService,
             IClassificationQueue classificationQueue,
             LotsDbContext dbContext,
             ILogger<AdminController> logger,
-            IRosreestrQueue rosreestrQueue)
+            IRosreestrQueue rosreestrQueue,
+            IRosreestrServiceClient rosreestrClient)
         {
             _rosreestrService = rosreestrService;
             _classificationQueue = classificationQueue;
             _dbContext = dbContext;
             _logger = logger;
             _rosreestrQueue = rosreestrQueue;
+            _rosreestrClient = rosreestrClient;
         }
 
         /// <summary>
@@ -316,6 +320,60 @@ namespace FedresursScraper.Controllers
             }
 
             return Ok(new { message = $"Успешно инициализировано расписание для {updatedCount} торгов." });
+        }
+
+        [HttpPost("reparse-cadastralinfo")]
+        public async Task<IActionResult> ReparseCadastralInfoAsync()
+        {
+            // Получаем все записи, где сохранен JSON от Росреестра
+            var cadastralInfos = await _dbContext.Set<CadastralInfo>()
+                .Where(c => c.RawGeoJson != null)
+                .ToListAsync();
+
+            int updatedCount = 0;
+            int errorCount = 0;
+
+            foreach (var info in cadastralInfos)
+            {
+                try
+                {
+                    var parsedDto = _rosreestrClient.ParseGeoJson(info.CadastralNumber, info.RawGeoJson!);
+
+                    info.Address = parsedDto.Address;
+                    info.Area = parsedDto.Area;
+                    info.CadastralCost = parsedDto.CadastralCost;
+                    info.PermittedUse = parsedDto.PermittedUse;
+                    info.Category = parsedDto.Category;
+                    info.Status = parsedDto.Status;
+                    info.ObjectType = parsedDto.ObjectType;
+                    info.RightType = parsedDto.RightType;
+                    info.OwnershipType = parsedDto.OwnershipType;
+                    info.RegDate = parsedDto.RegDate;
+
+                    updatedCount++;
+                }
+                catch (Exception ex)
+                {
+                    // Если JSON оказался "битым", просто логируем и идем к следующему
+                    _logger.LogError(ex, "Ошибка при парсинге RawGeoJson для CadastralInfo с ID: {Id}", info.Id);
+                    errorCount++;
+                }
+            }
+
+            // Сохраняем все обновленные сущности разом
+            if (updatedCount > 0)
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+
+            // Возвращаем отчет о проделанной работе
+            return Ok(new
+            {
+                Message = "Перезаполнение кадастровых данных завершено.",
+                TotalProcessed = cadastralInfos.Count,
+                SuccessfullyUpdated = updatedCount,
+                Errors = errorCount
+            });
         }
     }
 }

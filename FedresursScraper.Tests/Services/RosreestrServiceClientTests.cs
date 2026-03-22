@@ -50,7 +50,7 @@ public class RosreestrServiceClientTests
         // Arrange
         var expectedCadastralNumber = "39:10:480001:58";
 
-        // Считываем JSON из файла (предполагаем, что вы назовете его так)
+        // Считываем JSON из файла
         var geoJson = File.ReadAllText("TestData/39_10_480001_58.geojson");
 
         var service = CreateClientWithMockedResponse(geoJson);
