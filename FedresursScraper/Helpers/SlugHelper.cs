@@ -12,7 +12,8 @@ public static class SlugHelper
         {'у', "u"}, {'ф', "f"}, {'х', "h"}, {'ц', "ts"}, {'ч', "ch"},
         {'ш', "sh"}, {'щ', "sch"}, {'ъ', ""}, {'ы', "y"}, {'ь', ""},
         {'э', "e"}, {'ю', "yu"}, {'я', "ya"},
-        {' ', "-"}, {'.', ""}, {',', ""}, {':', ""}, {'/', "-"}
+        {' ', "-"}, {'.', ""}, {',', ""}, {':', ""}, {'/', "-"},
+        {'№', "n"}, {'×', "x"}
     };
 
     public static string GenerateSlug(string text)
@@ -32,24 +33,40 @@ public static class SlugHelper
             {
                 sb.Append(c);
             }
-            // Все остальные символы игнорируются, как в TS: (/[a-z0-9\-]/.test(char) ? char : '')
         }
 
         var slug = sb.ToString();
 
-        // Аналог .replace(/-+/g, '-')
+        // Заменяем множественные дефисы на один
         slug = Regex.Replace(slug, @"-+", "-");
         
-        // Аналог .replace(/^-|-$/g, '')
+        // Убираем дефисы по краям перед проверкой длины
         slug = slug.Trim('-');
 
-        // Аналог .substring(0, 60)
-        if (slug.Length > 60)
+        // Увеличиваем лимит для большей информативности (оптимально 80-90 для SEO)
+        int maxLength = 85; 
+
+        if (slug.Length > maxLength)
         {
-            slug = slug.Substring(0, 60);
-            // На всякий случай, если обрезка пришлась на дефис (в TS это не делается явно после substring, 
-            // но для красоты можно, хотя для точного соответствия TS оставим как есть)
+            // Ищем последний дефис в пределах лимита, чтобы не резать слово пополам
+            int lastDashIndex = slug.LastIndexOf('-', maxLength);
+
+            if (lastDashIndex > 0)
+            {
+                slug = slug.Substring(0, lastDashIndex);
+            }
+            else
+            {
+                // Если дефисов почему-то нет (одно гигантское слово), режем жестко
+                slug = slug.Substring(0, maxLength); 
+            }
         }
+
+        // Еще раз убираем дефисы с конца (на случай, если обрезка пришлась на дефис)
+        slug = slug.Trim('-');
+
+        // убираем висячие предлоги на конце (i, v, s, k, o, u, na, po, za, do)
+        slug = Regex.Replace(slug, @"-(i|v|s|k|o|u|na|po|za|do)$", "");
 
         return slug;
     }

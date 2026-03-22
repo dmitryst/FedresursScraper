@@ -51,9 +51,10 @@ if (parsersEnabled)
     builder.Services.AddHostedService<BiddingListParser>();
     builder.Services.AddHostedService<BiddingProcessorService>();
 
-    builder.Services.AddSingleton<IRosreestrQueue, RosreestrQueue>();
     builder.Services.AddHostedService<RosreestrWorker>();
 }
+
+builder.Services.AddSingleton<IRosreestrQueue, RosreestrQueue>();
 
 builder.Services.AddSingleton<ILotClassifier>(serviceProvider =>
 {

@@ -171,6 +171,7 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
                 var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
                 var scraper = scope.ServiceProvider.GetRequiredService<ITradeCardLotsStatusScraper>();
                 var cdtTradeStatusScraper = scope.ServiceProvider.GetRequiredService<ICdtTradeStatusScraper>();
+                var indexNowService = scope.ServiceProvider.GetRequiredService<IIndexNowService>();
 
                 foreach (var biddingId in batchIds)
                 {
@@ -190,10 +191,16 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
 
                     if (lotNumbers.Count == 0) continue;
 
+                    // Список URL для пинга Яндекса в рамках этих торгов
+                    var urlsToPing = new List<string>();
+
                     // Проверяем, не зависли ли торги. Если зависли и были закрыты по таймауту, 
                     // пропускаем парсинг (идем к следующим торгам)
-                    if (await HandleStuckBiddingAsync(bidding, dbContext))
+                    // Передаем коллекцию urlsToPing, чтобы метод мог добавить туда зависшие лоты
+                    if (await HandleStuckBiddingAsync(bidding, dbContext, urlsToPing))
                     {
+                        // Сохраняем и отправляем пинг, если торги зависли и перешли в финал
+                        await TrySaveAndPingAsync(dbContext, indexNowService, urlsToPing, stoppingToken);
                         continue;
                     }
 
@@ -221,11 +228,19 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
 
                         if (statuses.TryGetValue(normalizedLotNumber, out var parsedStatus))
                         {
+                            var oldStatus = lot.TradeStatus;
+
                             // Лот найден — сохраняем нормальные данные
                             lot.TradeStatus = parsedStatus.TradeStatus;
                             lot.FinalPrice = parsedStatus.FinalPrice;
                             lot.WinnerName = parsedStatus.WinnerName;
                             lot.WinnerInn = parsedStatus.WinnerInn;
+
+                            // Если статус изменился и стал конечным (не активным)
+                            if (oldStatus != lot.TradeStatus && !lot.IsActive())
+                            {
+                                urlsToPing.Add(GenerateLotUrl(lot));
+                            }
                         }
                     }
 
@@ -253,6 +268,9 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
                                             dbContext.LotAuditEvents.Add(auditEvent);
                                         }
                                         _logger.LogInformation("Лот {LotId} дообогащен с ЦДТ общим статусом торгов: {Status}", lot.Id, cdtStatus);
+
+                                        // ЦДТ перевел лот в отмененные/не состоялись
+                                        urlsToPing.Add(GenerateLotUrl(lot));
                                     }
                                 }
                             }
@@ -272,7 +290,8 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
                         bidding.ScheduleNextCheck(DateTime.UtcNow);
                     }
 
-                    await dbContext.SaveChangesAsync(stoppingToken);
+                    // Сохраняем изменения и пингуем Яндекс
+                    await TrySaveAndPingAsync(dbContext, indexNowService, urlsToPing, stoppingToken);
 
                     // Делаем паузу в 2 секунды между запросами, чтобы старый Федресурс не заблокировал IP
                     await Task.Delay(2000, stoppingToken);
@@ -288,6 +307,44 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
         {
             _logger.LogError(ex, "Произошла критическая ошибка при фоновом обновлении статусов торгов.");
         }
+    }
+
+    /// <summary>
+    /// Вспомогательный метод для сохранения в БД и отправки ссылок
+    /// </summary>
+    private async Task TrySaveAndPingAsync(LotsDbContext dbContext, IIndexNowService indexNowService, List<string> urlsToPing, CancellationToken stoppingToken)
+    {
+        await dbContext.SaveChangesAsync(stoppingToken);
+
+        if (urlsToPing.Any())
+        {
+            var distinctUrls = urlsToPing.Distinct().ToList();
+            await indexNowService.SubmitUrlsAsync(distinctUrls);
+            _logger.LogInformation("IndexNow: Отправлено {Count} новых архивных ссылок.", distinctUrls.Count);
+        }
+    }
+
+    /// <summary>
+    /// Генерация URL лота.
+    /// Точно повторяет логику фронтенда (schemas.ts): 
+    /// lot.slug ?? generateSlug(lot.title || lot.description)
+    /// </summary>
+    private string GenerateLotUrl(Lot lot)
+    {
+        var slug = lot.Slug;
+
+        // Если Slug в БД пустой (старые лоты), генерируем его на лету
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            var textForSlug = !string.IsNullOrWhiteSpace(lot.Title) 
+                ? lot.Title 
+                : lot.Description;
+            
+            slug = SlugHelper.GenerateSlug(textForSlug ?? "lot");
+        }
+
+        // Так как PublicId есть всегда, используем основной формат
+        return $"https://s-lot.ru/lot/{slug}-{lot.PublicId}";
     }
 
     /// <summary>
@@ -320,7 +377,7 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
         return true;
     }
 
-    private async Task<bool> HandleStuckBiddingAsync(Bidding bidding, LotsDbContext dbContext)
+    private async Task<bool> HandleStuckBiddingAsync(Bidding bidding, LotsDbContext dbContext, List<string> urlsToPing)
     {
         // Проверяем, истек ли таймаут ожидания результатов
         if (!bidding.IsExpired(DateTime.UtcNow, _stuckTimeout))
@@ -343,8 +400,13 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
                 {
                     dbContext.LotAuditEvents.Add(auditEvent);
                 }
+
                 _logger.LogInformation("Лот {PublicId} (Id: {LotId}) принудительно переведен в 'Торги завершены (нет данных)'", lot.PublicId, lot.Id);
+                
                 hasChanges = true;
+
+                // Лот завершился по таймауту
+                urlsToPing.Add(GenerateLotUrl(lot));
             }
         }
 
@@ -352,7 +414,6 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
         {
             bidding.IsTradeStatusesFinalized = true;
             bidding.NextStatusCheckAt = null;
-            await dbContext.SaveChangesAsync();
         }
 
         return true; // Торги были обработаны как "зависшие"

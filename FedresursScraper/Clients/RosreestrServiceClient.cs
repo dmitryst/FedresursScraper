@@ -18,6 +18,8 @@ public interface IRosreestrServiceClient
     Task<double[]?> GetCoordinatesAsync(string cadastralNumber);
 
     Task<CadastralInfoDto?> GetCadastralInfoAsync(string cadastralNumber);
+
+    CadastralInfoDto ParseGeoJson(string cadastralNumber, string jsonString);
 }
 
 /// <summary>
@@ -107,8 +109,13 @@ public class RosreestrServiceClient : IRosreestrServiceClient
 
         response.EnsureSuccessStatusCode();
 
-        // Читаем как JsonDocument, чтобы извлечь нужные поля из "properties" и сохранить сырой JSON
         var jsonString = await response.Content.ReadAsStringAsync();
+
+        return ParseGeoJson(cadastralNumber, jsonString);
+    }
+
+    public CadastralInfoDto ParseGeoJson(string cadastralNumber, string jsonString)
+    {
         using var document = JsonDocument.Parse(jsonString);
         var root = document.RootElement;
 
@@ -123,11 +130,11 @@ public class RosreestrServiceClient : IRosreestrServiceClient
         {
             if (props.TryGetProperty("options", out var options))
             {
-                // --- 1. Адрес ---
+                // --- Адрес ---
                 if (options.TryGetProperty("readable_address", out var addr))
                     dto.Address = addr.GetString();
 
-                // --- 2. Площадь (пробуем 3 разных ключа) ---
+                // --- Площадь (пробуем 3 разных ключа) ---
                 if (options.TryGetProperty("area", out var area) && area.ValueKind == JsonValueKind.Number)
                     dto.Area = area.GetDouble();
                 else if (options.TryGetProperty("specified_area", out var sArea) && sArea.ValueKind == JsonValueKind.Number)
@@ -135,26 +142,26 @@ public class RosreestrServiceClient : IRosreestrServiceClient
                 else if (options.TryGetProperty("land_record_area", out var lrArea) && lrArea.ValueKind == JsonValueKind.Number)
                     dto.Area = lrArea.GetDouble();
 
-                // --- 3. Кадастровая стоимость ---
+                // --- Кадастровая стоимость ---
                 if (options.TryGetProperty("cost_value", out var cost) && cost.ValueKind == JsonValueKind.Number)
                     dto.CadastralCost = cost.GetDecimal();
 
-                // --- 4. Разрешенное использование ---
+                // --- Разрешенное использование ---
                 if (options.TryGetProperty("permitted_use_established_by_document", out var use))
                     dto.PermittedUse = use.GetString();
 
-                // --- 5. Категория земель ---
+                // --- Категория земель ---
                 // land_record_category_type информативнее ("Земли населенных пунктов" вместо "Земельные участки ЕГРН")
                 if (options.TryGetProperty("land_record_category_type", out var catType))
                     dto.Category = catType.GetString();
                 else if (props.TryGetProperty("categoryName", out var catName)) // Фолбэк
                     dto.Category = catName.GetString();
 
-                // --- 6. Статус объекта ---
+                // --- Статус объекта ---
                 if (options.TryGetProperty("status", out var status))
                     dto.Status = status.GetString();
 
-                // --- 7. Другие поля ---
+                // --- Другие поля ---
                 if (options.TryGetProperty("land_record_type", out var objType))
                     dto.ObjectType = objType.GetString();
 
