@@ -147,7 +147,7 @@ public class LotsController : ControllerBase
             ViewingProcedure = lot.ViewingProcedure,
             CreatedAt = lot.CreatedAt,
             Coordinates = (lot.Latitude.HasValue && lot.Longitude.HasValue)
-                ? new[] { lot.Latitude.Value, lot.Longitude.Value }
+                ? [lot.Latitude.Value, lot.Longitude.Value]
                 : null,
             PropertyRegionName = lot.PropertyRegionName,
             PropertyFullAddress = lot.PropertyFullAddress,
@@ -156,6 +156,21 @@ public class LotsController : ControllerBase
             MarketValueMax = lot.MarketValueMax,
             PriceConfidence = lot.PriceConfidence,
             InvestmentSummary = lot.InvestmentSummary,
+
+            CadastralInfos = lot.CadastralInfos?.Select(c => new CadastralItemDto
+            {
+                CadastralNumber = c.CadastralNumber,
+                Area = c.Area,
+                CadastralCost = c.CadastralCost,
+                Category = c.Category,
+                PermittedUse = c.PermittedUse,
+                Address = c.Address,
+                Status = c.Status,
+                ObjectType = c.ObjectType,
+                RightType = c.RightType,
+                OwnershipType = c.OwnershipType,
+                RegDate = c.RegDate
+            }).ToList(),
 
             Bidding = new BiddingDto
             {

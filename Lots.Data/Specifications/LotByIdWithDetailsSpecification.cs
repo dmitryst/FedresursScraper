@@ -20,7 +20,8 @@ public class LotByIdWithDetailsSpecification : Specification<Lot>, ISingleResult
             .Include(l => l.Categories)
             .Include(x => x.PriceSchedules)
             .Include(x => x.Images)
-            .Include(x => x.Documents);
+            .Include(x => x.Documents)
+            .Include(x => x.CadastralInfos);
     }
 
     /// <summary>
@@ -38,6 +39,7 @@ public class LotByIdWithDetailsSpecification : Specification<Lot>, ISingleResult
             .Include(l => l.Categories)
             .Include(x => x.PriceSchedules)
             .Include(x => x.Images)
-            .Include(x => x.Documents);
+            .Include(x => x.Documents)
+            .Include(x => x.CadastralInfos);
     }
 }

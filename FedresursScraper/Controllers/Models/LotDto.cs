@@ -1,3 +1,5 @@
+using FedresursScraper.Clients;
+
 namespace FedresursScraper.Controllers.Models;
 
 public class LotDto
@@ -57,4 +59,9 @@ public class LotDto
     /// Короткий инвестиционный комментарий (2–3 предложения): логика marketValue, риски, потенциал.
     /// </summary>
     public string? InvestmentSummary { get; set; }
+
+    /// <summary>
+    /// Данные из Росреестра по конкретному кадастровому номеру
+    /// </summary>
+    public List<CadastralItemDto>? CadastralInfos { get; set; }
 }

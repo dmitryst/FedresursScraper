@@ -286,7 +286,12 @@ namespace FedresursScraper.Services
                                 CadastralCost = infoDto.CadastralCost,
                                 Category = infoDto.Category,
                                 PermittedUse = infoDto.PermittedUse,
-                                Address = infoDto.Address
+                                Address = infoDto.Address,
+                                Status = infoDto.Status,
+                                ObjectType = infoDto.ObjectType,
+                                RightType = infoDto.RightType,
+                                OwnershipType = infoDto.OwnershipType,
+                                RegDate = infoDto.RegDate
                             });
 
                             // Логируем успешную попытку
