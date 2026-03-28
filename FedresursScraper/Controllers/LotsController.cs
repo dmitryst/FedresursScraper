@@ -342,8 +342,8 @@ public class LotsController : ControllerBase
 
     [HttpGet("sitemap-data")]
     public async Task<IActionResult> GetSitemapData(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 40000)
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 40000)
     {
         if (pageSize > 50000)
         {
@@ -353,14 +353,17 @@ public class LotsController : ControllerBase
         var query = _dbContext.Lots.AsNoTracking();
 
         var items = await query
-            .Where(l => !string.IsNullOrEmpty(l.Title))
+            .Where(Lot.IsActiveExpression) // Оставляем только активные лоты
+            .Where(l => string.IsNullOrEmpty(l.Title))
             .OrderByDescending(l => l.CreatedAt) // Свежие сначала
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(l => new SitemapItemDto
             {
                 PublicId = l.PublicId,
+                Slug = l.Slug, // Обязательно передаем Slug из БД
                 Title = l.Title!,
+                Description = l.Description, // Для фоллбэка генерации
                 CreatedAt = l.CreatedAt
             })
             .ToListAsync();
