@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FedresursScraper.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/admin/seo")]
 [AdminApiKey]
 public class AdminSeoController : ControllerBase
 {
