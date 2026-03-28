@@ -1,6 +1,4 @@
-using System.Text.Json;
 using FedresursScraper.Services;
-using Lots.Data;
 using Lots.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,8 +16,6 @@ namespace FedresursScraper.Controllers
         private readonly ILogger<AdminController> _logger;
         private readonly IRosreestrQueue _rosreestrQueue;
         private readonly IRosreestrServiceClient _rosreestrClient;
-        // Внедряем фабрику Scope вместо самих сервисов для фоновых задач
-        private readonly IServiceScopeFactory _scopeFactory;
 
         public AdminController(
             IRosreestrService rosreestrService,
@@ -27,8 +23,7 @@ namespace FedresursScraper.Controllers
             LotsDbContext dbContext,
             ILogger<AdminController> logger,
             IRosreestrQueue rosreestrQueue,
-            IRosreestrServiceClient rosreestrClient,
-            IServiceScopeFactory scopeFactory)
+            IRosreestrServiceClient rosreestrClient)
         {
             _rosreestrService = rosreestrService;
             _classificationQueue = classificationQueue;
@@ -36,7 +31,6 @@ namespace FedresursScraper.Controllers
             _logger = logger;
             _rosreestrQueue = rosreestrQueue;
             _rosreestrClient = rosreestrClient;
-            _scopeFactory = scopeFactory;
         }
 
         /// <summary>
@@ -378,107 +372,6 @@ namespace FedresursScraper.Controllers
                 SuccessfullyUpdated = updatedCount,
                 Errors = errorCount
             });
-        }
-
-        /// <summary>
-        /// Возвращает тестовую выборку сгенерированных URL для старых лотов.
-        /// </summary>
-        [HttpGet("test-slugs")]
-        public async Task<IActionResult> TestSlugs([FromQuery] int count = 50)
-        {
-            var lots = await _dbContext.Lots
-                .Where(l => l.PublicId >= 10001 && l.PublicId <= 53158 && string.IsNullOrEmpty(l.Slug))
-                .OrderBy(l => Guid.NewGuid()) // Берем случайные лоты для репрезентативности
-                .Take(count)
-                .Select(l => new { l.PublicId, l.Title, l.Description })
-                .ToListAsync();
-
-            var result = lots.Select(l =>
-            {
-                var textForSlug = !string.IsNullOrWhiteSpace(l.Title) ? l.Title : l.Description;
-                var slug = SlugHelper.GenerateSlug(textForSlug ?? "lot");
-
-                return new
-                {
-                    l.PublicId,
-                    OriginalText = textForSlug?.Substring(0, Math.Min(textForSlug.Length, 100)), // Показываем начало текста
-                    GeneratedSlug = slug,
-                    Url = $"https://s-lot.ru/lot/{slug}-{l.PublicId}"
-                };
-            });
-
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Массово генерирует URL для старых лотов и отправляет их в IndexNow пачками по 5000.
-        /// </summary>
-        [HttpPost("submit-old-lots")]
-        public IActionResult SubmitOldLotsToIndexNow()
-        {
-            // Запускаем в фоновом потоке, чтобы не держать HTTP-соединение (Fire and Forget)
-            _ = Task.Run(async () => await ProcessAndSubmitOldLotsAsync());
-
-            return Accepted(new { Message = "Процесс массовой отправки ссылок в IndexNow запущен в фоне. Проверяйте логи сервера." });
-        }
-
-        private async Task ProcessAndSubmitOldLotsAsync()
-        {
-            try
-            {
-                _logger.LogInformation("Начата массовая генерация URL для отправки в IndexNow...");
-
-                // Создаем полностью независимый Scope для фонового потока
-                using var scope = _scopeFactory.CreateScope();
-
-                // Достаем все нужные сервисы из этого независимого Scope
-                var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
-                var indexNowService = scope.ServiceProvider.GetRequiredService<IIndexNowService>();
-
-                // Получаем только нужные поля, чтобы не грузить всю базу в память
-                var lotsData = await dbContext.Lots
-                    .Where(l => l.PublicId >= 10001 && l.PublicId <= 53158)
-                    .Select(l => new { l.PublicId, l.Slug, l.Title, l.Description })
-                    .ToListAsync();
-
-                var urlsToSubmit = new List<string>(lotsData.Count);
-
-                foreach (var lot in lotsData)
-                {
-                    var slug = lot.Slug;
-
-                    if (string.IsNullOrWhiteSpace(slug))
-                    {
-                        var textForSlug = !string.IsNullOrWhiteSpace(lot.Title) ? lot.Title : lot.Description;
-                        slug = SlugHelper.GenerateSlug(textForSlug ?? "lot");
-                    }
-
-                    urlsToSubmit.Add($"https://s-lot.ru/lot/{slug}-{lot.PublicId}");
-                }
-
-                // Очищаем от дубликатов на всякий случай
-                var uniqueUrls = urlsToSubmit.Distinct().ToList();
-                _logger.LogInformation("Сгенерировано {Count} уникальных URL. Начинаем отправку...", uniqueUrls.Count);
-
-                // Отправляем пачками по 5000 штук (лимит Яндекса 10 000)
-                const int batchSize = 5000;
-                for (int i = 0; i < uniqueUrls.Count; i += batchSize)
-                {
-                    var batch = uniqueUrls.Skip(i).Take(batchSize).ToList();
-                    _logger.LogInformation("Отправка батча в IndexNow: с {Start} по {End}...", i + 1, i + batch.Count);
-
-                    await indexNowService.SubmitUrlsAsync(batch);
-
-                    // Делаем небольшую паузу между батчами, чтобы Яндекс не "заругался" на спам
-                    await Task.Delay(3000);
-                }
-
-                _logger.LogInformation("Массовая отправка в IndexNow успешно завершена!");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Ошибка при массовой отправке URL в IndexNow.");
-            }
         }
     }
 }
