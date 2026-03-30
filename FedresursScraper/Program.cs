@@ -107,26 +107,42 @@ builder.Services.AddHttpClient<IRosreestrServiceClient, RosreestrServiceClient>(
 
 builder.Services.AddHttpClient("FedresursScraper", client =>
 {
-    // Оставляем User-Agent
-    client.DefaultRequestHeaders.Add(
-        "User-Agent",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+    // Максимально имитируем реальный браузер, чтобы обойти WAF
+    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+    client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7");
+    client.DefaultRequestHeaders.Add("Accept-Language", "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7");
+    client.DefaultRequestHeaders.Add("Upgrade-Insecure-Requests", "1");
+    client.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "document");
+    client.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "navigate");
+    client.DefaultRequestHeaders.Add("Sec-Fetch-Site", "none");
+    client.DefaultRequestHeaders.Add("Sec-Fetch-User", "?1");
 })
 .ConfigurePrimaryHttpMessageHandler(() =>
 {
     var handler = new HttpClientHandler
     {
-        // Оставляем критически важную настройку TLS для старого сайта
         SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
+        // Критично важно для Федресурса (ASP.NET сессии и куки WAF)
+        UseCookies = true,
+        CookieContainer = new CookieContainer(),
+        // WAF часто требует поддержки сжатия
+        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
+        // Заставляет HttpClient отправлять креды прокси сразу, не дожидаясь ответа 407
+        PreAuthenticate = true,
+        // Ограничиваем время жизни соединения, чтобы ротация IP прокси работала корректно
+        //PooledConnectionLifetime = TimeSpan.FromMinutes(2)
     };
 
-    // Читаем настройки прокси из конфигурации (appsettings.json или переменных окружения)
     var proxyHost = configuration["ProxySettings:Host"];
     var proxyPortString = configuration["ProxySettings:Port"];
 
     if (!string.IsNullOrWhiteSpace(proxyHost) && int.TryParse(proxyPortString, out int proxyPort))
     {
-        var proxy = new WebProxy(proxyHost, proxyPort);
+        // Явное конструирование через Uri надежнее для некоторых провайдеров
+        var proxy = new WebProxy($"http://{proxyHost}:{proxyPort}")
+        {
+            BypassProxyOnLocal = false
+        };
 
         var proxyUser = configuration["ProxySettings:Username"];
         var proxyPass = configuration["ProxySettings:Password"];
