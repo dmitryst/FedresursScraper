@@ -9,6 +9,7 @@ using FedresursScraper.TradeStatuses;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using FedresursScraper.Services.LotAlerts;
 using FedresursScraper.Services.Email;
+using System.Net;
 
 // Используем WebApplicationBuilder для создания веб-приложения
 var builder = WebApplication.CreateBuilder(args);
@@ -106,41 +107,40 @@ builder.Services.AddHttpClient<IRosreestrServiceClient, RosreestrServiceClient>(
 
 builder.Services.AddHttpClient("FedresursScraper", client =>
 {
-    // Добавляем User-Agent, который будет использоваться для всех запросов этого клиента
+    // Оставляем User-Agent
     client.DefaultRequestHeaders.Add(
         "User-Agent",
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-
-    // Здесь можно добавить и другие заголовки, если понадобятся
-    // client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-    // client.DefaultRequestHeaders.Add("Accept-Language", "ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3");
 })
 .ConfigurePrimaryHttpMessageHandler(() =>
 {
-    return new HttpClientHandler
+    var handler = new HttpClientHandler
     {
-        // 1. Явно указываем, что нужно использовать TLS 1.2. 
-        // Это самая частая причина подобных ошибок со старыми сайтами.
+        // Оставляем критически важную настройку TLS для старого сайта
         SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
-
-        // 2. В качестве крайней меры, если п.1 не поможет.
-        // Этот параметр позволяет использовать более широкий (и менее безопасный) набор шифров,
-        // который может требоваться старыми серверами.
-        // Раскомментируйте следующую строку, только если явное указание Tls12 не сработало.
-        // CipherSuitesPolicy = new CipherSuitePolicy(
-        //     new[]
-        //     {
-        //         TlsCipherSuite.TLS_AES_128_GCM_SHA256,
-        //         TlsCipherSuite.TLS_AES_256_GCM_SHA384,
-        //         TlsCipherSuite.TLS_CHACHA20_POLY1305_SHA256,
-        //         TlsCipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-        //         TlsCipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-        //         TlsCipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-        //         TlsCipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-        //         TlsCipherSuite.TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,
-        //         TlsCipherSuite.TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
-        //     })
     };
+
+    // Читаем настройки прокси из конфигурации (appsettings.json или переменных окружения)
+    var proxyHost = configuration["ProxySettings:Host"];
+    var proxyPortString = configuration["ProxySettings:Port"];
+
+    if (!string.IsNullOrWhiteSpace(proxyHost) && int.TryParse(proxyPortString, out int proxyPort))
+    {
+        var proxy = new WebProxy(proxyHost, proxyPort);
+
+        var proxyUser = configuration["ProxySettings:Username"];
+        var proxyPass = configuration["ProxySettings:Password"];
+
+        if (!string.IsNullOrWhiteSpace(proxyUser) && !string.IsNullOrWhiteSpace(proxyPass))
+        {
+            proxy.Credentials = new NetworkCredential(proxyUser, proxyPass);
+        }
+
+        handler.Proxy = proxy;
+        handler.UseProxy = true;
+    }
+
+    return handler;
 });
 
 builder.Services.AddHttpClient<IIndexNowService, IndexNowService>();
