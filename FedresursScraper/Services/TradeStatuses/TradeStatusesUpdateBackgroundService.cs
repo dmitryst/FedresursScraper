@@ -293,12 +293,12 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
                     // Сохраняем изменения и пингуем Яндекс
                     await TrySaveAndPingAsync(dbContext, indexNowService, urlsToPing, stoppingToken);
 
-                    // Делаем паузу в 2 секунды между запросами, чтобы старый Федресурс не заблокировал IP
-                    await Task.Delay(2000, stoppingToken);
+                    // Делаем паузу в 5 секунд между запросами, чтобы старый Федресурс не заблокировал IP
+                    await Task.Delay(5000, stoppingToken);
                 }
 
-                // На всякий случай добавляем небольшую паузу между батчами
-                await Task.Delay(5000, stoppingToken);
+                // На всякий случай добавляем паузу 10 секунд между батчами
+                await Task.Delay(10000, stoppingToken);
             }
 
             _logger.LogInformation("Обновление статусов торгов успешно завершено.");
