@@ -29,4 +29,16 @@ public interface IBiddingDataCache
     /// Удаляет из кэша старые записи, которые уже были обработаны.
     /// </summary>
     void PruneCompleted();
+
+    /// <summary>
+    /// Удаляет конкретные записи по их ID (безопасный способ)
+    /// </summary>
+    /// <param name="idsToRemove"></param>
+    /// <returns></returns>
+    int RemoveMany(IEnumerable<Guid> idsToRemove);
+
+    /// <summary>
+    /// Полная очистка кэша (ядерная кнопка для отладки)
+    /// </summary>
+    void ClearAll();
 }

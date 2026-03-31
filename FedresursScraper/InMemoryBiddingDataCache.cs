@@ -55,7 +55,7 @@ public class InMemoryBiddingDataCache : IBiddingDataCache
             _biddingCache.TryUpdate(biddingId, newItem, currentItem);
         }
     }
-    
+
     public void PruneCompleted()
     {
         // Находим все ключи, которые нужно удалить
@@ -63,7 +63,7 @@ public class InMemoryBiddingDataCache : IBiddingDataCache
             .Where(pair => pair.Value.status == ParsingStatus.Completed)
             .Select(pair => pair.Key)
             .ToList();
-        
+
         if (!keysToRemove.Any())
         {
             return; // Нечего удалять
@@ -76,5 +76,28 @@ public class InMemoryBiddingDataCache : IBiddingDataCache
         }
 
         _logger.LogInformation("Очищено {Count} обработанных записей из кэша.", keysToRemove.Count);
+    }
+
+    // Удаляет конкретные записи по их ID (безопасный способ)
+    public int RemoveMany(IEnumerable<Guid> idsToRemove)
+    {
+        int removedCount = 0;
+        foreach (var id in idsToRemove)
+        {
+            if (_biddingCache.TryRemove(id, out _))
+            {
+                removedCount++;
+            }
+        }
+        _logger.LogInformation("Удалено {Count} записей из кэша по запросу подтверждения.", removedCount);
+        return removedCount;
+    }
+
+    // Полная очистка кэша (ядерная кнопка для отладки)
+    public void ClearAll()
+    {
+        int count = _biddingCache.Count;
+        _biddingCache.Clear();
+        _logger.LogInformation("Кэш полностью очищен. Удалено {Count} записей.", count);
     }
 }

@@ -49,7 +49,7 @@ bool parsersEnabled = configuration.GetValue<bool>("BackgroundParsers:Enabled");
 if (parsersEnabled)
 {
     builder.Services.AddSingleton<IBiddingDataCache, InMemoryBiddingDataCache>();
-    builder.Services.AddHostedService<BiddingListParser>();
+    //builder.Services.AddHostedService<BiddingListParser>();
     builder.Services.AddHostedService<BiddingProcessorService>();
 
     builder.Services.AddHostedService<RosreestrWorker>();
@@ -76,7 +76,7 @@ builder.Services.AddScoped<IClassificationManager, ClassificationManager>();
 
 builder.Services.AddHostedService<LotClassificationService>();
 builder.Services.AddHostedService<LotRecoveryService>();
-builder.Services.AddHostedService<TradeStatusesUpdateBackgroundService>();
+//builder.Services.AddHostedService<TradeStatusesUpdateBackgroundService>();
 builder.Services.AddHostedService<LotAlertMatchingWorker>();
 builder.Services.AddHostedService<LotAlertDeliveryWorker>();
 
@@ -133,27 +133,31 @@ builder.Services.AddHttpClient("FedresursScraper", client =>
         //PooledConnectionLifetime = TimeSpan.FromMinutes(2)
     };
 
-    var proxyHost = configuration["ProxySettings:Host"];
-    var proxyPortString = configuration["ProxySettings:Port"];
-
-    if (!string.IsNullOrWhiteSpace(proxyHost) && int.TryParse(proxyPortString, out int proxyPort))
+    var useProxy = false;
+    if (useProxy)
     {
-        // Явное конструирование через Uri надежнее для некоторых провайдеров
-        var proxy = new WebProxy($"http://{proxyHost}:{proxyPort}")
-        {
-            BypassProxyOnLocal = false
-        };
+        var proxyHost = configuration["ProxySettings:Host"];
+        var proxyPortString = configuration["ProxySettings:Port"];
 
-        var proxyUser = configuration["ProxySettings:Username"];
-        var proxyPass = configuration["ProxySettings:Password"];
-
-        if (!string.IsNullOrWhiteSpace(proxyUser) && !string.IsNullOrWhiteSpace(proxyPass))
+        if (!string.IsNullOrWhiteSpace(proxyHost) && int.TryParse(proxyPortString, out int proxyPort))
         {
-            proxy.Credentials = new NetworkCredential(proxyUser, proxyPass);
+            // Явное конструирование через Uri надежнее для некоторых провайдеров
+            var proxy = new WebProxy($"http://{proxyHost}:{proxyPort}")
+            {
+                BypassProxyOnLocal = false
+            };
+
+            var proxyUser = configuration["ProxySettings:Username"];
+            var proxyPass = configuration["ProxySettings:Password"];
+
+            if (!string.IsNullOrWhiteSpace(proxyUser) && !string.IsNullOrWhiteSpace(proxyPass))
+            {
+                proxy.Credentials = new NetworkCredential(proxyUser, proxyPass);
+            }
+
+            handler.Proxy = proxy;
+            handler.UseProxy = true;
         }
-
-        handler.Proxy = proxy;
-        handler.UseProxy = true;
     }
 
     return handler;

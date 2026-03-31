@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FedresursScraper.Services;
+using FedresursScraper.Services.Models;
 using Lots.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ public class AdminController : ControllerBase
     private readonly ILogger<AdminController> _logger;
     private readonly IRosreestrQueue _rosreestrQueue;
     private readonly IRosreestrServiceClient _rosreestrClient;
+    private readonly IBiddingDataCache _cache;
 
     public AdminController(
         IRosreestrService rosreestrService,
@@ -24,7 +26,8 @@ public class AdminController : ControllerBase
         LotsDbContext dbContext,
         ILogger<AdminController> logger,
         IRosreestrQueue rosreestrQueue,
-        IRosreestrServiceClient rosreestrClient)
+        IRosreestrServiceClient rosreestrClient,
+        IBiddingDataCache cache)
     {
         _rosreestrService = rosreestrService;
         _classificationQueue = classificationQueue;
@@ -32,6 +35,7 @@ public class AdminController : ControllerBase
         _logger = logger;
         _rosreestrQueue = rosreestrQueue;
         _rosreestrClient = rosreestrClient;
+        _cache = cache;
     }
 
     /// <summary>
@@ -373,5 +377,98 @@ public class AdminController : ControllerBase
             SuccessfullyUpdated = updatedCount,
             Errors = errorCount
         });
+    }
+
+    /// <summary>
+    /// Выгружает торги из локального кэша
+    /// </summary>
+    [HttpGet("cache/export")]
+    public IActionResult ExportCache()
+    {
+        try
+        {
+            var biddings = _cache.GetDataToParse();
+
+            _logger.LogInformation("Выгружено {Count} торгов из кэша для экспорта.", biddings.Count);
+            return Ok(biddings);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при выгрузке кэша.");
+            return StatusCode(500, "Внутренняя ошибка сервера");
+        }
+    }
+
+    /// <summary>
+    /// Загружает собранные торги в кэш
+    /// </summary>
+    [HttpPost("cache/import")]
+    public IActionResult ImportCache([FromBody] List<BiddingData> biddings)
+    {
+        if (biddings == null || biddings.Count == 0)
+        {
+            return BadRequest("Список торгов пуст или имеет неверный формат.");
+        }
+
+        try
+        {
+            _cache.AddMany(biddings);
+
+            var importedIds = biddings.Select(b => b.Id).ToList();
+
+            _logger.LogInformation("Через API в кэш загружено {Count} новых торгов.", biddings.Count);
+
+            return Ok(new
+            {
+                Message = $"Успешно добавлено {biddings.Count} записей в кэш.",
+                ImportedIds = importedIds
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при загрузке торгов в кэш.");
+            return StatusCode(500, "Внутренняя ошибка сервера");
+        }
+    }
+
+    /// <summary>
+    /// Подтверждает успешный экспорт: удаляет указанные торги из локального кэша
+    /// </summary>
+    [HttpPost("cache/ack")]
+    public IActionResult AcknowledgeExported([FromBody] List<Guid> exportedIds)
+    {
+        if (exportedIds == null || !exportedIds.Any())
+        {
+            return BadRequest("Список ID пуст.");
+        }
+
+        try
+        {
+            int removedCount = _cache.RemoveMany(exportedIds);
+            return Ok(new { Message = $"Успешно удалено {removedCount} записей из кэша." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при удалении подтвержденных записей из кэша.");
+            return StatusCode(500, "Внутренняя ошибка сервера");
+        }
+    }
+
+    /// <summary>
+    /// Полностью очищает локальный кэш
+    /// </summary>
+    [HttpDelete("cache/clear")]
+    public IActionResult ClearCache()
+    {
+        try
+        {
+            _cache.ClearAll();
+            return Ok(new { Message = "Кэш полностью очищен." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при полной очистке кэша.");
+            return StatusCode(500, "Внутренняя ошибка сервера");
+        }
     }
 }
