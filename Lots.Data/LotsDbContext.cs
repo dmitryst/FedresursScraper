@@ -30,8 +30,10 @@ public class LotsDbContext : DbContext
     public DbSet<LotEvaluation> LotEvaluations { get; set; }
     public DbSet<LotEvaluationUserRunStatistics> LotEvaluationUserRunStatistics { get; set; } = default!;
 
+    public DbSet<RawFedresursMessage> RawFedresursMessages { get; set; }
+
     /// <summary>
-    /// Таблица состояний классификации лотов (используется как очередь для фоновых задач).
+    /// Таблица состояний классификации лотов (используется как очередь для фоновых задач). 
     /// </summary>
     public DbSet<LotClassificationState> LotClassificationStates { get; set; }
 

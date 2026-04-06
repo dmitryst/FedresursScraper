@@ -10,6 +10,10 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using FedresursScraper.Services.LotAlerts;
 using FedresursScraper.Services.Email;
 using System.Net;
+using FedresursScraper.Integrations.Fedresurs.Models;
+using FedresursScraper.Integrations.Fedresurs.Clients;
+using FedresursScraper.Integrations.Fedresurs.Workers;
+using FedresursScraper.Integrations.Fedresurs.Processors;
 
 // Используем WebApplicationBuilder для создания веб-приложения
 var builder = WebApplication.CreateBuilder(args);
@@ -193,6 +197,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
+
+// Integrations / Fedresurs
+
+builder.Services.Configure<FedresursApiOptions>(builder.Configuration.GetSection("FedresursApi"));
+
+builder.Services.Configure<FedresursWorkerOptions>(builder.Configuration.GetSection("FedresursWorkers"));
+
+builder.Services.AddHttpClient<IFedresursApiClient, FedresursApiClient>();
+
+builder.Services.AddHostedService<FedresursAggregatorService>();
+builder.Services.AddHostedService<FedresursMessageProcessorService>();
 
 // CORS
 var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
