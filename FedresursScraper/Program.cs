@@ -50,7 +50,8 @@ if (parsersEnabled)
 {
     builder.Services.AddSingleton<IBiddingDataCache, InMemoryBiddingDataCache>();
     //builder.Services.AddHostedService<BiddingListParser>();
-    builder.Services.AddHostedService<BiddingProcessorService>();
+    builder.Services.AddHostedService<BiddingListParserSeleniumImpl>();
+    //builder.Services.AddHostedService<BiddingProcessorService>();
 
     builder.Services.AddHostedService<RosreestrWorker>();
 }
@@ -123,12 +124,12 @@ builder.Services.AddHttpClient("FedresursScraper", client =>
     {
         SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
         // Критично важно для Федресурса (ASP.NET сессии и куки WAF)
-        UseCookies = true,
-        CookieContainer = new CookieContainer(),
-        // WAF часто требует поддержки сжатия
-        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
-        // Заставляет HttpClient отправлять креды прокси сразу, не дожидаясь ответа 407
-        PreAuthenticate = true,
+        // UseCookies = true,
+        // CookieContainer = new CookieContainer(),
+        // // WAF часто требует поддержки сжатия
+        // AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
+        // // Заставляет HttpClient отправлять креды прокси сразу, не дожидаясь ответа 407
+        // PreAuthenticate = true,
         // Ограничиваем время жизни соединения, чтобы ротация IP прокси работала корректно
         //PooledConnectionLifetime = TimeSpan.FromMinutes(2)
     };
