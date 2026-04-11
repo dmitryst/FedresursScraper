@@ -35,14 +35,19 @@ namespace FedresursScraper.Services
         {
             var lots = new List<LotInfo>();
             var url = $"https://fedresurs.ru/biddings/{biddingId}/lots";
+            var random = new Random();
 
             try
             {
+                _logger.LogInformation("Переход на страницу лотов: {Url}", url);
                 driver.Navigate().GoToUrl(url);
+
+                // Имитация: Пользователь ждет визуальной загрузки (2-4 сек)
+                await Task.Delay(random.Next(2000, 4000));
 
                 try
                 {
-                    var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+                    var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(15));
 
                     // Ждем, пока появится хотя бы один элемент лота
                     // Используем тот же селектор, что и при поиске элементов ниже
@@ -70,6 +75,12 @@ namespace FedresursScraper.Services
 
                 foreach (var card in lotCards)
                 {
+                    // Имитация: Скроллинг к карточке (очень важно для антифрод-систем)
+                    ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", card);
+
+                    // Короткая пауза после скролла (имитация фиксации взгляда)
+                    await Task.Delay(random.Next(400, 900));
+
                     try
                     {
                         // --- ПАРСИНГ ДАННЫХ В ПЕРЕМЕННЫЕ ---
@@ -142,6 +153,9 @@ namespace FedresursScraper.Services
             {
                 _logger.LogError(ex, "Критическая ошибка при парсинге лотов со страницы {Url}", url);
             }
+
+            // Финальная пауза перед закрытием/переходом (имитация "закончил чтение")
+            await Task.Delay(random.Next(1000, 1500));
 
             return lots;
         }
