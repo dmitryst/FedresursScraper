@@ -52,7 +52,7 @@ if (parsersEnabled)
     //builder.Services.AddHostedService<BiddingListParser>();
     //builder.Services.AddHostedService<BiddingListParserSeleniumImpl>();
     builder.Services.AddHostedService<BiddingListParserNewFedresursSeleniumImpl>();
-    //builder.Services.AddHostedService<BiddingProcessorService>(); 
+    builder.Services.AddHostedService<BiddingProcessorService>(); 
 
     builder.Services.AddHostedService<RosreestrWorker>();
 }
