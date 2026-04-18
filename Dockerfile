@@ -27,6 +27,7 @@ RUN echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome-keyring.gp
 
 # Обновляем пакеты еще раз и ставим браузер google-chrome и все нужные ему библиотеки
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    dumb-init \
     google-chrome-stable \
     wget \
     unzip \
@@ -87,4 +88,4 @@ FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-ENTRYPOINT ["dotnet", "FedresursScraper.dll"]
+ENTRYPOINT ["dumb-init", "--", "dotnet", "FedresursScraper.dll"]
