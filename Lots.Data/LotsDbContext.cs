@@ -48,6 +48,11 @@ public class LotsDbContext : DbContext
     public DbSet<LotAlertMatch> LotAlertMatches { get; set; }
 
     /// <summary>
+    /// Кеш похожих лотов
+    /// </summary>
+    public DbSet<SimilarLot> SimilarLots { get; set; }
+
+    /// <summary>
     /// Настраивает модели, связи и индексы при создании контекста.
     /// </summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -176,6 +181,17 @@ public class LotsDbContext : DbContext
             entity.HasIndex(e => e.IsSent)
                   .HasDatabaseName("IX_LotAlertMatches_Unsent")
                   .HasFilter("\"IsSent\" = FALSE");
+        });
+
+        modelBuilder.Entity<SimilarLot>(entity =>
+        {
+            // Быстрый поиск похожих лотов для конкретного лота
+            entity.HasIndex(e => e.SourceLotId);
+
+            entity.HasOne(e => e.TargetLot)
+                .WithMany()
+                .HasForeignKey(e => e.TargetLotId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
