@@ -92,6 +92,7 @@ public class FavoritesController : ControllerBase
             Bidding = new BiddingDto
             {
                 Type = l.Bidding.Type,
+                BidAcceptancePeriod = l.Bidding.BidAcceptancePeriod,
                 ViewingProcedure = l.Bidding.ViewingProcedure,
             },
             Categories = l.Categories.Select(c => new CategoryDto
@@ -99,6 +100,12 @@ public class FavoritesController : ControllerBase
                 Id = c.Id,
                 Name = c.Name
             }).ToList(),
+            PriceSchedules = l.PriceSchedules.Select(pc => new PriceScheduleDto
+            {
+                StartDate = pc.StartDate,
+                EndDate = pc.EndDate,
+                Price = pc.Price
+            })
         }).ToList();
 
         var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);

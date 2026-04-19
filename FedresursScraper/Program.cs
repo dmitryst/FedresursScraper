@@ -49,9 +49,15 @@ bool parsersEnabled = configuration.GetValue<bool>("BackgroundParsers:Enabled");
 if (parsersEnabled)
 {
     builder.Services.AddSingleton<IBiddingDataCache, InMemoryBiddingDataCache>();
+
+    // старые реализации парсеров списка торгов (с old.bankrot.fedresurs.ru)
     //builder.Services.AddHostedService<BiddingListParser>();
     //builder.Services.AddHostedService<BiddingListParserSeleniumImpl>();
+
+    // парсер списка торгов
     builder.Services.AddHostedService<BiddingListParserNewFedresursSeleniumImpl>();
+
+    // парсер торгов
     builder.Services.AddHostedService<BiddingProcessorService>(); 
 
     builder.Services.AddHostedService<RosreestrWorker>();
@@ -81,6 +87,8 @@ builder.Services.AddHostedService<LotRecoveryService>();
 //builder.Services.AddHostedService<TradeStatusesUpdateBackgroundService>();
 builder.Services.AddHostedService<LotAlertMatchingWorker>();
 builder.Services.AddHostedService<LotAlertDeliveryWorker>();
+
+// TODO: зарегистрировать SimilarLotsWorker когда все для этого будет готово
 
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
