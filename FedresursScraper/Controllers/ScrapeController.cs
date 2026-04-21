@@ -19,6 +19,7 @@ namespace FedresursScraper.Controllers
         private readonly ILogger<ScrapeController> _logger;
         private readonly ICdtTradeStatusScraper _cdtTradeStatusScraper;
         private readonly RadParserService _radParserService;
+        private readonly FedresursTradeResultsParserService _tradeResultsParser;
 
         public ScrapeController(
             IBiddingScraper biddingScraper,
@@ -29,7 +30,8 @@ namespace FedresursScraper.Controllers
             LotsDbContext dbContext,
             ILogger<ScrapeController> logger,
             ICdtTradeStatusScraper cdtTradeStatusScraper,
-            RadParserService radParserService)
+            RadParserService radParserService,
+            FedresursTradeResultsParserService tradeResultsParser)
         {
             _biddingScraper = biddingScraper;
             _lotsScraper = lotsScraper;
@@ -40,6 +42,7 @@ namespace FedresursScraper.Controllers
             _logger = logger;
             _cdtTradeStatusScraper = cdtTradeStatusScraper;
             _radParserService = radParserService;
+            _tradeResultsParser = tradeResultsParser;
         }
 
         [HttpGet("{biddingId}")]
@@ -258,6 +261,19 @@ namespace FedresursScraper.Controllers
                 _logger.LogError(ex, "Ошибка при парсинге каталога РАД");
                 return StatusCode(500, new { Error = ex.Message });
             }
+        }
+
+        [HttpPost("biddings/{biddingId:guid}/results")]
+        public async Task<IActionResult> ScrapeBiddingResults(Guid biddingId, CancellationToken cancellationToken)
+        {
+            var result = await _tradeResultsParser.ProcessSingleBiddingAsync(biddingId, cancellationToken);
+
+            if (!result)
+            {
+                return NotFound(new { Message = $"Торги с ID {biddingId} не найдены в базе." });
+            }
+
+            return Ok(new { Message = $"Парсинг результатов для торгов {biddingId} успешно завершен." });
         }
     }
 }

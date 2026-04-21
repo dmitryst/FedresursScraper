@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
+using Lots.Data.Dto;
 using NpgsqlTypes;
 
 namespace Lots.Data.Entities;
@@ -255,5 +256,47 @@ public class Lot
         };
 
         return true;
+    }
+
+    /// <summary>
+    /// Обновляет статус лота на основе полученных результатов торгов.
+    /// </summary>
+    public bool UpdateTradeStatus(ImportLotTradeResultDto dto, string source, out LotAuditEvent auditEvent)
+    {
+        var oldStatus = TradeStatus;
+
+        // Приоритет отдаем внутреннему статусу из DTO (который мы распарсили из блока лота)
+        string targetStatus;
+        if (!string.IsNullOrEmpty(dto.Status) && dto.Status.Contains("Торги не состоялись"))
+        {
+            targetStatus = "Торги не состоялись";
+        }
+        else
+        {
+            targetStatus = dto.EventType switch
+            {
+                "Торги не состоялись" => "Торги не состоялись",
+                "Отмена торгов" => "Торги отменены",
+                "Результаты торгов" => "Завершенные",
+                _ => "Завершенные"
+            };
+        }
+
+        TradeStatus = targetStatus;
+        FinalPrice = dto.FinalPrice;
+        WinnerName = dto.WinnerName;
+        WinnerInn = dto.WinnerInn;
+
+        auditEvent = new LotAuditEvent
+        {
+            LotId = this.Id,
+            EventType = "TradeStatusUpdate",
+            Status = "Success",
+            Source = source,
+            Timestamp = DateTime.UtcNow,
+            Details = $"Обновлено: {dto.EventType}. Статус лота: {dto.Status}. Обоснование: {dto.DecisionJustification}"
+        };
+
+        return oldStatus != targetStatus;
     }
 }

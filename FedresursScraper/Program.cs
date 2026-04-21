@@ -90,6 +90,11 @@ builder.Services.AddHostedService<LotAlertDeliveryWorker>();
 
 // TODO: зарегистрировать SimilarLotsWorker когда все для этого будет готово
 
+builder.Services.AddScoped<FedresursTradeResultsParserService>();
+builder.Services.AddScoped<TradeResultsImportService>();
+
+// TODO: зарегистрировать FedresursTradeResultsBackgroundWorker
+
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 

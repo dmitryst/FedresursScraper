@@ -53,6 +53,11 @@ public class LotsDbContext : DbContext
     public DbSet<SimilarLot> SimilarLots { get; set; }
 
     /// <summary>
+    /// Результаты торгов
+    /// </summary>
+    public DbSet<LotTradeResult> LotTradeResults { get; set; }
+
+    /// <summary>
     /// Настраивает модели, связи и индексы при создании контекста.
     /// </summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -193,6 +198,20 @@ public class LotsDbContext : DbContext
                 .HasForeignKey(e => e.TargetLotId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+        // Автоматическая настройка всех DateTime свойств для всех сущностей
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            var dateTimeProperties = entityType.GetProperties()
+                .Where(p => p.ClrType == typeof(DateTime) || p.ClrType == typeof(DateTime?));
+
+            foreach (var property in dateTimeProperties)
+            {
+                property.SetValueConverter(new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<DateTime, DateTime>(
+                    v => v.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v, DateTimeKind.Utc),
+                    v => v));
+            }
+        }
     }
 }
 
