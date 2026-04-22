@@ -149,7 +149,10 @@ public class Bidding
 
             if (startAcceptanceDate.HasValue && startAcceptanceDate.Value > utcNow)
             {
-                NextStatusCheckAt = startAcceptanceDate.Value.AddDays(1);
+                //NextStatusCheckAt = startAcceptanceDate.Value.AddDays(1);
+                // В будущем будем проверять график снижения цены
+                // пока протсо прибавляем 7 дней
+                NextStatusCheckAt = utcNow.AddDays(7);
             }
             else
             {
@@ -166,7 +169,8 @@ public class Bidding
 
                 if (resultsDateUtc > utcNow)
                 {
-                    NextStatusCheckAt = resultsDateUtc.AddDays(1);
+                    // проверяем каждые 3 дня
+                    NextStatusCheckAt = resultsDateUtc.AddDays(3);
                 }
                 else
                 {
