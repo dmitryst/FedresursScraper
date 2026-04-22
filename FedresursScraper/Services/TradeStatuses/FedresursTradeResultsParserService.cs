@@ -263,7 +263,6 @@ public class FedresursTradeResultsParserService
 
     private bool ParseSuccessBiddingMessage(IWebDriver driver, LotsDbContext dbContext, Bidding bidding, Guid messageId, DateTime eventDate)
     {
-        // Аналогичный XPath для компонента состоявшихся торгов
         var lotBlocks = driver.FindElements(By.XPath("//bidding-message-biddingresult/div[./div[contains(@class, 'info-header')]]"));
         bool processedAny = false;
 
@@ -290,10 +289,24 @@ public class FedresursTradeResultsParserService
 
             if (!string.IsNullOrEmpty(winnerRaw))
             {
-                // Извлекаем ИНН из строки вида "Иванов Иван (ИНН: 1234567890)"
-                var innMatch = Regex.Match(winnerRaw, @"ИНН:\s*(\d+)");
-                winnerInn = innMatch.Success ? innMatch.Groups[1].Value : null;
-                winnerName = winnerRaw.Split('(')[0].Trim();
+                // Ищем "ИНН", игнорируем любые не-цифры (переносы, двоеточия, пробелы) и берем 10-12 цифр
+                var innMatch = Regex.Match(winnerRaw, @"ИНН[^\d]*(\d{10,12})", RegexOptions.IgnoreCase);
+                if (innMatch.Success)
+                {
+                    winnerInn = innMatch.Groups[1].Value;
+
+                    // Имя — это всё, что до слова "ИНН"
+                    var rawName = winnerRaw.Substring(0, innMatch.Index);
+
+                    // Заменяем любые переносы строк и множественные пробелы на один пробел, 
+                    // и убираем лишнюю пунктуацию по краям
+                    winnerName = Regex.Replace(rawName, @"\s+", " ").Trim(' ', '(', ',', '-');
+                }
+                else
+                {
+                    // Если ИНН не найден, просто чистим строку от переносов
+                    winnerName = Regex.Replace(winnerRaw, @"\s+", " ").Trim();
+                }
             }
 
             var result = new LotTradeResult
