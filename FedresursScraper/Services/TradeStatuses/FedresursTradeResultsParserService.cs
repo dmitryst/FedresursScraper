@@ -94,11 +94,39 @@ public class FedresursTradeResultsParserService
         using var driver = _webDriverFactory.CreateDriver();
         var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(15));
 
-        await ProcessSingleBiddingInternalAsync(driver, wait, bidding, cancellationToken);
+        bool allFinalized = await ProcessSingleBiddingInternalAsync(driver, wait, bidding, cancellationToken);
+
+        if (allFinalized)
+        {
+            bidding.IsTradeStatusesFinalized = true;
+            bidding.NextStatusCheckAt = null;
+            _logger.LogInformation("Все лоты торгов {BiddingId} получили результаты. Торги финализированы.", bidding.Id);
+        }
+        else
+        {
+            bidding.ScheduleNextCheck(DateTime.UtcNow);
+
+            // Записываем обновление в таблицу для экспорта на прод
+            var scheduleUpdate = new BiddingScheduleUpdate
+            {
+                Id = Guid.NewGuid(),
+                BiddingId = bidding.Id,
+                NextStatusCheckAt = bidding.NextStatusCheckAt.Value,
+                IsExported = false
+            };
+
+            _dbContext.BiddingScheduleUpdates.Add(scheduleUpdate);
+
+            _logger.LogInformation("Торги {Id} не завершены. Перепланировано на {Date}",
+                biddingId, bidding.NextStatusCheckAt);
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
         return true;
     }
 
-    private async Task ProcessSingleBiddingInternalAsync(IWebDriver driver, WebDriverWait wait, Bidding bidding, CancellationToken stoppingToken)
+    private async Task<bool> ProcessSingleBiddingInternalAsync(IWebDriver driver, WebDriverWait wait, Bidding bidding, CancellationToken stoppingToken)
     {
         var messagesUrl = $"{BaseUrl}/{bidding.Id}/messages";
         _logger.LogInformation("Проверка сообщений для торгов {BiddingId}: {Url}", bidding.Id, messagesUrl);
@@ -208,21 +236,10 @@ public class FedresursTradeResultsParserService
                 }
             }
 
-            if (allFinalized)
-            {
-                bidding.IsTradeStatusesFinalized = true;
-                bidding.NextStatusCheckAt = null;
-                _logger.LogInformation("Все лоты торгов {BiddingId} получили результаты. Торги финализированы.", bidding.Id);
-            }
-            else
-            {
-                // Если результаты были (hasNewResults), но не по всем лотам, 
-                // или результатов вообще не было — планируем следующий заход
-                bidding.ScheduleNextCheck(DateTime.UtcNow);
-            }
-
-            await _dbContext.SaveChangesAsync(stoppingToken);
+            return allFinalized;
         }
+
+        return false;
     }
 
     private bool ParseFailedBiddingMessage(IWebDriver driver, LotsDbContext dbContext, Bidding bidding, Guid messageId, DateTime eventDate)

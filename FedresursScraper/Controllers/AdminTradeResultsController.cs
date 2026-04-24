@@ -25,9 +25,12 @@ public class AdminTradeResultsController : ControllerBase
 
     // ВЫЗЫВАЕТСЯ НА ЛОКАЛЬНОМ ПАРСЕРЕ
     [HttpGet("export")]
-    public async Task<ActionResult<List<ImportLotTradeResultDto>>> ExportUnsyncedResults()
+    public async Task<ActionResult<TradeSyncBatchDto>> ExportUnsyncedData()
     {
-        var results = await _dbContext.LotTradeResults
+        var batch = new TradeSyncBatchDto();
+
+        // Собираем результаты торгов
+        batch.Results = await _dbContext.LotTradeResults
             .Where(r => !r.IsExportedToProd)
             .Select(r => new ImportLotTradeResultDto
             {
@@ -45,40 +48,76 @@ public class AdminTradeResultsController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(results);
+        // Собираем обновления дат проверки
+        batch.ScheduleUpdates = await _dbContext.BiddingScheduleUpdates
+            .Where(u => !u.IsExported)
+            .Select(u => new BiddingScheduleUpdateDto
+            {
+                BiddingId = u.BiddingId,
+                NextStatusCheckAt = u.NextStatusCheckAt
+            })
+            .ToListAsync();
+
+        return Ok(batch);
     }
 
     // ВЫЗЫВАЕТСЯ НА ПРОДЕ
     [HttpPost("import")]
-    public async Task<IActionResult> ImportResults([FromBody] List<ImportLotTradeResultDto> results)
+    public async Task<IActionResult> ImportBatch([FromBody] TradeSyncBatchDto batch)
     {
-        if (results == null || !results.Any())
-            return BadRequest("Список пуст");
+        if (batch == null)
+            return BadRequest("Пустой пакет");
 
-        await _importService.ImportResultsAsync(results, HttpContext.RequestAborted);
+        // Импортируем результаты
+        if (batch.Results.Any())
+        {
+            await _importService.ImportResultsAsync(batch.Results, HttpContext.RequestAborted);
+        }
 
-        return Ok(new { Count = results.Count });
+        // Обновляем даты в Bidding
+        if (batch.ScheduleUpdates.Any())
+        {
+            foreach (var update in batch.ScheduleUpdates)
+            {
+                // Используем ExecuteUpdate для производительности (EF Core 7+)
+                await _dbContext.Biddings
+                    .Where(b => b.Id == update.BiddingId)
+                    .ExecuteUpdateAsync(s => s.SetProperty(b => b.NextStatusCheckAt, update.NextStatusCheckAt));
+            }
+        }
+
+        return Ok(new
+        {
+            ResultsCount = batch.Results.Count,
+            UpdatesCount = batch.ScheduleUpdates.Count
+        });
     }
 
     // ВЫЗЫВАЕТСЯ НА ЛОКАЛЬНОМ ПАРСЕРЕ ПОСЛЕ УСПЕШНОГО IMPORT
     [HttpPost("mark-exported")]
-    public async Task<IActionResult> MarkAsExported([FromBody] List<ImportLotTradeResultDto> results)
+    public async Task<IActionResult> MarkAsExported([FromBody] TradeSyncBatchDto batch)
     {
-        if (results == null || !results.Any()) return BadRequest();
+        if (batch == null)
+            return BadRequest();
 
-        // Собираем пары MessageId + LotNumber для точного поиска в локальной БД
-        foreach (var dto in results)
+        // Помечаем результаты как отправленные
+        var messageIds = batch.Results.Select(r => r.MessageId).ToList();
+        if (messageIds.Any())
         {
-            var record = await _dbContext.LotTradeResults
-                .FirstOrDefaultAsync(r => r.MessageId == dto.MessageId && r.LotNumber == dto.LotNumber);
-
-            if (record != null)
-            {
-                record.IsExportedToProd = true;
-            }
+            await _dbContext.LotTradeResults
+                .Where(r => messageIds.Contains(r.MessageId))
+                .ExecuteUpdateAsync(s => s.SetProperty(r => r.IsExportedToProd, true));
         }
 
-        await _dbContext.SaveChangesAsync();
+        // Помечаем обновления расписания как отправленные
+        var biddingIds = batch.ScheduleUpdates.Select(u => u.BiddingId).ToList();
+        if (biddingIds.Any())
+        {
+            await _dbContext.BiddingScheduleUpdates
+                .Where(u => biddingIds.Contains(u.BiddingId))
+                .ExecuteUpdateAsync(s => s.SetProperty(u => u.IsExported, true));
+        }
+
         return Ok();
     }
 }

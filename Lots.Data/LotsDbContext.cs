@@ -57,6 +57,8 @@ public class LotsDbContext : DbContext
     /// </summary>
     public DbSet<LotTradeResult> LotTradeResults { get; set; }
 
+    public DbSet<BiddingScheduleUpdate> BiddingScheduleUpdates { get; set; }
+
     /// <summary>
     /// Настраивает модели, связи и индексы при создании контекста.
     /// </summary>
