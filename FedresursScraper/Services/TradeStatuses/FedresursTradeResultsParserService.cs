@@ -107,15 +107,18 @@ public class FedresursTradeResultsParserService
             bidding.ScheduleNextCheck(DateTime.UtcNow);
 
             // Записываем обновление в таблицу для экспорта на прод
-            var scheduleUpdate = new BiddingScheduleUpdate
+            if (bidding.NextStatusCheckAt.HasValue)
             {
-                Id = Guid.NewGuid(),
-                BiddingId = bidding.Id,
-                NextStatusCheckAt = bidding.NextStatusCheckAt.Value,
-                IsExported = false
-            };
+                var scheduleUpdate = new BiddingScheduleUpdate
+                {
+                    Id = Guid.NewGuid(),
+                    BiddingId = bidding.Id,
+                    NextStatusCheckAt = bidding.NextStatusCheckAt.Value,
+                    IsExported = false
+                };
 
-            _dbContext.BiddingScheduleUpdates.Add(scheduleUpdate);
+                _dbContext.BiddingScheduleUpdates.Add(scheduleUpdate);
+            }
 
             _logger.LogInformation("Торги {Id} не завершены. Перепланировано на {Date}",
                 biddingId, bidding.NextStatusCheckAt);
