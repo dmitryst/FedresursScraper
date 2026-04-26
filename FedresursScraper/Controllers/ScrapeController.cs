@@ -266,14 +266,49 @@ namespace FedresursScraper.Controllers
         [HttpPost("biddings/{biddingId:guid}/results")]
         public async Task<IActionResult> ScrapeBiddingResults(Guid biddingId, CancellationToken cancellationToken)
         {
-            var result = await _tradeResultsParser.ProcessSingleBiddingAsync(biddingId, cancellationToken);
+            // Запускаем парсер
+            var isFound = await _tradeResultsParser.ProcessSingleBiddingAsync(biddingId, cancellationToken);
 
-            if (!result)
+            if (!isFound)
             {
                 return NotFound(new { Message = $"Торги с ID {biddingId} не найдены в базе." });
             }
 
-            return Ok(new { Message = $"Парсинг результатов для торгов {biddingId} успешно завершен." });
+            // Загружаем торги, чтобы узнать общее количество лотов
+            var bidding = await _dbContext.Biddings
+                .Include(b => b.Lots)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.Id == biddingId, cancellationToken);
+
+            if (bidding == null)
+            {
+                return NotFound(new { Message = $"Торги с ID {biddingId} были удалены или не существуют." });
+            }
+
+            // Считаем статистику на основе собранных фактов (LotTradeResults)
+
+            // Считаем только лоты с валидными номерами
+            var validLotsCount = bidding.Lots.Count(l => !string.IsNullOrWhiteSpace(l.LotNumber));
+
+            // Считаем уникальные номера лотов, для которых парсер нашел хотя бы одно сообщение с результатами
+            var lotsWithParsedResults = await _dbContext.LotTradeResults
+                .Where(r => r.BiddingId == biddingId)
+                .Select(r => r.LotNumber)
+                .Distinct()
+                .CountAsync(cancellationToken);
+
+            var pendingLots = validLotsCount - lotsWithParsedResults;
+
+            return Ok(new
+            {
+                Message = $"Парсинг результатов для торгов {biddingId} успешно завершен.",
+                Stats = new
+                {
+                    TotalLots = validLotsCount,
+                    LotsWithParsedResults = lotsWithParsedResults,
+                    PendingLots = Math.Max(0, pendingLots) // Защита от отрицательных чисел, если база рассинхронизирована
+                }
+            });
         }
     }
 }
