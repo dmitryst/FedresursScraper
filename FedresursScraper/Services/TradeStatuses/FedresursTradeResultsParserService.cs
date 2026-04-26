@@ -299,7 +299,7 @@ public class FedresursTradeResultsParserService
 
             var lotStatus = GetValue("Статус");
             var justification = GetValue("Обоснование принятого решения");
-            var finalPrice = ParsePrice(GetValue("Предложенная цена") ?? GetValue("Цена приобретения"));
+            var finalPrice = ParsePrice(GetValue("Цена лота") ?? GetValue("Предложенная цена") ?? GetValue("Цена приобретения"));
 
             // Пробуем найти Победителя, если нет - Участника
             var winnerRaw = GetValue("Победитель") ?? GetValue("Участник");

@@ -87,7 +87,13 @@ public class AdminSeoController : ControllerBase
             var lotsData = await dbContext.Lots
                 .AsNoTracking()
                 .Where(l => l.TradeStatus != null && finalStatuses.Contains(l.TradeStatus))
-                .Select(l => new { l.PublicId, l.Slug, l.Title, l.Description })
+                .Select(l => new Lot
+                {
+                    PublicId = l.PublicId,
+                    Slug = l.Slug,
+                    Title = l.Title,
+                    Description = l.Description
+                })
                 .ToListAsync();
 
             if (lotsData.Count == 0)
@@ -96,22 +102,12 @@ public class AdminSeoController : ControllerBase
                 return;
             }
 
-            var urlsToSubmit = new List<string>(lotsData.Count);
+            // Генерируем URL через доменный метод и оставляем только уникальные
+            var uniqueUrls = lotsData
+                .Select(lot => lot.GetOrGenerateLotUrl())
+                .Distinct()
+                .ToList();
 
-            foreach (var lot in lotsData)
-            {
-                var slug = lot.Slug;
-
-                if (string.IsNullOrWhiteSpace(slug))
-                {
-                    var textForSlug = !string.IsNullOrWhiteSpace(lot.Title) ? lot.Title : lot.Description;
-                    slug = SlugHelper.GenerateSlug(textForSlug ?? "lot");
-                }
-
-                urlsToSubmit.Add($"https://s-lot.ru/lot/{slug}-{lot.PublicId}");
-            }
-
-            var uniqueUrls = urlsToSubmit.Distinct().ToList();
             _logger.LogInformation("Сгенерировано {Count} уникальных URL завершенных лотов. Начинаем отправку...", uniqueUrls.Count);
 
             // Лимит Яндекса - 10 000 URL за раз. Отправляем батчами по 5000.

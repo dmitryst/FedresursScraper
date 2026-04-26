@@ -239,7 +239,7 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
                             // Если статус изменился и стал конечным (не активным)
                             if (oldStatus != lot.TradeStatus && !lot.IsActive())
                             {
-                                urlsToPing.Add(GenerateLotUrl(lot));
+                                urlsToPing.Add(lot.GetOrGenerateLotUrl());
                             }
                         }
                     }
@@ -270,7 +270,7 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
                                         _logger.LogInformation("Лот {LotId} дообогащен с ЦДТ общим статусом торгов: {Status}", lot.Id, cdtStatus);
 
                                         // ЦДТ перевел лот в отмененные/не состоялись
-                                        urlsToPing.Add(GenerateLotUrl(lot));
+                                        urlsToPing.Add(lot.GetOrGenerateLotUrl());
                                     }
                                 }
                             }
@@ -322,29 +322,6 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
             await indexNowService.SubmitUrlsAsync(distinctUrls);
             _logger.LogInformation("IndexNow: Отправлено {Count} новых архивных ссылок.", distinctUrls.Count);
         }
-    }
-
-    /// <summary>
-    /// Генерация URL лота.
-    /// Точно повторяет логику фронтенда (schemas.ts): 
-    /// lot.slug ?? generateSlug(lot.title || lot.description)
-    /// </summary>
-    private string GenerateLotUrl(Lot lot)
-    {
-        var slug = lot.Slug;
-
-        // Если Slug в БД пустой (старые лоты), генерируем его на лету
-        if (string.IsNullOrWhiteSpace(slug))
-        {
-            var textForSlug = !string.IsNullOrWhiteSpace(lot.Title) 
-                ? lot.Title 
-                : lot.Description;
-            
-            slug = SlugHelper.GenerateSlug(textForSlug ?? "lot");
-        }
-
-        // Так как PublicId есть всегда, используем основной формат
-        return $"https://s-lot.ru/lot/{slug}-{lot.PublicId}";
     }
 
     /// <summary>
@@ -406,7 +383,7 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
                 hasChanges = true;
 
                 // Лот завершился по таймауту
-                urlsToPing.Add(GenerateLotUrl(lot));
+                urlsToPing.Add(lot.GetOrGenerateLotUrl());
             }
         }
 

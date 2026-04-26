@@ -14,13 +14,16 @@ public class AdminTradeResultsController : ControllerBase
 {
     private readonly LotsDbContext _dbContext;
     private readonly TradeResultsImportService _importService;
+    private readonly IIndexNowService _indexNowService;
 
     public AdminTradeResultsController(
         LotsDbContext dbContext,
-        TradeResultsImportService importService)
+        TradeResultsImportService importService,
+        IIndexNowService indexNowService)
     {
         _dbContext = dbContext;
         _importService = importService;
+        _indexNowService = indexNowService;
     }
 
     // ВЫЗЫВАЕТСЯ НА ЛОКАЛЬНОМ ПАРСЕРЕ
@@ -119,5 +122,50 @@ public class AdminTradeResultsController : ControllerBase
         }
 
         return Ok();
+    }
+
+    [HttpPost("force-finalize/{biddingId}")]
+    public async Task<IActionResult> ForceFinalize(Guid biddingId)
+    {
+        var bidding = await _dbContext.Biddings
+            .Include(b => b.Lots)
+            .FirstOrDefaultAsync(b => b.Id == biddingId);
+
+        if (bidding == null)
+        {
+            return NotFound(new { Error = $"Торги с Id {biddingId} не найдены." });
+        }
+
+        // Выполняем доменную логику
+        // Источник указываем как "ManualAdminAction", чтобы в аудите было видно вмешательство.
+        var changedLots = bidding.ForceFinalizeMissingResults("ManualAdminAction", out var auditEvents);
+
+        if (auditEvents.Any())
+        {
+            _dbContext.LotAuditEvents.AddRange(auditEvents);
+        }
+
+        // Сохраняем все изменения (статусы лотов, статус торгов и аудит) одной транзакцией
+        await _dbContext.SaveChangesAsync();
+
+        // Отправляем уведомления в IndexNow
+        if (changedLots.Any())
+        {
+            var urlsToPing = changedLots
+                .Select(l => l.GetOrGenerateLotUrl())
+                .Distinct()
+                .ToList();
+
+            // Отправляем асинхронно через существующий сервис
+            // Не дожидаемся ответа (fire-and-forget), чтобы не тормозить UI админки
+            _ = _indexNowService.SubmitUrlsAsync(urlsToPing);
+        }
+
+        return Ok(new
+        {
+            Message = "Торги успешно финализированы.",
+            BiddingId = biddingId,
+            ProcessedLots = changedLots.Count
+        });
     }
 }

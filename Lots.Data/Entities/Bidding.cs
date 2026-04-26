@@ -128,7 +128,7 @@ public class Bidding
     /// <summary>
     /// Флаг: указывает, что торги были обработаны, но лотов на площадке реально нет
     /// </summary>
-    public bool HasNoLots { get; set; } = false; 
+    public bool HasNoLots { get; set; } = false;
 
     // Domain Logic
 
@@ -213,6 +213,40 @@ public class Bidding
         var fallbackDateUtc = fallbackDate.Kind == DateTimeKind.Utc ? fallbackDate : fallbackDate.ToUniversalTime();
 
         return (utcNow - fallbackDateUtc) > timeout;
+    }
+
+    /// <summary>
+    /// Инвалидирует оставшиеся активные лоты и переводит торги в финальный статус.
+    /// </summary>
+    public List<Lot> ForceFinalizeMissingResults(string source, out List<LotAuditEvent> auditEvents)
+    {
+        auditEvents = [];
+        var changedLots = new List<Lot>();
+
+        // Если торги уже помечены как финальные, повторная обработка не требуется.
+        if (IsTradeStatusesFinalized)
+        {
+            return changedLots;
+        }
+
+        foreach (var lot in Lots.Where(l => l.IsActive()))
+        {
+            if (lot.TryMarkAsFinalizedWithoutData(source, out var auditEvent))
+            {
+                if (auditEvent != null)
+                {
+                    auditEvents.Add(auditEvent);
+                }
+
+                changedLots.Add(lot);
+            }
+        }
+
+        // Переводим агрегат в конечное состояние
+        IsTradeStatusesFinalized = true;
+        NextStatusCheckAt = null;
+
+        return changedLots;
     }
 
     private DateTime? TryParseBidAcceptancePeriodStart()

@@ -156,27 +156,24 @@ public class LotRecoveryService : BackgroundService
             }
 
             var urlsToSubmit = new List<string>();
-            var baseUrl = _configuration["App:BaseUrl"] ?? "https://s-lot.ru";
             var lotsToUpdate = false;
 
             foreach (var lot in updatedLots)
             {
                 if (string.IsNullOrEmpty(lot.Slug))
                 {
-                    var textForSlug = lot.Title ?? lot.Description;
-
                     if (string.IsNullOrEmpty(lot.Title))
                     {
                         _logger.LogWarning("Внимание: Лот {LotId} остался без Title после классификации! Slug сгенерирован из Description.", lot.Id);
                     }
 
                     // Генерируем Slug
-                    lot.Slug = SlugHelper.GenerateSlug(textForSlug!);
+                    lot.Slug = lot.GetOrGenerateSlug();
                     lotsToUpdate = true;
                 }
 
                 // Формируем URL, используя сохраненный Slug
-                var url = $"{baseUrl}/lot/{lot.Slug}-{lot.PublicId}";
+                var url = lot.GetOrGenerateLotUrl();
                 urlsToSubmit.Add(url);
             }
 

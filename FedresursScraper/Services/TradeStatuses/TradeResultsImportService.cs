@@ -90,7 +90,7 @@ public class TradeResultsImportService
                     if (lot.UpdateTradeStatus(dto, "ParserImport", out var auditEvent))
                     {
                         _dbContext.LotAuditEvents.Add(auditEvent);
-                        urlsToPing.Add(GenerateLotUrl(lot));
+                        urlsToPing.Add(lot.GetOrGenerateLotUrl());
                         biddingHasChanges = true;
                     }
                 }
@@ -129,21 +129,5 @@ public class TradeResultsImportService
     {
         if (string.IsNullOrWhiteSpace(lotNumber)) return string.Empty;
         return Regex.Replace(lotNumber.Trim(), @"(?i)\s*лот\s*№?\s*", "").Trim();
-    }
-
-    private string GenerateLotUrl(Lot lot)
-    {
-        var slug = lot.Slug;
-
-        if (string.IsNullOrWhiteSpace(slug))
-        {
-            var textForSlug = !string.IsNullOrWhiteSpace(lot.Title)
-                ? lot.Title
-                : lot.Description;
-
-            slug = SlugHelper.GenerateSlug(textForSlug ?? "lot");
-        }
-
-        return $"https://s-lot.ru/lot/{slug}-{lot.PublicId}";
     }
 }

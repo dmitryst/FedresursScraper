@@ -299,4 +299,21 @@ public class Lot
 
         return oldStatus != targetStatus;
     }
+
+    public string GetOrGenerateSlug()
+    {
+        if (string.IsNullOrWhiteSpace(Slug))
+        {
+            var textForSlug = !string.IsNullOrWhiteSpace(Title) ? Title : Description;
+
+            Slug = SlugHelper.GenerateSlug(textForSlug ?? "lot");
+        }
+
+        return Slug;
+    }
+
+    public string GetOrGenerateLotUrl()
+    {
+        return $"https://s-lot.ru/lot/{GetOrGenerateSlug()}-{PublicId}";
+    }
 }
