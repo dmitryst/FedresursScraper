@@ -237,14 +237,22 @@ public class LotsController : ControllerBase
     }
 
     /// <summary>
-    /// Возвращает лоты с координатами.
-    /// Для анонимных пользователей или пользователей без подписки возвращает не более 100 лотов.
-    /// Для пользователей с активной подпиской возвращает все лоты.
+    /// Получает список лотов с координатами для отображения на интерактивной карте.
     /// </summary>
+    /// <remarks>
+    /// Поддерживает фильтрацию по Bounding Box (видимой области экрана). 
+    /// Для пользователей с подпиской PRO (Full Access) возвращает все объекты в рамках экрана (с лимитом для защиты от перегрузки).
+    /// Для пользователей без активной подписки возвращает лоты только из ограниченного глобального демо-пула (Teaser Set), 
+    /// но при этом рассчитывает реальное количество объектов в видимой зоне для маркетинговой плашки.
+    /// </remarks>
     [HttpGet("with-coordinates")]
     public async Task<IActionResult> GetLotsWithCoordinates(
         [FromQuery] string[]? categories = null,
-        [FromQuery] bool onlyActive = true)
+        [FromQuery] bool onlyActive = true,
+        [FromQuery] double? minLat = null,
+        [FromQuery] double? maxLat = null,
+        [FromQuery] double? minLon = null,
+        [FromQuery] double? maxLon = null)
     {
         AccessLevel accessLevel = AccessLevel.Anonymous;
 
@@ -277,20 +285,50 @@ public class LotsController : ControllerBase
 
         var spec = new LotsWithCoordinatesSpecification(categories, onlyActive);
 
-        // Подсчитываем общее количество до применения пагинации/лимитов
-        var totalCount = await _dbContext.Lots.WithSpecification(spec).CountAsync();
+        // Базовый запрос ко всем лотам (до применения фильтра по карте)
+        var baseQuery = _dbContext.Lots.WithSpecification(spec);
 
-        // Получаем результаты проекции из БД
+        // Запрос для конкретной области (Bounding Box)
+        var bboxQuery = baseQuery;
+        if (minLat.HasValue && maxLat.HasValue && minLon.HasValue && maxLon.HasValue)
+        {
+            bboxQuery = bboxQuery.Where(l =>
+                l.Latitude >= minLat.Value && l.Latitude <= maxLat.Value &&
+                l.Longitude >= minLon.Value && l.Longitude <= maxLon.Value);
+        }
+
+        // Считаем реальное количество объектов в видимой зоне (для маркетинговой плашки)
+        var totalCountInBBox = await bboxQuery.CountAsync();
+
         List<LotGeoResult> dbResults;
 
+        // Выборка данных в зависимости от прав доступа
         if (accessLevel == AccessLevel.Full)
         {
-            dbResults = await _dbContext.Lots.WithSpecification(spec).ToListAsync();
+            // PRO-пользователь: отдаем все лоты в видимой области (с защитным лимитом от зависания браузера)
+            dbResults = await bboxQuery.Take(2000).ToListAsync();
         }
         else
         {
-            // Если нет подписки или пользователь анонимный, берем только первые 100
-            dbResults = await _dbContext.Lots.WithSpecification(spec).Take(100).ToListAsync();
+            // БЕСПЛАТНЫЙ пользователь: 
+            // Создаем "глобальный демо-пул" (например, 200 лотов со всей страны).
+            // Обязательно делаем OrderBy, чтобы набор демо-лотов был всегда стабильным!
+            var globalFreePool = baseQuery
+                .OrderByDescending(l => l.Id) // Или l.PublishedDate
+                .Take(200);
+
+            // Теперь применяем фильтр по экрану только к этому маленькому демо-пулу
+            if (minLat.HasValue && maxLat.HasValue && minLon.HasValue && maxLon.HasValue)
+            {
+                dbResults = await globalFreePool.Where(l =>
+                    l.Latitude >= minLat.Value && l.Latitude <= maxLat.Value &&
+                    l.Longitude >= minLon.Value && l.Longitude <= maxLon.Value)
+                    .ToListAsync();
+            }
+            else
+            {
+                dbResults = await globalFreePool.ToListAsync();
+            }
         }
 
         var lotsForMap = dbResults
@@ -307,7 +345,7 @@ public class LotsController : ControllerBase
         var response = new MapLotsResponse
         {
             Lots = lotsForMap,
-            TotalCount = totalCount,
+            TotalCount = totalCountInBBox, // Отправляем реальное количество объектов в этой зоне
             AccessLevel = accessLevel
         };
 

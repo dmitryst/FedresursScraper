@@ -149,6 +149,14 @@ public class LotsDbContext : DbContext
             .HasDatabaseName("IX_Lots_ActiveTradeStatus")
             .HasFilter($"\"TradeStatus\" IS NULL OR \"TradeStatus\" = '' OR \"TradeStatus\" NOT IN ({finalStatusesSql})");
 
+        // --- ИНДЕКС ДЛЯ ПОИСКА ПО КАРТЕ (Bounding Box) ---
+        // Создаем композитный индекс по широте и долготе.
+        // Делаем его частичным (IS NOT NULL), так как лоты без координат на карте не нужны в принципе.
+        modelBuilder.Entity<Lot>()
+            .HasIndex(l => new { l.Latitude, l.Longitude })
+            .HasDatabaseName("IX_Lots_Coordinates")
+            .HasFilter("\"Latitude\" IS NOT NULL AND \"Longitude\" IS NOT NULL");
+
         modelBuilder.Entity<LotClassificationState>(entity =>
         {
             entity.HasKey(e => e.LotId);
