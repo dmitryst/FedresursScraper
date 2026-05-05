@@ -18,10 +18,17 @@ public class FedresursTradeResultsBackgroundWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var isEnabled = _configuration.GetValue<bool>("Parsing:ResultsScraperEnabled", true);
-        if (!isEnabled) return;
+        var isEnabled = _configuration.GetValue<bool>("BackgroundServices:FedresursTradeResults:Enabled", false);
 
-        int intervalMinutes = _configuration.GetValue<int>("Parsing:ResultsScraperIntervalMinutes", 60);
+        if (!isEnabled)
+        {
+            _logger.LogInformation("FedresursTradeResultsBackgroundWorker отключен через конфигурацию.");
+            return;
+        }
+
+        _logger.LogInformation("FedresursTradeResultsBackgroundWorker запущен.");
+
+        int intervalMinutes = _configuration.GetValue<int>("BackgroundServices:FedresursTradeResults:IntervalMinutesBetweenBatches", 1);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -37,6 +44,7 @@ public class FedresursTradeResultsBackgroundWorker : BackgroundService
                 _logger.LogError(ex, "Ошибка в цикле фонового парсинга результатов.");
             }
 
+            _logger.LogInformation($"Ожидаем {intervalMinutes} минут до начала парсинга следующего батча результатов торгов");
             await Task.Delay(TimeSpan.FromMinutes(intervalMinutes), stoppingToken);
         }
     }
