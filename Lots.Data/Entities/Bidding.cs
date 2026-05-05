@@ -145,40 +145,78 @@ public class Bidding
 
         if (isPublicOffer)
         {
-            var startAcceptanceDate = TryParseBidAcceptancePeriodStart();
+            // Прибавляем 7 дней к текущей NextStatusCheckAt (или к текущему времени)
+            var baseDate = NextStatusCheckAt ?? utcNow;
+            var proposedDate = baseDate.AddDays(7);
 
-            if (startAcceptanceDate.HasValue && startAcceptanceDate.Value > utcNow)
+            // NextStatusCheckAt не может быть раньше старта приема заявок
+            var startAcceptanceDate = TryParsePeriodStart(BidAcceptancePeriod);
+            if (startAcceptanceDate.HasValue && proposedDate < startAcceptanceDate.Value)
             {
-                //NextStatusCheckAt = startAcceptanceDate.Value.AddDays(1);
-                // В будущем будем проверять график снижения цены
-                // пока протсо прибавляем 7 дней
+                proposedDate = startAcceptanceDate.Value.AddDays(2);
+            }
+
+            // Дата проверки не может быть в прошлом.
+            // Если после всех вычислений дата оказалась раньше текущего времени, 
+            // прибавляем 7 дней строго к текущей дате (utcNow).
+            if (proposedDate < utcNow)
+            {
                 NextStatusCheckAt = utcNow.AddDays(7);
             }
             else
             {
-                NextStatusCheckAt = utcNow.AddDays(7);
+                NextStatusCheckAt = proposedDate;
             }
         }
         else
         {
+            // Для аукционов:
+            DateTime? proposedDate = null;
+
+            // Смотрим на ResultsAnnouncementDate
             if (ResultsAnnouncementDate.HasValue)
             {
                 var resultsDateUtc = ResultsAnnouncementDate.Value.Kind == DateTimeKind.Utc
                     ? ResultsAnnouncementDate.Value
                     : ResultsAnnouncementDate.Value.ToUniversalTime();
 
-                if (resultsDateUtc > utcNow)
+                proposedDate = resultsDateUtc.AddDays(2); // Прибавляем 2 дня
+            }
+            else
+            {
+                // Если нет ResultsAnnouncementDate, смотрим на TradePeriod
+                var tradePeriodEnd = TryParsePeriodEnd(TradePeriod);
+                if (tradePeriodEnd.HasValue)
                 {
-                    // проверяем каждые 3 дня
-                    NextStatusCheckAt = resultsDateUtc.AddDays(3);
+                    proposedDate = tradePeriodEnd.Value.AddDays(2); // Прибавляем 2 день как буфер
                 }
                 else
                 {
-                    NextStatusCheckAt = utcNow.AddDays(7);
+                    // Если TradePeriod пусто или равно "нет данных", смотрим на BidAcceptancePeriod
+                    var bidAcceptanceEnd = TryParsePeriodEnd(BidAcceptancePeriod);
+                    if (bidAcceptanceEnd.HasValue)
+                    {
+                        proposedDate = bidAcceptanceEnd.Value.AddDays(2);
+                    }
+                }
+            }
+
+            if (proposedDate.HasValue)
+            {
+                // Защита от бесконечного цикла: если расчетная дата окончания периода 
+                // уже давно в прошлом, планируем следующую проверку отталкиваясь от сегодня
+                if (proposedDate.Value < utcNow)
+                {
+                    NextStatusCheckAt = utcNow.AddDays(2);
+                }
+                else
+                {
+                    NextStatusCheckAt = proposedDate;
                 }
             }
             else
             {
+                // Fallback, если совсем никаких дат нет
                 NextStatusCheckAt = utcNow.AddDays(7);
             }
         }
@@ -201,8 +239,8 @@ public class Bidding
             return (utcNow - resultsDateUtc) > timeout;
         }
 
-        // Проверяем по дате окончания приема заявок (используем новый метод)
-        var endAcceptanceDate = TryParseBidAcceptancePeriodEnd();
+        // Проверяем по дате окончания приема заявок
+        var endAcceptanceDate = TryParsePeriodEnd(BidAcceptancePeriod);
         if (endAcceptanceDate.HasValue)
         {
             return (utcNow - endAcceptanceDate.Value) > timeout;
@@ -249,11 +287,11 @@ public class Bidding
         return changedLots;
     }
 
-    private DateTime? TryParseBidAcceptancePeriodStart()
+    private DateTime? TryParsePeriodStart(string? period)
     {
-        if (string.IsNullOrWhiteSpace(BidAcceptancePeriod)) return null;
+        if (string.IsNullOrWhiteSpace(period)) return null;
 
-        var parts = BidAcceptancePeriod.Split(new[] { '-', '—', '–' }, StringSplitOptions.RemoveEmptyEntries);
+        var parts = period.Split(new[] { '-', '—', '–' }, StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length > 0)
         {
             var startStr = parts[0].Trim();
@@ -267,16 +305,22 @@ public class Bidding
         return null;
     }
 
-    private DateTime? TryParseBidAcceptancePeriodEnd()
+    private DateTime? TryParsePeriodEnd(string? period)
     {
-        if (string.IsNullOrWhiteSpace(BidAcceptancePeriod)) return null;
+        if (string.IsNullOrWhiteSpace(period)) return null;
 
-        var parts = BidAcceptancePeriod.Split(new[] { '-', '—', '–' }, StringSplitOptions.RemoveEmptyEntries);
+        var parts = period.Split(new[] { '-', '—', '–' }, StringSplitOptions.RemoveEmptyEntries);
 
-        // Если есть хотя бы две части (начало и конец), берем последнюю
         if (parts.Length > 1)
         {
             var endStr = parts[parts.Length - 1].Trim();
+
+            // Если дата неизвестна
+            if (endStr.Equals("нет данных", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
             if (DateTime.TryParseExact(endStr, "dd.MM.yyyy HH:mm",
                 System.Globalization.CultureInfo.InvariantCulture,
                 System.Globalization.DateTimeStyles.AssumeUniversal, out var endDate))
