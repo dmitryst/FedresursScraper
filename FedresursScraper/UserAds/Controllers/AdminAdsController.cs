@@ -53,6 +53,18 @@ public class AdminAdsController : ControllerBase
         return Ok(ads);
     }
 
+    [HttpGet("moderation/count")]
+    public async Task<IActionResult> GetModerationCount()
+    {
+        if (!await IsAdminAsync()) return Forbid();
+
+        var count = await _dbContext.UserAds
+            .Where(a => a.Status == AdStatus.UnderModeration)
+            .CountAsync();
+
+        return Ok(new { count });
+    }
+
     [HttpPost("{id}/approve")]
     public async Task<IActionResult> ApproveAd(Guid id)
     {
