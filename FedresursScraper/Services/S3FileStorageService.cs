@@ -4,11 +4,29 @@ using Amazon.S3.Transfer;
 
 namespace FedresursScraper.Services;
 
+/// <summary>
+/// Базовый интерфейс с общим функционалом
+/// </summary>
 public interface IFileStorageService
 {
     // Возвращает публичную ссылку на сохраненный файл
     Task<string> UploadAsync(byte[] fileData, string fileName, string contentType = "image/jpeg");
+    Task<string> UploadAsync(Stream fileStream, string fileName, string contentType = "image/jpeg");
     Task DeleteAsync(string fileName);
+}
+
+/// <summary>
+/// Интерфейс специально для фотографий объявлений пользователей
+/// </summary>
+public interface IUserAdsFileStorageService : IFileStorageService
+{
+}
+
+/// <summary>
+/// Интерфейс специально для фотографий лотов
+/// </summary>
+public interface ILotsFileStorageService : IFileStorageService
+{
 }
 
 
@@ -18,22 +36,11 @@ public class S3FileStorageService : IFileStorageService
     private readonly string _bucketName;
     private readonly string _publicUrlBase;
 
-    public S3FileStorageService(IConfiguration config)
+    public S3FileStorageService(IAmazonS3 s3Client, string bucketName, string publicUrlBase)
     {
-        var accessKey = config["S3:AccessKey"] ?? throw new ArgumentNullException("S3:AccessKey");
-        var secretKey = config["S3:SecretKey"] ?? throw new ArgumentNullException("S3:SecretKey");
-        var serviceUrl = config["S3:ServiceUrl"] ?? throw new ArgumentNullException("S3:ServiceUrl");
-        _bucketName = config["S3:BucketName"] ?? throw new ArgumentNullException("S3:BucketName");
-        _publicUrlBase = config["S3:PublicUrlBase"] ?? throw new ArgumentNullException("S3:PublicUrlBase");
-
-        var s3Config = new AmazonS3Config
-        {
-            ServiceURL = serviceUrl,
-            ForcePathStyle = true,
-            UseHttp = true
-        };
-
-        _s3Client = new AmazonS3Client(accessKey, secretKey, s3Config);
+        _s3Client = s3Client ?? throw new ArgumentNullException(nameof(s3Client));
+        _bucketName = bucketName ?? throw new ArgumentNullException(nameof(bucketName));
+        _publicUrlBase = publicUrlBase ?? throw new ArgumentNullException(nameof(publicUrlBase));
 
         // авто-создания бакета
         EnsureBucketExistsAsync().Wait();
@@ -56,6 +63,23 @@ public class S3FileStorageService : IFileStorageService
         await fileTransferUtility.UploadAsync(uploadRequest);
 
         // Формируем публичную ссылку для базы
+        return $"{_publicUrlBase}/{_bucketName}/{fileName}";
+    }
+
+    public async Task<string> UploadAsync(Stream fileStream, string fileName, string contentType = "image/jpeg")
+    {
+        var uploadRequest = new TransferUtilityUploadRequest
+        {
+            InputStream = fileStream, // Передаем поток напрямую
+            Key = fileName,
+            BucketName = _bucketName,
+            CannedACL = S3CannedACL.PublicRead,
+            ContentType = contentType
+        };
+
+        var fileTransferUtility = new TransferUtility(_s3Client);
+        await fileTransferUtility.UploadAsync(uploadRequest);
+
         return $"{_publicUrlBase}/{_bucketName}/{fileName}";
     }
 
@@ -103,5 +127,27 @@ public class S3FileStorageService : IFileStorageService
             // Логируем ошибку, но не роняем приложение, если это временная проблема сети
             Console.WriteLine($"Ошибка при создании бакета: {ex.Message}");
         }
+    }
+}
+
+// Реализация для объявлений
+public class UserAdsFileStorageService : S3FileStorageService, IUserAdsFileStorageService
+{
+    public UserAdsFileStorageService(IAmazonS3 s3Client, IConfiguration config)
+        : base(s3Client,
+               config["S3:UserAdsBucketName"] ?? throw new ArgumentNullException("S3:UserAdsBucketName"),
+               config["S3:PublicUrlBase"] ?? throw new ArgumentNullException("S3:PublicUrlBase"))
+    {
+    }
+}
+
+// Реализация для лотов
+public class LotsFileStorageService : S3FileStorageService, ILotsFileStorageService
+{
+    public LotsFileStorageService(IAmazonS3 s3Client, IConfiguration config)
+        : base(s3Client,
+               config["S3:LotsBucketName"] ?? throw new ArgumentNullException("S3:LotsBucketName"),
+               config["S3:PublicUrlBase"] ?? throw new ArgumentNullException("S3:PublicUrlBase"))
+    {
     }
 }

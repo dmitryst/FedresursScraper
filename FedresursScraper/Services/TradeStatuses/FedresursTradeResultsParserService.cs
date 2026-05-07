@@ -42,7 +42,7 @@ public class FedresursTradeResultsParserService
     /// </summary>
     public async Task ProcessBatchAsync(CancellationToken stoppingToken)
     {
-        var batchSize = _configuration.GetValue<int>("Parsing:ResultsBatchSize", 50);
+        var batchSize = _configuration.GetValue<int>("BackgroundServices:FedresursTradeResults:ResultsBatchSize", 100);
         var now = DateTime.UtcNow;
 
         var biddingsToProcess = await _dbContext.Biddings
@@ -50,6 +50,7 @@ public class FedresursTradeResultsParserService
             .Where(b => !b.IsTradeStatusesFinalized &&
                         (b.NextStatusCheckAt == null || b.NextStatusCheckAt <= now) &&
                         b.Lots.Any(l => l.LotNumber != null && l.LotNumber != ""))
+            //.Where(b => b.Lots.Count < 30)  // пока не берем торги, у которых 30 и более лотов, будем такие торги обрабатывать через scrape контроллер
             .OrderBy(b => b.NextStatusCheckAt ?? DateTime.MinValue) // Берем самые старые
             .Take(batchSize)
             .ToListAsync(stoppingToken);
@@ -69,11 +70,62 @@ public class FedresursTradeResultsParserService
 
             try
             {
-                await ProcessSingleBiddingInternalAsync(driver, wait, bidding, stoppingToken);
+                // Получаем результат: все ли лоты завершены
+                bool allFinalized = await ProcessSingleBiddingInternalAsync(driver, wait, bidding, stoppingToken);
+
+                // Применяем логику финализации или перепланирования
+                if (allFinalized)
+                {
+                    bidding.IsTradeStatusesFinalized = true;
+                    bidding.NextStatusCheckAt = null;
+                    _logger.LogInformation("Все лоты торгов {BiddingId} получили результаты. Торги финализированы.", bidding.Id);
+                }
+                else
+                {
+                    // Эта логика сработает и в том случае, если hasNewResults = false
+                    bidding.ScheduleNextCheck(DateTime.UtcNow);
+
+                    if (bidding.NextStatusCheckAt.HasValue)
+                    {
+                        var scheduleUpdate = new BiddingScheduleUpdate
+                        {
+                            Id = Guid.NewGuid(),
+                            BiddingId = bidding.Id,
+                            NextStatusCheckAt = bidding.NextStatusCheckAt.Value,
+                            IsExported = false
+                        };
+
+                        _dbContext.BiddingScheduleUpdates.Add(scheduleUpdate);
+                    }
+
+                    _logger.LogInformation("Торги {Id} не завершены (новых результатов нет или закрыты не все лоты). Перепланировано на {Date}",
+                        bidding.Id, bidding.NextStatusCheckAt);
+                }
+
+                // Сохраняем изменения даты и статусов в БД
+                await _dbContext.SaveChangesAsync(stoppingToken);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка при обработке торгов {BiddingId}", bidding.Id);
+
+                // Очищаем контекст от "отравленных" сущностей, 
+                // чтобы эта ошибка не сломала сохранение следующих торгов в цикле.
+                _dbContext.ChangeTracker.Clear();
+
+                try
+                {
+                    // Выполняем прямой SQL-запрос (через ExecuteUpdate), чтобы сдвинуть NextStatusCheckAt.
+                    // ExecuteUpdate не использует ChangeTracker, поэтому сработает безопасно и быстро.
+                    // Сдвигаем на 2 часа вперед.
+                    await _dbContext.Biddings
+                        .Where(b => b.Id == bidding.Id)
+                        .ExecuteUpdateAsync(s => s.SetProperty(b => b.NextStatusCheckAt, DateTime.UtcNow.AddHours(2)), stoppingToken);
+                }
+                catch (Exception innerEx)
+                {
+                    _logger.LogError(innerEx, "Критическая ошибка: не удалось сдвинуть NextStatusCheckAt для сбойных торгов {BiddingId}", bidding.Id);
+                }
             }
 
             await Task.Delay(_random.Next(5000, 10000), stoppingToken);

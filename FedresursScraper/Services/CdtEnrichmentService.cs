@@ -17,7 +17,7 @@ namespace FedresursScraper.Services
     {
         private readonly LotsDbContext _context;
         private readonly HttpClient _httpClient;
-        private readonly IFileStorageService _fileStorage;
+        private readonly ILotsFileStorageService _fileStorage;
         private readonly ILogger<CdtEnrichmentService> _logger;
 
         // Настройки батчей
@@ -27,7 +27,7 @@ namespace FedresursScraper.Services
         public CdtEnrichmentService(
             LotsDbContext context,
             HttpClient httpClient,
-            IFileStorageService fileStorage,
+            ILotsFileStorageService fileStorage,
             ILogger<CdtEnrichmentService> logger)
         {
             _context = context;

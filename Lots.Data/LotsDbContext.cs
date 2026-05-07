@@ -59,6 +59,11 @@ public class LotsDbContext : DbContext
 
     public DbSet<BiddingScheduleUpdate> BiddingScheduleUpdates { get; set; }
 
+    public DbSet<UserAd> UserAds { get; set; }
+    public DbSet<UserAdImage> UserAdImages { get; set; }
+    public DbSet<UserAdChatRoom> ChatRooms { get; set; }
+    public DbSet<UserAdChatMessage> ChatMessages { get; set; }
+
     /// <summary>
     /// Настраивает модели, связи и индексы при создании контекста.
     /// </summary>
@@ -94,6 +99,40 @@ public class LotsDbContext : DbContext
             .HasOne(c => c.Lot)
             .WithMany(l => l.CadastralNumbers)
             .HasForeignKey(c => c.LotId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Настройка объявлений
+        modelBuilder.Entity<UserAd>(entity =>
+        {
+            entity.HasOne(a => a.User)
+                .WithMany() // Или .WithMany(u => u.Ads), если есть коллекция в User
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Индекс для быстрого поиска активных объявлений
+            entity.HasIndex(a => a.Status);
+        });
+
+        modelBuilder.Entity<UserAdImage>(entity =>
+        {
+            entity.HasOne(i => i.UserAd)
+                .WithMany(a => a.Images)
+                .HasForeignKey(i => i.UserAdId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Настройка связей для чата
+        modelBuilder.Entity<UserAdChatRoom>()
+            .HasMany(c => c.Messages)
+            .WithOne(m => m.Room)
+            .HasForeignKey(m => m.ChatRoomId)
+            .OnDelete(DeleteBehavior.Cascade); // При удалении комнаты удаляются сообщения
+            
+        // Важно для объявлений: при удалении объявления удаляем и чаты по нему
+        modelBuilder.Entity<UserAd>()
+            .HasMany<UserAdChatRoom>()
+            .WithOne(c => c.Ad)
+            .HasForeignKey(c => c.AdId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // ПОЛНОТЕКСТОВЫЙ ПОИСК

@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text;
 
 public record AuthDto(string Email, string Password);
+public record RegisterDto(string Name, string Email, string Password);
 
 [ApiController]
 [Route("api/[controller]")]
@@ -37,6 +38,7 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             id = user.Id,
+            name = user.Name,
             email = user.Email,
             isSubscriptionActive = user.HasProAccess,
             isOnTrial = user.IsOnTrial,
@@ -47,7 +49,7 @@ public class AuthController : ControllerBase
 
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register(AuthDto request)
+    public async Task<IActionResult> Register(RegisterDto request)
     {
         if (await _dbContext.Users.AnyAsync(u => u.Email == request.Email))
         {
@@ -56,6 +58,7 @@ public class AuthController : ControllerBase
 
         var newUser = new User
         {
+            Name = request.Name,
             Email = request.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             CreatedAt = DateTime.UtcNow
@@ -94,6 +97,7 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             id = user.Id,
+            name = user.Name,
             email = user.Email,
             isSubscriptionActive = user.HasProAccess,
             isOnTrial = user.IsOnTrial,

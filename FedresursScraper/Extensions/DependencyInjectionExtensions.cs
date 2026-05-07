@@ -7,6 +7,7 @@ using FedresursScraper.Integrations.Fedresurs.Models;
 using FedresursScraper.Integrations.Fedresurs.Clients;
 using FedresursScraper.Integrations.Fedresurs.Workers;
 using FedresursScraper.Integrations.Fedresurs.Processors;
+using Amazon.S3;
 
 namespace FedresursScraper.Extensions;
 
@@ -105,6 +106,37 @@ public static class DependencyInjectionExtensions
         // Регистрация фоновых задач (Workers)
         services.AddHostedService<FedresursAggregatorService>();
         services.AddHostedService<FedresursMessageProcessorService>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Регистрирует клиенты Amazon S3 и типизированные сервисы хранилища для разных бакетов.
+    /// </summary>
+    public static IServiceCollection AddFileStorageServices(
+        this IServiceCollection services, 
+        IConfiguration configuration)
+    {
+        // Регистрируем единый потокобезопасный клиент IAmazonS3 (Singleton)
+        services.AddSingleton<IAmazonS3>(sp =>
+        {
+            var accessKey = configuration["S3:AccessKey"] ?? throw new ArgumentNullException("S3:AccessKey");
+            var secretKey = configuration["S3:SecretKey"] ?? throw new ArgumentNullException("S3:SecretKey");
+            var serviceUrl = configuration["S3:ServiceUrl"] ?? throw new ArgumentNullException("S3:ServiceUrl");
+
+            var s3Config = new AmazonS3Config
+            {
+                ServiceURL = serviceUrl,
+                ForcePathStyle = true,
+                UseHttp = true // Оставьте true, если используете локальный MinIO без SSL, иначе лучше false
+            };
+
+            return new AmazonS3Client(accessKey, secretKey, s3Config);
+        });
+
+        // Регистрируем типизированные сервисы
+        services.AddTransient<IUserAdsFileStorageService, UserAdsFileStorageService>();
+        services.AddTransient<ILotsFileStorageService, LotsFileStorageService>();
 
         return services;
     }

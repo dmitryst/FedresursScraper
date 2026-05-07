@@ -153,7 +153,7 @@ public class Bidding
             var startAcceptanceDate = TryParsePeriodStart(BidAcceptancePeriod);
             if (startAcceptanceDate.HasValue && proposedDate < startAcceptanceDate.Value)
             {
-                proposedDate = startAcceptanceDate.Value.AddDays(2);
+                proposedDate = startAcceptanceDate.Value.AddDays(7);
             }
 
             // Дата проверки не может быть в прошлом.
@@ -188,7 +188,7 @@ public class Bidding
                 var tradePeriodEnd = TryParsePeriodEnd(TradePeriod);
                 if (tradePeriodEnd.HasValue)
                 {
-                    proposedDate = tradePeriodEnd.Value.AddDays(2); // Прибавляем 2 день как буфер
+                    proposedDate = tradePeriodEnd.Value.AddDays(3); // Прибавляем 3 дня как буфер
                 }
                 else
                 {
@@ -196,7 +196,7 @@ public class Bidding
                     var bidAcceptanceEnd = TryParsePeriodEnd(BidAcceptancePeriod);
                     if (bidAcceptanceEnd.HasValue)
                     {
-                        proposedDate = bidAcceptanceEnd.Value.AddDays(2);
+                        proposedDate = bidAcceptanceEnd.Value.AddDays(5);
                     }
                 }
             }

@@ -17,7 +17,7 @@ namespace FedresursScraper.Services
     public class MetsEnrichmentService : IMetsEnrichmentService
     {
         private readonly LotsDbContext _context;
-        private readonly IFileStorageService _fileStorage;
+        private readonly ILotsFileStorageService _fileStorage;
         private readonly HttpClient _httpClient;
         private readonly ILogger<MetsEnrichmentService> _logger;
 
@@ -37,7 +37,7 @@ namespace FedresursScraper.Services
 
         public MetsEnrichmentService(
             LotsDbContext context,
-            IFileStorageService fileStorage,
+            ILotsFileStorageService fileStorage,
             HttpClient httpClient,
             ILogger<MetsEnrichmentService> logger)
         {

@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using FedresursScraper.Extensions;
 using FedresursScraper.TradeStatuses;
+using FedresursScraper.UserAds.Hubs;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using FedresursScraper.Services.LotAlerts;
 using FedresursScraper.Services.Email;
@@ -17,6 +18,7 @@ var configuration = builder.Configuration;
 
 // Регистрация сервисов в DI контейнере
 builder.Services.AddControllers(); // Добавляем поддержку API-контроллеров
+builder.Services.AddSignalR(); // Добавляем SignalR
 
 var connectionString = configuration.GetConnectionString("Postgres");
 
@@ -103,7 +105,8 @@ builder.Services.AddScoped<ILotEvaluationService, LotEvaluationService>();
 
 var rosreestrServiceUrl = Environment.GetEnvironmentVariable("ROSREESTR_SERVICE_URL");
 
-builder.Services.AddSingleton<IFileStorageService, S3FileStorageService>();
+// Добавляем регистрацию сервисов S3
+builder.Services.AddFileStorageServices(builder.Configuration);
 
 // Регистрируем сервисы дообогащения торгов (МЭТС, ЦДТ)
 builder.Services.AddEnrichmentServices(configuration);
@@ -261,6 +264,7 @@ app.UseCors(myAllowSpecificOrigins);
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers(); // Включаем маппинг запросов на контроллеры
+app.MapHub<ChatHub>("/chathub"); // Включаем маппинг SignalR хаба
 
 // Запуск приложения (и фоновых задач, и API)
 await app.RunAsync();

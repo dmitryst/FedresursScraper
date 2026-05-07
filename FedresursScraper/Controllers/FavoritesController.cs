@@ -66,9 +66,9 @@ public class FavoritesController : ControllerBase
             .Where(l => l != null)
             .ToList();
 
-        var lotDtos = lots.Select(l => new LotDto
+        var lotDtos = sortedLots.Select(l => new LotDto
         {
-            Id = l.Id,
+            Id = l!.Id,
             PublicId = l.PublicId,
             LotNumber = l.LotNumber,
             StartPrice = l.StartPrice,
@@ -105,7 +105,9 @@ public class FavoritesController : ControllerBase
                 StartDate = pc.StartDate,
                 EndDate = pc.EndDate,
                 Price = pc.Price
-            })
+            }),
+            TradeStatus = l.TradeStatus,
+            FinalPrice = l.FinalPrice
         }).ToList();
 
         var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);

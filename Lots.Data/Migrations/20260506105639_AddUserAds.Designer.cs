@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -11,9 +12,11 @@ using NpgsqlTypes;
 namespace Lots.Data.Migrations
 {
     [DbContext(typeof(LotsDbContext))]
-    partial class LotsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260506105639_AddUserAds")]
+    partial class AddUserAds
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -915,9 +918,6 @@ namespace Lots.Data.Migrations
                     b.Property<bool>("IsSubscriptionActive")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -972,60 +972,6 @@ namespace Lots.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserAds");
-                });
-
-            modelBuilder.Entity("Lots.Data.Entities.UserAdChatMessage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ChatRoomId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid>("SenderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChatRoomId");
-
-                    b.ToTable("ChatMessages");
-                });
-
-            modelBuilder.Entity("Lots.Data.Entities.UserAdChatRoom", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AdId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("BuyerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("SellerId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AdId");
-
-                    b.ToTable("ChatRooms");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.UserAdImage", b =>
@@ -1248,28 +1194,6 @@ namespace Lots.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Lots.Data.Entities.UserAdChatMessage", b =>
-                {
-                    b.HasOne("Lots.Data.Entities.UserAdChatRoom", "Room")
-                        .WithMany("Messages")
-                        .HasForeignKey("ChatRoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Room");
-                });
-
-            modelBuilder.Entity("Lots.Data.Entities.UserAdChatRoom", b =>
-                {
-                    b.HasOne("Lots.Data.Entities.UserAd", "Ad")
-                        .WithMany()
-                        .HasForeignKey("AdId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Ad");
-                });
-
             modelBuilder.Entity("Lots.Data.Entities.UserAdImage", b =>
                 {
                     b.HasOne("Lots.Data.Entities.UserAd", "UserAd")
@@ -1306,11 +1230,6 @@ namespace Lots.Data.Migrations
             modelBuilder.Entity("Lots.Data.Entities.UserAd", b =>
                 {
                     b.Navigation("Images");
-                });
-
-            modelBuilder.Entity("Lots.Data.Entities.UserAdChatRoom", b =>
-                {
-                    b.Navigation("Messages");
                 });
 #pragma warning restore 612, 618
         }
