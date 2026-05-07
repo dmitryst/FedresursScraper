@@ -16,6 +16,9 @@ public class CreateUserAdDto
     [Range(1, double.MaxValue, ErrorMessage = "Цена должна быть больше нуля")]
     public decimal Price { get; set; }
 
+    [Required(ErrorMessage = "Укажите регион")]
+    public string Region { get; set; } = null!;
+
     public string? Latitude { get; set; }
     public string? Longitude { get; set; }
 

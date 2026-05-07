@@ -10,6 +10,7 @@ public class UserAd
     public string Title { get; set; } = default!;
     public string Description { get; set; } = default!;
     public decimal Price { get; set; }
+    public string? Region { get; set; }
 
     // Дата создания и обновления
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

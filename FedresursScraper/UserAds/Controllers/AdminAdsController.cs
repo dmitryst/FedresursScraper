@@ -43,6 +43,7 @@ public class AdminAdsController : ControllerBase
                 a.Title,
                 a.Description,
                 a.Price,
+                a.Region,
                 a.CreatedAt,
                 AuthorEmail = a.User.Email,
                 AuthorName = a.User.Name,
