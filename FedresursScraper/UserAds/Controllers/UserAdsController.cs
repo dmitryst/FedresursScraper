@@ -42,6 +42,7 @@ public class UserAdsController : ControllerBase
             Description = dto.Description,
             Price = dto.Price,
             Region = dto.Region,
+            Category = dto.Category,
             Latitude = dto.Latitude != null ? double.Parse(dto.Latitude.Replace(',', '.'), CultureInfo.InvariantCulture) : null,
             Longitude = dto.Longitude != null ? double.Parse(dto.Longitude.Replace(',', '.'), CultureInfo.InvariantCulture) : null,
             Status = AdStatus.UnderModeration,
@@ -109,6 +110,7 @@ public class UserAdsController : ControllerBase
                 Description = a.Description,
                 Price = a.Price,
                 Region = a.Region,
+                Category = a.Category,
                 Latitude = a.Latitude,
                 Longitude = a.Longitude,
                 CreatedAt = a.CreatedAt,
@@ -119,6 +121,41 @@ public class UserAdsController : ControllerBase
             .ToListAsync();
 
         return Ok(new { Total = total, Ads = ads });
+    }
+
+    /// <summary>
+    /// Получение объявлений текущего пользователя
+    /// </summary>
+    [HttpGet("my")]
+    [Authorize]
+    public async Task<IActionResult> GetMyAds()
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdString, out var userId))
+            return Unauthorized();
+
+        var ads = await _dbContext.UserAds
+            .Include(a => a.Images)
+            .Where(a => a.UserId == userId)
+            .OrderByDescending(a => a.CreatedAt)
+            .Select(a => new UserAdDto
+            {
+                Id = a.Id,
+                Title = a.Title,
+                Description = a.Description,
+                Price = a.Price,
+                Region = a.Region,
+                Category = a.Category,
+                Latitude = a.Latitude,
+                Longitude = a.Longitude,
+                CreatedAt = a.CreatedAt,
+                Status = (int)a.Status,
+                ImageUrls = a.Images.OrderBy(i => i.Order).Select(i => i.Url).ToList()
+            })
+            .AsNoTracking()
+            .ToListAsync();
+
+        return Ok(ads);
     }
 
     /// <summary>
@@ -141,6 +178,7 @@ public class UserAdsController : ControllerBase
             Description = ad.Description,
             Price = ad.Price,
             Region = ad.Region,
+            Category = ad.Category,
             Latitude = ad.Latitude,
             Longitude = ad.Longitude,
             CreatedAt = ad.CreatedAt,

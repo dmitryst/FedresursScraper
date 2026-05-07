@@ -11,6 +11,7 @@ public class UserAd
     public string Description { get; set; } = default!;
     public decimal Price { get; set; }
     public string? Region { get; set; }
+    public string? Category { get; set; }
 
     // Дата создания и обновления
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

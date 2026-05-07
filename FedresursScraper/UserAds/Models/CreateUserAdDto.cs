@@ -19,6 +19,9 @@ public class CreateUserAdDto
     [Required(ErrorMessage = "Укажите регион")]
     public string Region { get; set; } = null!;
 
+    [Required(ErrorMessage = "Укажите категорию")]
+    public string Category { get; set; } = null!;
+
     public string? Latitude { get; set; }
     public string? Longitude { get; set; }
 

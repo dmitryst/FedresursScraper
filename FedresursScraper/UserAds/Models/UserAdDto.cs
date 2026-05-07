@@ -7,6 +7,7 @@ public class UserAdDto
     public string Description { get; set; } = null!;
     public decimal Price { get; set; }
     public string? Region { get; set; }
+    public string? Category { get; set; }
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
     public DateTime CreatedAt { get; set; }
