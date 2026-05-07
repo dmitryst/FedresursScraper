@@ -43,7 +43,8 @@ public class AuthController : ControllerBase
             isSubscriptionActive = user.HasProAccess,
             isOnTrial = user.IsOnTrial,
             subscriptionEndDate = user.SubscriptionEndDate,
-            createdAt = user.CreatedAt
+            createdAt = user.CreatedAt,
+            isAdmin = user.IsAdmin
         });
     }
 
@@ -102,7 +103,8 @@ public class AuthController : ControllerBase
             isSubscriptionActive = user.HasProAccess,
             isOnTrial = user.IsOnTrial,
             subscriptionEndDate = user.SubscriptionEndDate,
-            createdAt = user.CreatedAt
+            createdAt = user.CreatedAt,
+            isAdmin = user.IsAdmin
         });
     }
 

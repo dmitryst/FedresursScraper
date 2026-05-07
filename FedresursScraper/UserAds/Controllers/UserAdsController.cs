@@ -1,3 +1,4 @@
+using System.Globalization;
 using FedresursScraper.Services;
 using Lots.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -40,6 +41,8 @@ public class UserAdsController : ControllerBase
             Title = dto.Title,
             Description = dto.Description,
             Price = dto.Price,
+            Latitude = dto.Latitude != null ? double.Parse(dto.Latitude.Replace(',', '.'), CultureInfo.InvariantCulture) : null,
+            Longitude = dto.Longitude != null ? double.Parse(dto.Longitude.Replace(',', '.'), CultureInfo.InvariantCulture) : null,
             Status = AdStatus.UnderModeration,
             CreatedAt = DateTime.UtcNow
         };
@@ -104,6 +107,8 @@ public class UserAdsController : ControllerBase
                 Title = a.Title,
                 Description = a.Description,
                 Price = a.Price,
+                Latitude = a.Latitude,
+                Longitude = a.Longitude,
                 CreatedAt = a.CreatedAt,
                 Status = (int)a.Status,
                 ImageUrls = a.Images.OrderBy(i => i.Order).Select(i => i.Url).ToList()
@@ -133,6 +138,8 @@ public class UserAdsController : ControllerBase
             Title = ad.Title,
             Description = ad.Description,
             Price = ad.Price,
+            Latitude = ad.Latitude,
+            Longitude = ad.Longitude,
             CreatedAt = ad.CreatedAt,
             Status = (int)ad.Status,
             ImageUrls = ad.Images.OrderBy(i => i.Order).Select(i => i.Url).ToList()

@@ -16,6 +16,9 @@ public class CreateUserAdDto
     [Range(1, double.MaxValue, ErrorMessage = "Цена должна быть больше нуля")]
     public decimal Price { get; set; }
 
+    public string? Latitude { get; set; }
+    public string? Longitude { get; set; }
+
     // Список загружаемых файлов
     [MaxFileSize(5 * 1024 * 1024)]
     public List<IFormFile>? Images { get; set; }
