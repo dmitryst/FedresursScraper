@@ -176,6 +176,7 @@ public class LotsController : ControllerBase
             {
                 Type = lot.Bidding.Type,
                 Platform = lot.Bidding.Platform,
+                BankruptMessageId = lot.Bidding.BankruptMessageId,
                 BidAcceptancePeriod = lot.Bidding.BidAcceptancePeriod,
                 TradePeriod = lot.Bidding.TradePeriod,
                 ResultsAnnouncementDate = lot.Bidding.ResultsAnnouncementDate,

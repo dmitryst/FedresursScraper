@@ -16,6 +16,11 @@ public class BiddingDto
     public string Platform { get; set; } = default!;
 
     /// <summary>
+    /// Идентификатор объявления торгов на сайте Федресурса
+    /// </summary>
+    public Guid BankruptMessageId { get; set; }
+
+    /// <summary>
     /// Период приема заявок
     /// </summary>
     public string? BidAcceptancePeriod { get; set; }
