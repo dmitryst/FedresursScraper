@@ -20,7 +20,7 @@ namespace FedresursScraper.Services
             _logger = logger;
         }
 
-        public async Task<BiddingInfo> ScrapeBiddingInfoAsync(IWebDriver driver, Guid biddingId)
+        public Task<BiddingInfo> ScrapeBiddingInfoAsync(IWebDriver driver, Guid biddingId)
         {
             var url = $"https://fedresurs.ru/biddings/{biddingId}";
 
@@ -51,7 +51,7 @@ namespace FedresursScraper.Services
             var managerInfo = ParseSubjectBlock(driver, "Арбитражный управляющий");
             var legalCaseInfo = ParseLegalCase(driver);
 
-            return new BiddingInfo
+            return Task.FromResult(new BiddingInfo
             {
                 Id = biddingId,
                 AnnouncedAt = announcementDate,
@@ -80,7 +80,7 @@ namespace FedresursScraper.Services
                 LegalCaseNumber = legalCaseInfo.Number,
 
                 ViewingProcedure = viewingProcedure,
-            };
+            });
         }
 
         private record LegalCaseParseResult(Guid? Id, string? Number);

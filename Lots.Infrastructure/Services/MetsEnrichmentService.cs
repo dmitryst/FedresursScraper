@@ -399,7 +399,7 @@ namespace FedresursScraper.Services
                 return;
             }
 
-            HtmlNode targetTable = null;
+            HtmlNode? targetTable = null;
 
             foreach (var table in candidateTables)
             {

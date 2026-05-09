@@ -354,12 +354,12 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
         return true;
     }
 
-    private async Task<bool> HandleStuckBiddingAsync(Bidding bidding, LotsDbContext dbContext, List<string> urlsToPing)
+    private Task<bool> HandleStuckBiddingAsync(Bidding bidding, LotsDbContext dbContext, List<string> urlsToPing)
     {
         // Проверяем, истек ли таймаут ожидания результатов
         if (!bidding.IsExpired(DateTime.UtcNow, _stuckTimeout))
         {
-            return false; // Торги еще не "зависли", продолжаем нормальную работу
+            return Task.FromResult(false); // Торги еще не "зависли", продолжаем нормальную работу
         }
 
         _logger.LogInformation("Торги {BiddingId} превысили таймаут ожидания результатов ({Days} дней). Запускается принудительное закрытие.",
@@ -393,6 +393,6 @@ public class TradeStatusesUpdateBackgroundService : BackgroundService
             bidding.NextStatusCheckAt = null;
         }
 
-        return true; // Торги были обработаны как "зависшие"
+        return Task.FromResult(true); // Торги были обработаны как "зависшие"
     }
 }

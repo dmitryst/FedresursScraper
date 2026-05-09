@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "Lots.WebApi"
+		},
+		{
+			"path": "Lots.Data"
+		},
+		{
+			"path": "Lots.Application"
+		},
+		{
+			"path": "Lots.Infrastructure"
+		}
+	],
+	"settings": {}
+}

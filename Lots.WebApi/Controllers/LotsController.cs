@@ -19,16 +19,13 @@ public class LotsController : ControllerBase
 {
     private readonly ILotCopyService _lotCopyService;
     private readonly LotsDbContext _dbContext;
-    private readonly ILotClassifier _lotClassifier;
 
     public LotsController(
         ILotCopyService lotCopyService,
-        LotsDbContext dbContext,
-        ILotClassifier lotClassifier)
+        LotsDbContext dbContext)
     {
         _lotCopyService = lotCopyService;
         _dbContext = dbContext;
-        _lotClassifier = lotClassifier;
     }
 
     [HttpGet("list")]
@@ -408,28 +405,5 @@ public class LotsController : ControllerBase
             .ToListAsync();
 
         return Ok(items);
-    }
-
-    /// <summary>
-    /// Классифицирует лот по его описанию.
-    /// </summary>
-    /// <param name="request">Тело запроса с описанием лота.</param>
-    /// <returns>Результат классификации.</returns>
-    [HttpPost("classify")]
-    public async Task<IActionResult> ClassifyLot([FromBody] LotRequest request, CancellationToken token)
-    {
-        if (string.IsNullOrWhiteSpace(request?.Description))
-        {
-            return BadRequest("Параметр 'Description' не может быть пустым.");
-        }
-
-        var lotClassificationResult = await _lotClassifier.ClassifyLotAsync(request.Description, token);
-
-        if (lotClassificationResult?.Categories is null)
-        {
-            return StatusCode(500, "Не удалось выполнить классификацию категорий лота.");
-        }
-
-        return Ok(new { result = lotClassificationResult });
     }
 }

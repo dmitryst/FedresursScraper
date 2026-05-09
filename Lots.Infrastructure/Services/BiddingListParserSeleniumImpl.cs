@@ -94,7 +94,7 @@ public class BiddingListParserSeleniumImpl : BackgroundService
             var rows = driver.FindElements(By.CssSelector("#ctl00_cphBody_gvTradeList tr"));
 
             // Пропускаем заголовок (первая строка) и строку пагинации (обычно содержит класс pager)
-            var dataRows = rows.Skip(1).Where(r => !r.GetAttribute("class").Contains("pager")).ToList();
+            var dataRows = rows.Skip(1).Where(r => !(r.GetAttribute("class") ?? "").Contains("pager")).ToList();
 
             foreach (var row in dataRows)
             {

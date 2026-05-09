@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using FedresursScraper.Extensions;
 using FedresursScraper.TradeStatuses;
-using FedresursScraper.UserAds.Hubs;
+//using FedresursScraper.UserAds.Hubs;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using FedresursScraper.Services.LotAlerts;
 using FedresursScraper.Services.Email;
@@ -196,7 +196,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidAudience = configuration["Jwt:Audience"],
             ValidateLifetime = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"])),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ?? "default_secret_key_1234567890123456")),
             ValidateIssuerSigningKey = true,
         };
         // Чтение токена из httpOnly cookie
@@ -264,7 +264,7 @@ app.UseCors(myAllowSpecificOrigins);
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers(); // Включаем маппинг запросов на контроллеры
-app.MapHub<ChatHub>("/chathub"); // Включаем маппинг SignalR хаба
+//app.MapHub<ChatHub>("/chathub"); // Включаем маппинг SignalR хаба
 
 // Запуск приложения (и фоновых задач, и API)
 await app.RunAsync();

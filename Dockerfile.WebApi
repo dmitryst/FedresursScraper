@@ -1,0 +1,40 @@
+# Объявляем аргумент сборки с версией по умолчанию
+ARG BUILD_VERSION=1.1.0
+
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+ARG BUILD_VERSION
+
+WORKDIR /app
+EXPOSE 8080
+
+# Устанавливаем версию как переменную окружения для приложения
+ENV AppInfo__Version=$BUILD_VERSION
+ENV ASPNETCORE_HTTP_PORTS=8080
+
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+# Копируем файлы проектов для восстановления зависимостей
+COPY ["FedresursSolution.sln", "."]
+COPY ["Lots.WebApi/Lots.WebApi.csproj", "Lots.WebApi/"]
+COPY ["Lots.Data/Lots.Data.csproj", "Lots.Data/"]
+COPY ["Lots.Application/Lots.Application.csproj", "Lots.Application/"]
+COPY ["Lots.Infrastructure/Lots.Infrastructure.csproj", "Lots.Infrastructure/"]
+COPY ["FedresursScraper/FedresursScraper.csproj", "FedresursScraper/"]
+COPY ["FedresursScraper.Tests/FedresursScraper.Tests.csproj", "FedresursScraper.Tests/"]
+
+# Восстанавливаем зависимости решения
+RUN dotnet restore "FedresursSolution.sln"
+
+# Копируем весь остальной код
+COPY . .
+
+# Запускаем публикацию
+RUN dotnet publish "Lots.WebApi/Lots.WebApi.csproj" -c Release -o /app/publish
+
+# Копируем результат сборки в рабочий образ
+FROM base AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+
+ENTRYPOINT ["dotnet", "Lots.WebApi.dll"]

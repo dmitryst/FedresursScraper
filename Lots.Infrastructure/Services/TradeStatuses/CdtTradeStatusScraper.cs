@@ -42,7 +42,7 @@ public class CdtTradeStatusScraper : ICdtTradeStatusScraper
 
             if (statusNode != null)
             {
-                var rawText = HtmlEntity.DeEntitize(statusNode.InnerText);
+                var rawText = HtmlEntity.DeEntitize(statusNode.InnerText) ?? string.Empty;
                 var status = Regex.Replace(rawText, @"\s+", " ").Trim();
 
                 if (status.Contains("не состоял", StringComparison.OrdinalIgnoreCase))
