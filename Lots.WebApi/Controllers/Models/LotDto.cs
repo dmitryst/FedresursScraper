@@ -64,4 +64,24 @@ public class LotDto
     /// Данные из Росреестра по конкретному кадастровому номеру
     /// </summary>
     public List<CadastralItemDto>? CadastralInfos { get; set; }
+
+    /// <summary>
+    /// Похожие лоты (для архивных лотов)
+    /// </summary>
+    public List<SimilarLotDto> SimilarLots { get; set; } = new();
+
+    /// <summary>
+    /// Активные лоты с такими же кадастровыми номерами
+    /// </summary>
+    public List<SimilarLotDto> SameCadastralLots { get; set; } = new();
+}
+
+public class SimilarLotDto
+{
+    public Guid Id { get; set; }
+    public int PublicId { get; set; }
+    public string? Title { get; set; }
+    public string? Slug { get; set; }
+    public decimal? StartPrice { get; set; }
+    public string? ImageUrl { get; set; }
 }

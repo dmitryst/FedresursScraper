@@ -90,7 +90,9 @@ builder.Services.AddHostedService<LotRecoveryService>();
 builder.Services.AddHostedService<LotAlertMatchingWorker>();
 builder.Services.AddHostedService<LotAlertDeliveryWorker>();
 
-// TODO: зарегистрировать SimilarLotsWorker когда все для этого будет готово
+// Похожие лоты
+builder.Services.Configure<FedresursScraper.Options.SimilarLotsOptions>(configuration.GetSection("SimilarLots"));
+builder.Services.AddHostedService<FedresursScraper.Services.SimilarLots.SimilarLotsWorker>();
 
 builder.Services.AddScoped<FedresursTradeResultsParserService>();
 builder.Services.AddScoped<TradeResultsImportService>();

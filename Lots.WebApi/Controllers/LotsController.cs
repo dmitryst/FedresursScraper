@@ -231,6 +231,60 @@ public class LotsController : ControllerBase
                 }).ToList(),
         };
 
+        if (!lot.IsActive())
+        {
+            var similarLots = await _dbContext.SimilarLots
+                .AsNoTracking()
+                .Where(sl => sl.SourceLotId == lot.Id)
+                .OrderBy(sl => sl.Rank)
+                .Include(sl => sl.TargetLot)
+                .ThenInclude(l => l.Images)
+                .ToListAsync();
+
+            lotDto.SimilarLots = similarLots.Select(sl => new SimilarLotDto
+            {
+                Id = sl.TargetLot.Id,
+                PublicId = sl.TargetLot.PublicId,
+                Title = sl.TargetLot.Title ?? sl.TargetLot.Description,
+                Slug = sl.TargetLot.Slug,
+                StartPrice = sl.TargetLot.StartPrice,
+                ImageUrl = sl.TargetLot.Images.OrderBy(i => i.Order).FirstOrDefault()?.Url
+            }).ToList();
+
+            // Если есть кадастровые номера, ищем активные лоты с такими же номерами
+            if (lot.CadastralInfos != null && lot.CadastralInfos.Any())
+            {
+                var cadastralNumbers = lot.CadastralInfos.Select(c => c.CadastralNumber).ToList();
+                
+                var lotsWithSameCadastral = await _dbContext.Lots
+                    .AsNoTracking()
+                    .Where(Lot.IsActiveExpression)
+                    .Where(l => l.Id != lot.Id)
+                    .Where(l => l.CadastralInfos.Any(c => cadastralNumbers.Contains(c.CadastralNumber)))
+                    .Include(l => l.Images)
+                    .OrderByDescending(l => l.CreatedAt)
+                    .Take(5)
+                    .ToListAsync();
+
+                if (lotsWithSameCadastral.Any())
+                {
+                    lotDto.SameCadastralLots = lotsWithSameCadastral.Select(l => new SimilarLotDto
+                    {
+                        Id = l.Id,
+                        PublicId = l.PublicId,
+                        Title = l.Title ?? l.Description,
+                        Slug = l.Slug,
+                        StartPrice = l.StartPrice,
+                        ImageUrl = l.Images.OrderBy(i => i.Order).FirstOrDefault()?.Url
+                    }).ToList();
+
+                    // Убираем их из SimilarLots, чтобы не было дублей
+                    var existingIds = new HashSet<Guid>(lotDto.SameCadastralLots.Select(s => s.Id));
+                    lotDto.SimilarLots = lotDto.SimilarLots.Where(s => !existingIds.Contains(s.Id)).ToList();
+                }
+            }
+        }
+
         return Ok(lotDto);
     }
 

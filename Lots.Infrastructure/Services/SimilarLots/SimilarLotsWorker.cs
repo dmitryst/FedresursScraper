@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using FedresursScraper.Options;
 
 namespace FedresursScraper.Services.SimilarLots;
 
@@ -10,16 +12,17 @@ public class SimilarLotsWorker : BackgroundService
 {
     private readonly ILogger<SimilarLotsWorker> _logger;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IOptionsMonitor<SimilarLotsOptions> _options;
 
     // Настройки
-    private readonly int _batchSize = 100;
     private readonly TimeSpan _delayBetweenBatches = TimeSpan.FromSeconds(5);
     private readonly TimeSpan _recalculationInterval = TimeSpan.FromHours(24); // Как часто пересчитывать
 
-    public SimilarLotsWorker(ILogger<SimilarLotsWorker> logger, IServiceProvider serviceProvider)
+    public SimilarLotsWorker(ILogger<SimilarLotsWorker> logger, IServiceProvider serviceProvider, IOptionsMonitor<SimilarLotsOptions> options)
     {
         _logger = logger;
         _serviceProvider = serviceProvider;
+        _options = options;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -30,6 +33,21 @@ public class SimilarLotsWorker : BackgroundService
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                if (!_options.CurrentValue.Enabled)
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+                    continue;
+                }
+
+                var now = DateTime.UtcNow;
+                var runAtHour = _options.CurrentValue.RunAtHour;
+                
+                if (now.Hour != runAtHour)
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(10), stoppingToken);
+                    continue;
+                }
+
                 try
                 {
                     await ProcessBatchAsync(stoppingToken);
@@ -72,7 +90,7 @@ public class SimilarLotsWorker : BackgroundService
             .Where(l => !context.SimilarLots.Any(sl => sl.SourceLotId == l.Id) ||
                         context.SimilarLots.Where(sl => sl.SourceLotId == l.Id).Max(sl => sl.CalculatedAt) < cutoffTime)
             .Include(l => l.Categories)
-            .Take(_batchSize)
+            .Take(_options.CurrentValue.BatchSize)
             .ToListAsync(stoppingToken);
 
         if (!archiveLotsToProcess.Any())
