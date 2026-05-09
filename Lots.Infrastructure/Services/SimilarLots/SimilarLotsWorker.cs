@@ -26,19 +26,30 @@ public class SimilarLotsWorker : BackgroundService
     {
         _logger.LogInformation("Сервис расчета похожих лотов запущен.");
 
-        while (!stoppingToken.IsCancellationRequested)
+        try
         {
-            try
+            while (!stoppingToken.IsCancellationRequested)
             {
-                await ProcessBatchAsync(stoppingToken);
-                // Пауза между пачками, чтобы не блокировать пул соединений БД
-                await Task.Delay(_delayBetweenBatches, stoppingToken);
+                try
+                {
+                    await ProcessBatchAsync(stoppingToken);
+                    // Пауза между пачками, чтобы не блокировать пул соединений БД
+                    await Task.Delay(_delayBetweenBatches, stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Ошибка при расчете похожих лотов.");
+                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken); // Пауза при ошибке
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Ошибка при расчете похожих лотов.");
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken); // Пауза при ошибке
-            }
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Сервис расчета похожих лотов остановлен (OperationCanceledException).");
         }
     }
 

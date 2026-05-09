@@ -29,30 +29,41 @@ public class LotAlertDeliveryWorker : BackgroundService
     {
         _logger.LogInformation("LotAlertDeliveryWorker запущен. Рассылка по расписанию (раз в час).");
 
-        while (!stoppingToken.IsCancellationRequested)
+        try
         {
-            try
+            while (!stoppingToken.IsCancellationRequested)
             {
-                await ProcessAlertDeliveriesAsync(stoppingToken);
+                try
+                {
+                    await ProcessAlertDeliveriesAsync(stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Критическая ошибка в цикле LotAlertDeliveryWorker.");
+                }
+
+                // РАСЧЕТ ВРЕМЕНИ СНА ДО СЛЕДУЮЩЕГО ЧАСА
+                var now = DateTime.UtcNow;
+                // Переходим на начало следующего часа (минуты и секунды в ноль)
+                var nextHour = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, DateTimeKind.Utc).AddHours(1);
+                // Добавляем 1 минуту для страховки от преждевременного пробуждения
+                nextHour = nextHour.AddMinutes(1);
+
+                var timeToSleep = nextHour - now;
+
+                _logger.LogInformation("Воркер засыпает на {Minutes:F1} минут до {NextRun:HH:mm} UTC.",
+                    timeToSleep.TotalMinutes, nextHour);
+
+                await Task.Delay(timeToSleep, stoppingToken);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Критическая ошибка в цикле LotAlertDeliveryWorker.");
-            }
-
-            // РАСЧЕТ ВРЕМЕНИ СНА ДО СЛЕДУЮЩЕГО ЧАСА
-            var now = DateTime.UtcNow;
-            // Переходим на начало следующего часа (минуты и секунды в ноль)
-            var nextHour = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, DateTimeKind.Utc).AddHours(1);
-            // Добавляем 1 минуту для страховки от преждевременного пробуждения
-            nextHour = nextHour.AddMinutes(1);
-
-            var timeToSleep = nextHour - now;
-
-            _logger.LogInformation("Воркер засыпает на {Minutes:F1} минут до {NextRun:HH:mm} UTC.",
-                timeToSleep.TotalMinutes, nextHour);
-
-            await Task.Delay(timeToSleep, stoppingToken);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("LotAlertDeliveryWorker остановлен (OperationCanceledException).");
         }
     }
 

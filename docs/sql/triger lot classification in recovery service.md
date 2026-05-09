@@ -38,11 +38,20 @@ BEGIN
     -- 1. Выбираем все нужные лоты (сразу берем внутренний Id и PublicId для логирования)
     -- и запускаем цикл по каждой найденной строке
     FOR target_record IN 
-        SELECT l."Id", l."PublicId" 
+        SELECT 
+            l."Id",
+            l."PublicId"
         FROM "Lots" l
-        JOIN "Biddings" b ON b."Id" = l."BiddingId"
-        WHERE b."TradeNumber" LIKE '196305-МЭТС%' 
-          AND l."StartPrice" < l."MarketValueMin" / 3
+        JOIN "LotAuditEvents" e ON l."Id" = e."LotId"
+        WHERE NOT EXISTS (
+            SELECT 1 
+            FROM "LotCategories" c 
+            WHERE c."LotId" = l."Id") -- Нет категорий
+        AND e."EventType" = 'Classification' 
+        AND e."Status" = 'Failure'
+        AND l."PublicId" >= 118845
+        GROUP BY l."Id"
+        HAVING COUNT(e."Id") >= 2
     LOOP
         -- 2. Внутри цикла у нас есть доступ к текущему target_record."Id"
         

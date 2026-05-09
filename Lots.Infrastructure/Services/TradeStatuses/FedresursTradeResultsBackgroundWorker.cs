@@ -30,22 +30,33 @@ public class FedresursTradeResultsBackgroundWorker : BackgroundService
 
         int intervalMinutes = _configuration.GetValue<int>("BackgroundServices:FedresursTradeResults:IntervalMinutesBetweenBatches", 1);
 
-        while (!stoppingToken.IsCancellationRequested)
+        try
         {
-            try
+            while (!stoppingToken.IsCancellationRequested)
             {
-                using var scope = _serviceProvider.CreateScope();
-                var parserService = scope.ServiceProvider.GetRequiredService<FedresursTradeResultsParserService>();
-                
-                await parserService.ProcessBatchAsync(stoppingToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Ошибка в цикле фонового парсинга результатов.");
-            }
+                try
+                {
+                    using var scope = _serviceProvider.CreateScope();
+                    var parserService = scope.ServiceProvider.GetRequiredService<FedresursTradeResultsParserService>();
+                    
+                    await parserService.ProcessBatchAsync(stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Ошибка в цикле фонового парсинга результатов.");
+                }
 
-            _logger.LogInformation($"Ожидаем {intervalMinutes} минут до начала парсинга следующего батча результатов торгов");
-            await Task.Delay(TimeSpan.FromMinutes(intervalMinutes), stoppingToken);
+                _logger.LogInformation($"Ожидаем {intervalMinutes} минут до начала парсинга следующего батча результатов торгов");
+                await Task.Delay(TimeSpan.FromMinutes(intervalMinutes), stoppingToken);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("FedresursTradeResultsBackgroundWorker остановлен (OperationCanceledException).");
         }
     }
 }

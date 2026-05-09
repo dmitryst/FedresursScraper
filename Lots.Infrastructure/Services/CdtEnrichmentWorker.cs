@@ -23,48 +23,59 @@ namespace FedresursScraper.Services
         {
             _logger.LogInformation("CDT Enrichment Worker стартовал.");
 
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                if (!_options.CurrentValue.IsEnabled)
+                while (!stoppingToken.IsCancellationRequested)
                 {
-                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
-                    continue;
-                }
-
-                try
-                {
-                    using (var scope = _scopeFactory.CreateScope())
+                    if (!_options.CurrentValue.IsEnabled)
                     {
-                        var enrichmentService = scope.ServiceProvider.GetRequiredService<ICdtEnrichmentService>();
+                        await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                        continue;
+                    }
 
-                        bool hasWork = await enrichmentService.ProcessPendingBiddingsAsync(stoppingToken);
-
-                        if (hasWork)
+                    try
+                    {
+                        using (var scope = _scopeFactory.CreateScope())
                         {
-                            int delaySeconds = Random.Shared.Next(10, 16);
-                            var randomDelay = TimeSpan.FromSeconds(delaySeconds);
+                            var enrichmentService = scope.ServiceProvider.GetRequiredService<ICdtEnrichmentService>();
 
-                            _logger.LogDebug("Пачка обработана. Ожидание {Seconds} сек...", delaySeconds);
+                            bool hasWork = await enrichmentService.ProcessPendingBiddingsAsync(stoppingToken);
 
-                            await Task.Delay(randomDelay, stoppingToken);
-                        }
-                        else
-                        {
-                            // Если работы нет (все спарсили), спим дольше
-                            _logger.LogInformation("Нет лотов для обработки. Переход в режим ожидания...");
+                            if (hasWork)
+                            {
+                                int delaySeconds = Random.Shared.Next(10, 16);
+                                var randomDelay = TimeSpan.FromSeconds(delaySeconds);
 
-                            var delayMinutes = _options.CurrentValue.DelayWhenNoWorkMinutes > 0
-                                ? _options.CurrentValue.DelayWhenNoWorkMinutes
-                                : 5;
-                            await Task.Delay(TimeSpan.FromMinutes(delayMinutes), stoppingToken);
+                                _logger.LogDebug("Пачка обработана. Ожидание {Seconds} сек...", delaySeconds);
+
+                                await Task.Delay(randomDelay, stoppingToken);
+                            }
+                            else
+                            {
+                                // Если работы нет (все спарсили), спим дольше
+                                _logger.LogInformation("Нет лотов для обработки. Переход в режим ожидания...");
+
+                                var delayMinutes = _options.CurrentValue.DelayWhenNoWorkMinutes > 0
+                                    ? _options.CurrentValue.DelayWhenNoWorkMinutes
+                                    : 5;
+                                await Task.Delay(TimeSpan.FromMinutes(delayMinutes), stoppingToken);
+                            }
                         }
                     }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Критическая ошибка в цикле CDT Enrichment Worker");
+                        await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Критическая ошибка в цикле CDT Enrichment Worker");
-                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
-                }
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("CDT Enrichment Worker остановлен (OperationCanceledException).");
             }
         }
     }

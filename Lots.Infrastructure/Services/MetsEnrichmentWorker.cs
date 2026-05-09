@@ -26,53 +26,65 @@ namespace FedresursScraper.Services
                 _options.CurrentValue.IsEnabled,
                 _options.CurrentValue.DelayWhenNoWorkMinutes);
 
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                // проверка флага отключения
-                if (!_options.CurrentValue.IsEnabled)
+                while (!stoppingToken.IsCancellationRequested)
                 {
-                    _logger.LogWarning("Mets Enrichment Worker ОТКЛЮЧЕН (IsEnabled=false). Жду 1 мин...");
-                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
-                    continue;
-                }
-
-                try
-                {
-                    using (var scope = _scopeFactory.CreateScope())
+                    // проверка флага отключения
+                    if (!_options.CurrentValue.IsEnabled)
                     {
-                        var enrichmentService = scope.ServiceProvider.GetRequiredService<IMetsEnrichmentService>();
+                        _logger.LogWarning("Mets Enrichment Worker ОТКЛЮЧЕН (IsEnabled=false). Жду 1 мин...");
+                        await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                        continue;
+                    }
 
-                        bool hasWork = await enrichmentService.ProcessPendingBiddingsAsync(stoppingToken);
-
-                        if (hasWork)
+                    try
+                    {
+                        using (var scope = _scopeFactory.CreateScope())
                         {
-                            // Генерируем случайную задержку от 10 до 15 секунд
-                            int delaySeconds = Random.Shared.Next(10, 16);
-                            var randomDelay = TimeSpan.FromSeconds(delaySeconds);
+                            var enrichmentService = scope.ServiceProvider.GetRequiredService<IMetsEnrichmentService>();
 
-                            _logger.LogDebug("Пачка обработана. Ожидание {Seconds} сек...", delaySeconds);
+                            bool hasWork = await enrichmentService.ProcessPendingBiddingsAsync(stoppingToken);
 
-                            // Если работа была, делаем короткую паузу и продолжаем молотить
-                            await Task.Delay(randomDelay, stoppingToken);
-                        }
-                        else
-                        {
-                            // Если работы нет (все спарсили), спим дольше
-                            _logger.LogInformation("Нет лотов для обработки. Переход в режим ожидания...");
+                            if (hasWork)
+                            {
+                                // Генерируем случайную задержку от 10 до 15 секунд
+                                int delaySeconds = Random.Shared.Next(10, 16);
+                                var randomDelay = TimeSpan.FromSeconds(delaySeconds);
 
-                            var delayMinutes = _options.CurrentValue.DelayWhenNoWorkMinutes > 0
-                                ? _options.CurrentValue.DelayWhenNoWorkMinutes
-                                : 5;
-                            await Task.Delay(TimeSpan.FromMinutes(delayMinutes), stoppingToken);
+                                _logger.LogDebug("Пачка обработана. Ожидание {Seconds} сек...", delaySeconds);
+
+                                // Если работа была, делаем короткую паузу и продолжаем молотить
+                                await Task.Delay(randomDelay, stoppingToken);
+                            }
+                            else
+                            {
+                                // Если работы нет (все спарсили), спим дольше
+                                _logger.LogInformation("Нет лотов для обработки. Переход в режим ожидания...");
+
+                                var delayMinutes = _options.CurrentValue.DelayWhenNoWorkMinutes > 0
+                                    ? _options.CurrentValue.DelayWhenNoWorkMinutes
+                                    : 5;
+                                await Task.Delay(TimeSpan.FromMinutes(delayMinutes), stoppingToken);
+                            }
                         }
                     }
+                    catch (OperationCanceledException)
+                    {
+                        // Игнорируем и пробрасываем выше
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Критическая ошибка в цикле Mets Enrichment Worker");
+                        // Пауза при ошибке, чтобы не дудосить БД в цикле при отвале сети
+                        await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Критическая ошибка в цикле Mets Enrichment Worker");
-                    // Пауза при ошибке, чтобы не дудосить БД в цикле при отвале сети
-                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
-                }
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Mets Enrichment Worker остановлен (OperationCanceledException).");
             }
         }
     }

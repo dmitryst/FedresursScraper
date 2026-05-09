@@ -11,6 +11,12 @@
 		},
 		{
 			"path": "Lots.Infrastructure"
+		},
+		{
+			"path": "FedresursScraper"
+		},
+		{
+			"path": "FedresursScraper.Tests"
 		}
 	],
 	"settings": {}
