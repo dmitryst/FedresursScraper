@@ -17,7 +17,7 @@ public class IndexNowService : IIndexNowService
     private readonly IConfiguration _configuration;
     
     private string Host => _configuration["IndexNow:Host"] ?? "s-lot.ru";
-    private string Key => _configuration["IndexNow:Key"] ?? throw new InvalidOperationException("IndexNow:Key не найден в конфигурации");
+    private string? Key => _configuration["IndexNow:Key"];
     private string KeyLocation => $"https://{Host}/{Key}.txt";
     private string ApiUrl => _configuration["IndexNow:ApiUrl"] ?? "https://api.indexnow.org/indexnow";
 
@@ -38,6 +38,13 @@ public class IndexNowService : IIndexNowService
 
     public async Task SubmitUrlsAsync(IEnumerable<string> urls)
     {
+        var key = Key;
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            _logger.LogWarning("IndexNow:Key не задан в конфигурации. Отправка пропущена.");
+            return;
+        }
+
         var urlList = urls.ToList();
         
         if (!urlList.Any())
@@ -49,7 +56,7 @@ public class IndexNowService : IIndexNowService
         var requestData = new
         {
             host = Host,
-            key = Key,
+            key = key,
             keyLocation = KeyLocation,
             urlList = urlList
         };
