@@ -69,13 +69,13 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Копируем только файлы, нужные для восстановления зависимостей
-COPY ["FedresursSolution.sln", "."]
-COPY ["FedresursScraper/FedresursScraper.csproj", "FedresursScraper/"]
 COPY ["Lots.Data/Lots.Data.csproj", "Lots.Data/"]
-COPY ["FedresursScraper.Tests/FedresursScraper.Tests.csproj", "FedresursScraper.Tests/"]
+COPY ["Lots.Application/Lots.Application.csproj", "Lots.Application/"]
+COPY ["Lots.Infrastructure/Lots.Infrastructure.csproj", "Lots.Infrastructure/"]
+COPY ["FedresursScraper/FedresursScraper.csproj", "FedresursScraper/"]
 
-# Восстанавливаем зависимости всего решения
-RUN dotnet restore "FedresursSolution.sln"
+# Восстанавливаем зависимости только для парсера
+RUN dotnet restore "FedresursScraper/FedresursScraper.csproj"
 
 # Копируем весь остальной код
 COPY . .

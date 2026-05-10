@@ -15,16 +15,13 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Копируем файлы проектов для восстановления зависимостей
-COPY ["FedresursSolution.sln", "."]
 COPY ["Lots.WebApi/Lots.WebApi.csproj", "Lots.WebApi/"]
 COPY ["Lots.Data/Lots.Data.csproj", "Lots.Data/"]
 COPY ["Lots.Application/Lots.Application.csproj", "Lots.Application/"]
 COPY ["Lots.Infrastructure/Lots.Infrastructure.csproj", "Lots.Infrastructure/"]
-COPY ["FedresursScraper/FedresursScraper.csproj", "FedresursScraper/"]
-COPY ["FedresursScraper.Tests/FedresursScraper.Tests.csproj", "FedresursScraper.Tests/"]
 
-# Восстанавливаем зависимости решения
-RUN dotnet restore "FedresursSolution.sln"
+# Восстанавливаем зависимости только для WebApi
+RUN dotnet restore "Lots.WebApi/Lots.WebApi.csproj"
 
 # Копируем весь остальной код
 COPY . .
