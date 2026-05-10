@@ -49,6 +49,15 @@ SET
 WHERE "Email" = 'user@example.com';
 ```
 
+Сделать пользователя админом:
+
+```sql
+UPDATE "Users"
+SET 
+    "IsAdmin" = true
+WHERE "Email" = 'dmitry_stepanov@inbox.ru';
+```
+
 ## Проверка результата
 Убедитесь, что изменения применились:
 
@@ -78,5 +87,5 @@ UPDATE "Users"
 SET 
     "IsSubscriptionActive" = false,
     "SubscriptionEndDate" = NULL -- или текущая дата NOW()
-WHERE "Email" = 'user@example.com';
+WHERE "Email" = 'a@a.a';
 ```
