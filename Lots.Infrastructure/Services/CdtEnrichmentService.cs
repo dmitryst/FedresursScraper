@@ -3,6 +3,7 @@ using Lots.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
+using System.Text.Json;
 
 namespace FedresursScraper.Services
 {
@@ -48,6 +49,8 @@ namespace FedresursScraper.Services
                     .ThenInclude(l => l.Images)
                 .Include(b => b.Lots)
                     .ThenInclude(l => l.Documents)
+                .Include(b => b.Lots)
+                    .ThenInclude(l => l.PriceSchedules)
                 .Include(b => b.EnrichmentState)
                 .Where(b => b.Platform.Contains("Центр дистанционных торгов"))
                 .Where(b => !b.IsEnriched ?? true)
@@ -97,6 +100,8 @@ namespace FedresursScraper.Services
                     .ThenInclude(l => l.Images)
                 .Include(b => b.Lots)
                     .ThenInclude(l => l.Documents)
+                .Include(b => b.Lots)
+                    .ThenInclude(l => l.PriceSchedules)
                 .Include(b => b.EnrichmentState)
                 .FirstOrDefaultAsync(b => b.TradeNumber == tradeNumber || b.TradeNumber.StartsWith(tradeNumber), ct);
 
@@ -125,10 +130,8 @@ namespace FedresursScraper.Services
 
         private async Task EnrichBiddingAsync(Bidding bidding, CancellationToken ct)
         {
-            // Формируем URL
-            // Пример: https://bankrot.cdtrf.ru/public/undef/card/trade.aspx?id=321404
             var tradeId = CleanTradeNumber(bidding.TradeNumber);
-            var url = $"https://bankrot.cdtrf.ru/public/undef/card/trade.aspx?id={tradeId}";
+            var url = $"https://torgi.cdtrf.ru/trades/{tradeId}";
 
             var response = await _httpClient.GetAsync(url, ct);
             if (!response.IsSuccessStatusCode)
@@ -140,242 +143,113 @@ namespace FedresursScraper.Services
             var doc = new HtmlDocument();
             doc.LoadHtml(htmlContent);
 
+            // Извлекаем JSON из тега <pre style="display:none;">
+            var preNode = doc.DocumentNode.SelectSingleNode("//pre[@style='display:none;']");
+            CdtrfTradeData tradeData = null;
+
+            if (preNode != null)
+            {
+                var jsonStr = System.Net.WebUtility.HtmlDecode(preNode.InnerText);
+                try
+                {
+                    tradeData = JsonSerializer.Deserialize<CdtrfTradeData>(jsonStr, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogWarning(ex, "Не удалось распарсить JSON из pre тега для торгов {TradeNumber}", tradeId);
+                }
+            }
+
             foreach (var lot in bidding.Lots)
             {
-                // Очищаем старые данные перед парсингом, чтобы избежать дубликатов
-                // Так как мы сделали Include, EF удалит старые записи из БД при SaveChanges
+                // Очищаем старые данные перед парсингом
                 lot.Images.Clear();
                 lot.Documents.Clear();
+                lot.PriceSchedules.Clear();
 
-                // Парсинг фото и документов
-                await ProcessAttachmentsAsync(lot, doc, ct);
-
-                // Парсинг графика снижения цены
-                if (IsPublicOffer(bidding.Type))
+                if (tradeData?.Lot != null)
                 {
-                    ProcessPriceSchedule(lot, doc);
+                    await ProcessImagesAsync(lot, tradeData.Lot, ct);
+
+                    if (IsPublicOffer(bidding.Type))
+                    {
+                        ProcessPriceSchedule(lot, tradeData.Lot);
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Данные лота не найдены в JSON или JSON отсутствует для торгов {TradeNumber}. Парсинг завершен без изображений.", tradeId);
                 }
             }
         }
 
-        private async Task ProcessAttachmentsAsync(Lot lot, HtmlDocument doc, CancellationToken ct)
+        private async Task ProcessImagesAsync(Lot lot, CdtrfLot cdtrfLot, CancellationToken ct)
         {
-            // Ищем все ссылки на документы (pdoc.aspx)
-            // Пример: <a href="/public/undef/card/pdoc.aspx?tradeid=321544&id=...">план бассеин баня</a>
-            var pdocLinks = doc.DocumentNode.SelectNodes("//a[contains(@href, 'pdoc.aspx')]");
-
-            if (pdocLinks == null || !pdocLinks.Any())
+            if (cdtrfLot.Images == null || !cdtrfLot.Images.Any())
             {
-                _logger.LogInformation("Lot {LotNumber}: Документы/фото не найдены.", lot.LotNumber);
+                _logger.LogInformation("Lot {LotNumber}: Картинки не найдены.", lot.LotNumber);
                 return;
             }
 
-            int imgOrder = 0;
+            var images = cdtrfLot.Images.OrderBy(i => i.Position).ToList();
 
-            // HashSet для исключения дубликатов ссылок на скачивание
-            var processedUrls = new HashSet<string>();
-
-            foreach (var linkNode in pdocLinks)
+            foreach (var img in images)
             {
-                var title = linkNode.InnerText.Trim();
-                var pdocUrl = linkNode.GetAttributeValue("href", "");
+                if (ct.IsCancellationRequested) break;
 
-                // Пропускаем стандартные документы, если будет нужно
-                // if (title.Contains("Договор")) continue; 
-
-                if (string.IsNullOrEmpty(pdocUrl)) continue;
-
-                // Приводим к абсолютному URL
-                if (!pdocUrl.StartsWith("http"))
-                {
-                    pdocUrl = "https://bankrot.cdtrf.ru/public/undef/card" + (pdocUrl.StartsWith("/") ? pdocUrl : "/" + pdocUrl);
-                }
+                // URL для скачивания картинки (большой размер)
+                // Пример: https://webapi.torgi.cdtrf.ru/LotImage/public?LotImageSize=Large&ImageId=...&LotId=...&TradeId=...
+                var imageUrl = $"https://webapi.torgi.cdtrf.ru/LotImage/public?LotImageSize=Large&ImageId={img.Id}&LotId={cdtrfLot.TradeLotId}&TradeId={cdtrfLot.TradeId}";
 
                 try
                 {
-                    // Вызываем метод и получаем true, если это была картинка (чтобы увеличить счетчик)
-                    bool isImageAdded = await ProcessSingleDocumentPageAsync(lot, pdocUrl, title, processedUrls, imgOrder, ct);
+                    await Task.Delay(200, ct); // Небольшая пауза
 
-                    if (isImageAdded)
+                    var response = await _httpClient.GetAsync(imageUrl, ct);
+                    if (!response.IsSuccessStatusCode)
                     {
-                        imgOrder++; // Увеличиваем счетчик только если добавили картинку
+                        _logger.LogWarning("Не удалось скачать картинку {Url}. Статус: {StatusCode}", imageUrl, response.StatusCode);
+                        continue;
                     }
+
+                    var fileBytes = await response.Content.ReadAsByteArrayAsync(ct);
+                    if (fileBytes.Length == 0) continue;
+
+                    var extension = ".jpg"; // По умолчанию, так как обычно WebAPI отдает JPEG, либо можно определять по Magic Bytes
+                    var s3FileName = $"lots/{lot.Id}/{Guid.NewGuid()}{extension}";
+                    var s3Url = await _fileStorage.UploadAsync(fileBytes, s3FileName);
+
+                    lot.Images.Add(new LotImage
+                    {
+                        LotId = lot.Id,
+                        Url = s3Url,
+                        Order = img.Position
+                    });
+
+                    _logger.LogInformation("Lot {LotNumber}: Загружено фото {ImageId}", lot.LotNumber, img.Id);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning("Lot {LotNumber}: Ошибка при обработке документа '{Title}': {Error}", lot.LotNumber, title, ex.Message);
+                    _logger.LogWarning("Lot {LotNumber}: Ошибка при загрузке картинки {ImageId}: {Error}", lot.LotNumber, img.Id, ex.Message);
                 }
             }
         }
 
-        // Возвращает true, если был добавлен файл и это была КАРТИНКА (нужно инкрементировать order)
-        private async Task<bool> ProcessSingleDocumentPageAsync(
-            Lot lot,
-            string pdocUrl,
-            string title,
-            HashSet<string> processedUrls,
-            int currentImgOrder,
-            CancellationToken ct)
+        private void ProcessPriceSchedule(Lot lot, CdtrfLot cdtrfLot)
         {
-            // Небольшая пауза, чтобы не спамить запросами (опционально)
-            await Task.Delay(200, ct);
-
-            var response = await _httpClient.GetAsync(pdocUrl, ct);
-            if (!response.IsSuccessStatusCode)
+            if (cdtrfLot.LotScheduleItems == null || !cdtrfLot.LotScheduleItems.Any())
             {
-                return false;
-            }
-
-            var html = await response.Content.ReadAsStringAsync(ct);
-            var doc = new HtmlDocument();
-            doc.LoadHtml(html);
-
-            // Ищем ссылку на скачивание файла
-            // Обычно это download.aspx?fileid=...
-            // Иногда ссылка может быть просто текстом файла, надо искать <a> рядом
-            var downloadLink = doc.DocumentNode.SelectSingleNode("//a[contains(@href, 'download.aspx') and contains(@href, 'fileid=')]");
-
-            if (downloadLink == null)
-            {
-                return false;
-            }
-
-            var downloadUrl = downloadLink.GetAttributeValue("href", "");
-            var fileName = downloadLink.InnerText.Trim(); // Обычно "план бассеин баня.pdf"
-
-            if (string.IsNullOrEmpty(downloadUrl))
-            {
-                return false;
-            }
-
-            // Абсолютный URL
-            if (!downloadUrl.StartsWith("http"))
-            {
-                downloadUrl = "https://bankrot.cdtrf.ru/" + downloadUrl;
-            }
-
-            // Защита от дубликатов ссылок
-            if (processedUrls.Contains(downloadUrl))
-            {
-                return false;
-            }
-            processedUrls.Add(downloadUrl);
-
-            // Определяем тип файла по расширению имени (не по URL, т.к. там .aspx)
-            var extension = Path.GetExtension(fileName).ToLower();
-            bool isImage = IsImageExtension(extension);
-
-            // Если имя файла пустое или странное, пробуем угадать или ставим дефолт
-            if (string.IsNullOrEmpty(extension))
-            {
-                // По умолчанию считаем документом
-                isImage = false;
-                extension = ".bin";
-            }
-
-            // Скачиваем байты
-            var fileBytes = await _httpClient.GetByteArrayAsync(downloadUrl, ct);
-            if (fileBytes.Length == 0)
-            {
-                return false;
-            }
-
-            // Генерируем путь для S3
-            // lots/{lotId}/{guid}.{ext}
-            var s3FileName = $"lots/{lot.Id}/{Guid.NewGuid()}{extension}";
-            var s3Url = await _fileStorage.UploadAsync(fileBytes, s3FileName);
-
-            if (isImage)
-            {
-                // Добавляем в коллекцию картинок
-                lot.Images.Add(new LotImage
-                {
-                    LotId = lot.Id,
-                    Url = s3Url,
-                    Order = currentImgOrder
-                });
-
-                _logger.LogInformation("Lot {LotNumber}: Загружено фото {FileName}", lot.LotNumber, fileName);
-
-                return true; // Сообщаем, что добавили картинку
-            }
-            else
-            {
-                if (lot.Documents == null)
-                {
-                    lot.Documents = new List<LotDocument>(); // На всякий случай инициализируем, если EF не сделал
-                }
-
-                lot.Documents.Add(new LotDocument
-                {
-                    LotId = lot.Id,
-                    Url = s3Url,
-                    Title = !string.IsNullOrEmpty(fileName) ? fileName : title,
-                    Extension = extension
-                });
-
-                _logger.LogInformation("Lot {LotNumber}: Загружен документ {FileName}", lot.LotNumber, fileName);
-
-                return false; // Документ не влияет на порядок картинок
-            }
-        }
-
-        private bool IsImageExtension(string ext)
-        {
-            return ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".webp";
-        }
-
-        private void ProcessPriceSchedule(Lot lot, HtmlDocument doc)
-        {
-            // Ищем любой элемент (td, th, b, span...), содержащий ключевую фразу.
-            // XPath ".//*" ищет на любой глубине, text() берет именно текстовый узел.
-            var headerNode = doc.DocumentNode.SelectSingleNode("//*[contains(text(), 'Начало периода действия цены')]");
-
-            if (headerNode == null)
-            {
-                _logger.LogWarning("Lot {LotNumber}: Не найдена таблица с графиком (header row missing).", lot.LotNumber);
                 return;
             }
 
-            // Поднимаемся вверх до <table>.
-            // Безопасный поиск предка, так как headerNode может быть глубоко (td -> b -> text).
-            var table = headerNode.Ancestors("table").FirstOrDefault();
-            if (table == null)
+            foreach (var item in cdtrfLot.LotScheduleItems)
             {
-                // Иногда таблица сверстана дивами, но на ЦДТ обычно table.
-                // Если table нет, возможно, мы нашли текст в описании, а не в таблице.
-                _logger.LogWarning("Lot {LotNumber}: Текст найден, но он не внутри тега <table>.", lot.LotNumber);
-                return;
-            }
-
-            var rows = table.SelectNodes(".//tr");
-            if (rows == null) return;
-
-            lot.PriceSchedules.Clear();
-
-            // Пропускаем строки до заголовка включительно и берем данные
-            // Но надежнее просто фильтровать строки, которые содержат даты
-            foreach (var row in rows)
-            {
-                var cols = row.SelectNodes("td");
-                if (cols == null || cols.Count < 4) continue;
-
-                // Ожидаем структуру: 
-                // [0] №
-                // [1] Начало (19.01.2026 00:00:00)
-                // [2] Конец (27.01.2026 23:59:59)
-                // [3] Цена (1 260 000,00)
-
-                var startText = cols[1].InnerText.Trim();
-                var endText = cols[2].InnerText.Trim();
-                var priceText = cols[3].InnerText.Trim();
-
-                // Проверка, что это строка данных, а не заголовок
-                if (startText.Contains("Начало")) continue;
-
-                if (TryParseDateTime(startText, out var startUtc) &&
-                    TryParseDateTime(endText, out var endUtc) &&
-                    TryParsePrice(priceText, out var price))
+                if (TryParseDateTime(item.StartTime, out var startUtc) &&
+                    TryParseDateTime(item.EndTime, out var endUtc) &&
+                    TryParsePrice(item.Price, out var price))
                 {
                     lot.PriceSchedules.Add(new LotPriceSchedule
                     {
@@ -383,8 +257,7 @@ namespace FedresursScraper.Services
                         StartDate = startUtc,
                         EndDate = endUtc,
                         Price = price,
-                        // Задаток на ЦДТ обычно не в этой таблице, ставим 0 или парсим из текста выше
-                        Deposit = 0
+                        Deposit = 0 // Задаток обычно указан в другом месте
                     });
                 }
             }
@@ -392,18 +265,10 @@ namespace FedresursScraper.Services
             _logger.LogInformation("Lot {LotNumber}: Найдено {Count} этапов снижения цены.", lot.LotNumber, lot.PriceSchedules.Count);
         }
 
-        private async Task ProcessImagesStubAsync(Lot lot, CancellationToken ct)
-        {
-            // Заглушка
-            await Task.CompletedTask;
-            // _logger.LogDebug("Парсинг фото для ЦДТ пока не реализован.");
-        }
-
         // --- Вспомогательные методы ---
 
         private string CleanTradeNumber(string tradeNumber)
         {
-            // Если в базе лежит "321404", возвращаем как есть.
             if (string.IsNullOrEmpty(tradeNumber)) return "";
             return tradeNumber.Trim();
         }
@@ -416,27 +281,41 @@ namespace FedresursScraper.Services
 
         private bool TryParsePrice(string raw, out decimal price)
         {
-            // Убираем пробелы (в т.ч. неразрывные) и "руб"
+            price = 0;
+            if (string.IsNullOrEmpty(raw)) return false;
+
             var clean = raw
                 .Replace(" ", "")
                 .Replace("\u00A0", "")
                 .Replace("руб", "")
-                .Replace(".", ",") // На случай если разделитель точка, а культура RU
+                .Replace(".", ",")
                 .Trim();
 
-            // Используем русскую культуру для парсинга "1,00"
             return decimal.TryParse(clean, NumberStyles.Any, new CultureInfo("ru-RU"), out price);
         }
 
         private bool TryParseDateTime(string raw, out DateTime dateUtc)
         {
             dateUtc = DateTime.MinValue;
-            // Формат в HTML: 19.01.2026 00:00:00
+            if (string.IsNullOrEmpty(raw)) return false;
+
             var clean = raw.Replace("\u00A0", " ").Trim();
 
             if (DateTime.TryParse(clean, new CultureInfo("ru-RU"), DateTimeStyles.None, out var dt))
             {
-                dateUtc = DateTime.SpecifyKind(dt, DateTimeKind.Utc); // Предполагаем, что на сайте время МСК/локальное, но сохраняем как UTC для базы
+                // Время на сайте указано по Москве (UTC+3)
+                TimeZoneInfo moscowTimeZone;
+                try
+                {
+                    moscowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow");
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                    // На случай Windows
+                    moscowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
+                }
+
+                dateUtc = TimeZoneInfo.ConvertTimeToUtc(dt, moscowTimeZone);
                 return true;
             }
             return false;
@@ -460,6 +339,34 @@ namespace FedresursScraper.Services
                 bidding.EnrichmentState.LastAttemptAt = DateTime.UtcNow;
                 bidding.EnrichmentState.LastError = ex.Message;
             }
+        }
+
+        // Модели для JSON из <pre style="display:none;">
+        public class CdtrfTradeData
+        {
+            public CdtrfLot Lot { get; set; }
+        }
+
+        public class CdtrfLot
+        {
+            public int TradeId { get; set; }
+            public int TradeLotId { get; set; }
+            public List<CdtrfLotScheduleItem> LotScheduleItems { get; set; }
+            public List<CdtrfImage> Images { get; set; }
+        }
+
+        public class CdtrfLotScheduleItem
+        {
+            public string StartTime { get; set; }
+            public string EndTime { get; set; }
+            public string Price { get; set; }
+        }
+
+        public class CdtrfImage
+        {
+            public string Id { get; set; }
+            public int Position { get; set; }
+            public bool IsMain { get; set; }
         }
     }
 }

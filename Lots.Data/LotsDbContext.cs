@@ -149,21 +149,28 @@ public class LotsDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
 
         // ПОЛНОТЕКСТОВЫЙ ПОИСК
-        // Включаем расширения
-        modelBuilder.HasPostgresExtension("uuid-ossp");
-        modelBuilder.HasPostgresExtension("pg_trgm"); // Для нечеткого поиска (опечатки)
-        modelBuilder.HasPostgresExtension("unaccent"); // Чтобы искать "ё" как "е"
+        if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
+        {
+            // Включаем расширения
+            modelBuilder.HasPostgresExtension("uuid-ossp");
+            modelBuilder.HasPostgresExtension("pg_trgm"); // Для нечеткого поиска (опечатки)
+            modelBuilder.HasPostgresExtension("unaccent"); // Чтобы искать "ё" как "е"
 
-        // Индекс для полнотекстового поиска (быстрый поиск по словам)
-        // Генерируемый столбец (Generated Column) - лучший способ хранить tsvector в Postgres 12+
-        modelBuilder.Entity<Lot>()
-        .HasGeneratedTsVectorColumn(
-            p => p.SearchVector,
-            "russian_h",  // Используем Hunspell Dictionary
-            p => new { p.Title, p.Description }
-        )
-        .HasIndex(p => p.SearchVector)
-        .HasMethod("GIN"); // GIN индекс для мгновенного поиска
+            // Индекс для полнотекстового поиска (быстрый поиск по словам)
+            // Генерируемый столбец (Generated Column) - лучший способ хранить tsvector в Postgres 12+
+            modelBuilder.Entity<Lot>()
+            .HasGeneratedTsVectorColumn(
+                p => p.SearchVector,
+                "russian_h",  // Используем Hunspell Dictionary
+                p => new { p.Title, p.Description }
+            )
+            .HasIndex(p => p.SearchVector)
+            .HasMethod("GIN"); // GIN индекс для мгновенного поиска
+        }
+        else
+        {
+            modelBuilder.Entity<Lot>().Ignore(p => p.SearchVector);
+        }
 
         // === Оптимизация поиска по кадастровым номерам ===
         // Кадастровые номера часто ищут как "77:01:..." так и "7701..."
