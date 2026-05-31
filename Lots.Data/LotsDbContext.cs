@@ -20,6 +20,7 @@ public class LotsDbContext : DbContext
     public DbSet<LotCadastralNumber> LotCadastralNumbers { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Favorite> Favorites { get; set; }
+    public DbSet<UserLotContractPermission> UserLotContractPermissions { get; set; }
     public DbSet<LotAuditEvent> LotAuditEvents { get; set; }
     public DbSet<LotClassificationAnalysis> LotClassificationAnalysis { get; set; }
     public DbSet<Subject> Subjects { get; set; }
@@ -99,6 +100,18 @@ public class LotsDbContext : DbContext
             .HasOne(c => c.Lot)
             .WithMany(l => l.CadastralNumbers)
             .HasForeignKey(c => c.LotId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserLotContractPermission>()
+            .HasOne(p => p.User)
+            .WithMany()
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserLotContractPermission>()
+            .HasOne(p => p.Lot)
+            .WithMany()
+            .HasForeignKey(p => p.LotId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Настройка объявлений

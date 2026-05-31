@@ -35,6 +35,8 @@ builder.Services.AddSingleton<IBiddingDataCache, InMemoryBiddingDataCache>();
 builder.Services.AddScoped<TradeResultsImportService>();
 builder.Services.AddHttpClient<IIndexNowService, IndexNowService>();
 
+builder.Services.AddScoped<Lots.Application.Services.ContractGenerationService>();
+
 builder.Services.AddTransient<IRosreestrService, RosreestrService>();
 builder.Services.AddSingleton<IRosreestrQueue, RosreestrQueue>();
 builder.Services.AddSingleton<IClassificationQueue, ClassificationQueue>();
