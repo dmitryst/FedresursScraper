@@ -180,7 +180,7 @@ public class Bidding
                     ? ResultsAnnouncementDate.Value
                     : ResultsAnnouncementDate.Value.ToUniversalTime();
 
-                proposedDate = resultsDateUtc.AddDays(2); // Прибавляем 2 дня
+                proposedDate = resultsDateUtc.AddDays(3); // Прибавляем 3 дня
             }
             else
             {
