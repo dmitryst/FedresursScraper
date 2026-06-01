@@ -460,4 +460,101 @@ public class LotsController : ControllerBase
 
         return Ok(items);
     }
+
+    private async Task<bool> IsAdminAsync()
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (!Guid.TryParse(userIdString, out Guid userId)) return false;
+
+        var user = await _dbContext.Users.FindAsync(userId);
+        return user?.IsAdmin == true;
+    }
+
+    public class UpdateLotDescriptionRequest
+    {
+        public string Description { get; set; } = default!;
+    }
+
+    [Authorize]
+    [HttpPut("{id}/description")]
+    public async Task<IActionResult> UpdateDescription(string id, [FromBody] UpdateLotDescriptionRequest request)
+    {
+        if (!await IsAdminAsync()) return Forbid();
+
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest(new { message = "Некорректный ID лота." });
+
+        Lot? lot = null;
+        if (int.TryParse(id, out int publicId))
+        {
+            lot = await _dbContext.Lots.FirstOrDefaultAsync(l => l.PublicId == publicId);
+        }
+        else if (Guid.TryParse(id, out Guid guidId))
+        {
+            lot = await _dbContext.Lots.FirstOrDefaultAsync(l => l.Id == guidId);
+        }
+
+        if (lot == null)
+            return NotFound(new { message = "Лот не найден." });
+
+        lot.Description = request.Description;
+        await _dbContext.SaveChangesAsync();
+
+        return Ok(new { message = "Описание успешно обновлено." });
+    }
+
+    [Authorize]
+    [HttpPost("{id}/images")]
+    public async Task<IActionResult> UploadImages(string id, List<IFormFile> files, [FromServices] ILotsFileStorageService storageService)
+    {
+        if (!await IsAdminAsync()) return Forbid();
+
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest(new { message = "Некорректный ID лота." });
+
+        Lot? lot = null;
+        if (int.TryParse(id, out int publicId))
+        {
+            lot = await _dbContext.Lots.Include(l => l.Images).FirstOrDefaultAsync(l => l.PublicId == publicId);
+        }
+        else if (Guid.TryParse(id, out Guid guidId))
+        {
+            lot = await _dbContext.Lots.Include(l => l.Images).FirstOrDefaultAsync(l => l.Id == guidId);
+        }
+
+        if (lot == null)
+            return NotFound(new { message = "Лот не найден." });
+
+        if (files == null || files.Count == 0)
+            return BadRequest(new { message = "Файлы не выбраны." });
+
+        var maxOrder = lot.Images.Any() ? lot.Images.Max(i => i.Order) : 0;
+        var uploadedImages = new List<object>();
+
+        foreach (var file in files)
+        {
+            if (file.Length == 0) continue;
+
+            var extension = Path.GetExtension(file.FileName);
+            var fileName = $"lots/{lot.Id}/{Guid.NewGuid()}{extension}";
+
+            using var stream = file.OpenReadStream();
+            var url = await storageService.UploadAsync(stream, fileName, file.ContentType);
+
+            maxOrder++;
+            var lotImage = new LotImage
+            {
+                LotId = lot.Id,
+                Url = url,
+                Order = maxOrder
+            };
+
+            _dbContext.Set<LotImage>().Add(lotImage);
+            uploadedImages.Add(new { url = url, order = lotImage.Order });
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        return Ok(uploadedImages);
+    }
 }
