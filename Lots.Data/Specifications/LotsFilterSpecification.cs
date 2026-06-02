@@ -14,7 +14,8 @@ public class LotsFilterSpecification : Specification<Lot>
         decimal? priceTo = null,
         bool? isSharedOwnership = null,
         string[]? regions = null,
-        bool onlyActive = true)
+        bool onlyActive = true,
+        Dictionary<string, string>? dynamicFilters = null)
     {
         // Полнотекстовый поиск + Кадастровые номера
         if (!string.IsNullOrWhiteSpace(searchQuery))
@@ -81,6 +82,51 @@ public class LotsFilterSpecification : Specification<Lot>
         if (onlyActive)
         {
             Query.Where(Lot.IsActiveExpression);
+        }
+
+        // Динамические фильтры (атрибуты)
+        if (dynamicFilters != null && dynamicFilters.Any())
+        {
+            foreach (var filter in dynamicFilters)
+            {
+                var key = filter.Key;
+                var value = filter.Value;
+
+                if (string.IsNullOrWhiteSpace(value))
+                    continue;
+
+                // Обработка диапазонов (от/до)
+                if (key.EndsWith("_from"))
+                {
+                    var actualKey = key.Substring(0, key.Length - 5);
+                    if (decimal.TryParse(value, out var numValue))
+                    {
+                        // Извлекаем значение как текст и приводим к числу для сравнения
+                        // Если атрибута нет, пропускаем этот фильтр для данного лота (лот остается в выдаче)
+                        Query.Where(l => l.Attributes == null || 
+                            !EF.Functions.JsonExists(l.Attributes, actualKey) || 
+                            Convert.ToDecimal(LotsDbContext.JsonbExtractPathText(l.Attributes, actualKey)) >= numValue);
+                    }
+                }
+                else if (key.EndsWith("_to"))
+                {
+                    var actualKey = key.Substring(0, key.Length - 3);
+                    if (decimal.TryParse(value, out var numValue))
+                    {
+                        Query.Where(l => l.Attributes == null || 
+                            !EF.Functions.JsonExists(l.Attributes, actualKey) || 
+                            Convert.ToDecimal(LotsDbContext.JsonbExtractPathText(l.Attributes, actualKey)) <= numValue);
+                    }
+                }
+                else
+                {
+                    // Точное совпадение (используем JsonContains для надежной трансляции в Postgres)
+                    // Если атрибута нет, пропускаем этот фильтр для данного лота
+                    Query.Where(l => l.Attributes == null || 
+                        !EF.Functions.JsonExists(l.Attributes, key) || 
+                        EF.Functions.JsonContains(l.Attributes, $"{{\"{key}\": \"{value}\"}}"));
+                }
+            }
         }
     }
 }

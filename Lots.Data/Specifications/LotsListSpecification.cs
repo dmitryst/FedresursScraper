@@ -18,8 +18,9 @@ public class LotsListSpecification : LotsFilterSpecification
         decimal? priceTo = null,
         bool? isSharedOwnership = null,
         string[]? regions = null,
-        bool onlyActive = true)
-        : base(categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership, regions, onlyActive)
+        bool onlyActive = true,
+        Dictionary<string, string>? dynamicFilters = null)
+        : base(categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership, regions, onlyActive, dynamicFilters)
     {
         Query.AsNoTracking();
         

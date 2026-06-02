@@ -115,6 +115,11 @@ public class Lot
     /// </summary>
     public string? WinnerInn { get; set; }
 
+    /// <summary>
+    /// Динамические атрибуты лота (Марка, Модель, Год выпуска и т.д.)
+    /// </summary>
+    public Dictionary<string, string>? Attributes { get; set; } = new();
+
     // Техническое поле для хранения поискового индекса
     public NpgsqlTsVector SearchVector { get; set; } = default!;
 

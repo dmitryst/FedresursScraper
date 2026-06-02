@@ -41,11 +41,22 @@ public class LotsController : ControllerBase
         [FromQuery] string[]? regions = null,
         [FromQuery] bool onlyActive = true)
     {
+        // Извлекаем динамические фильтры из Query (все, что начинается с attr_)
+        var dynamicFilters = new Dictionary<string, string>();
+        foreach (var key in Request.Query.Keys)
+        {
+            if (key.StartsWith("attr_"))
+            {
+                var attrName = key.Substring(5); // Убираем префикс "attr_"
+                dynamicFilters[attrName] = Request.Query[key].ToString();
+            }
+        }
+
         var spec = new LotsListSpecification(
-            page, pageSize, categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership, regions, onlyActive);
+            page, pageSize, categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership, regions, onlyActive, dynamicFilters);
 
         var filterSpec = new LotsFilterSpecification(
-            categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership, regions, onlyActive);
+            categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership, regions, onlyActive, dynamicFilters);
 
         var totalCount = await _dbContext.Lots.WithSpecification(filterSpec).CountAsync();
 
@@ -83,6 +94,7 @@ public class LotsController : ControllerBase
                 Id = c.Id,
                 Name = c.Name
             }).ToList(),
+            Attributes = l.Attributes,
 
             Images = l.Images
                 .OrderBy(i => i.Order)
@@ -153,6 +165,7 @@ public class LotsController : ControllerBase
             MarketValueMax = lot.MarketValueMax,
             PriceConfidence = lot.PriceConfidence,
             InvestmentSummary = lot.InvestmentSummary,
+            Attributes = lot.Attributes,
 
             CadastralInfos = lot.CadastralInfos?.Select(c => new CadastralItemDto
             {

@@ -471,4 +471,28 @@ public class AdminController : ControllerBase
             return StatusCode(500, "Внутренняя ошибка сервера");
         }
     }
+
+    /// <summary>
+    /// Запускает фоновую задачу по извлечению атрибутов для транспортных средств с помощью DeepSeek
+    /// </summary>
+    [HttpPost("extract-vehicle-attributes")]
+    public IActionResult ExtractVehicleAttributes([FromServices] IVehicleAttributesExtractor extractor)
+    {
+        _logger.LogInformation("Получен запрос на запуск извлечения атрибутов для транспортных средств.");
+        
+        // Запускаем в фоновом потоке, чтобы не блокировать ответ
+        Task.Run(async () =>
+        {
+            try
+            {
+                await extractor.ExtractAttributesForActiveVehiclesAsync(CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при фоновом извлечении атрибутов транспортных средств.");
+            }
+        });
+
+        return Accepted(new { Message = "Задача по извлечению атрибутов транспортных средств запущена в фоновом режиме." });
+    }
 }

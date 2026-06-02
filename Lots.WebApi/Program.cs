@@ -18,9 +18,13 @@ builder.Services.AddEndpointsApiExplorer();
 
 var connectionString = configuration.GetConnectionString("Postgres");
 
+var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(connectionString);
+dataSourceBuilder.EnableDynamicJson();
+var dataSource = dataSourceBuilder.Build();
+
 builder.Services.AddDbContext<LotsDbContext>(options =>
 {
-    options.UseNpgsql(connectionString);
+    options.UseNpgsql(dataSource);
     options.ConfigureWarnings(warnings =>
         warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
 });

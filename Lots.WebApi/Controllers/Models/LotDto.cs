@@ -74,6 +74,11 @@ public class LotDto
     /// Активные лоты с такими же кадастровыми номерами
     /// </summary>
     public List<SimilarLotDto> SameCadastralLots { get; set; } = new();
+
+    /// <summary>
+    /// Динамические атрибуты лота
+    /// </summary>
+    public Dictionary<string, string>? Attributes { get; set; }
 }
 
 public class SimilarLotDto

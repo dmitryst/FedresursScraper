@@ -65,6 +65,9 @@ public class LotsDbContext : DbContext
     public DbSet<UserAdChatRoom> ChatRooms { get; set; }
     public DbSet<UserAdChatMessage> ChatMessages { get; set; }
 
+    [DbFunction("jsonb_extract_path_text", "pg_catalog")]
+    public static string JsonbExtractPathText(Dictionary<string, string> target, string path) => throw new NotSupportedException();
+
     /// <summary>
     /// Настраивает модели, связи и индексы при создании контекста.
     /// </summary>
@@ -88,6 +91,9 @@ public class LotsDbContext : DbContext
             entity.Property(e => e.PublicId)
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("nextval('lots_public_id_seq')");
+
+            entity.Property(e => e.Attributes)
+                .HasColumnType("jsonb");
         });
 
         modelBuilder.Entity<LotCategory>()
