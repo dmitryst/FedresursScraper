@@ -22,18 +22,8 @@ builder.Services.AddSignalR(); // Добавляем SignalR
 
 var connectionString = configuration.GetConnectionString("Postgres");
 
-var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(connectionString);
-dataSourceBuilder.EnableDynamicJson();
-var dataSource = dataSourceBuilder.Build();
-
 // Регистрация DbContext
-builder.Services.AddDbContext<LotsDbContext>(options =>
-{
-    options.UseNpgsql(dataSource);
-    options.ConfigureWarnings(warnings =>
-        warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-});
-
+builder.Services.AddLotsDbContext(connectionString!);
 
 // Регистрация фабрики для создания ChromeDriver
 builder.Services.AddSingleton<IWebDriverFactory, WebDriverFactory>();

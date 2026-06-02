@@ -18,16 +18,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 var connectionString = configuration.GetConnectionString("Postgres");
 
-var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(connectionString);
-dataSourceBuilder.EnableDynamicJson();
-var dataSource = dataSourceBuilder.Build();
-
-builder.Services.AddDbContext<LotsDbContext>(options =>
-{
-    options.UseNpgsql(dataSource);
-    options.ConfigureWarnings(warnings =>
-        warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-});
+builder.Services.AddLotsDbContext(connectionString!);
 
 // Configure shared services using the extension method from Lots.Data
 builder.Services.AddFileStorageServices(configuration);

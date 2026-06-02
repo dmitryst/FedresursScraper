@@ -8,11 +8,29 @@ using FedresursScraper.Integrations.Fedresurs.Clients;
 using FedresursScraper.Integrations.Fedresurs.Workers;
 using FedresursScraper.Integrations.Fedresurs.Processors;
 using Amazon.S3;
+using Microsoft.EntityFrameworkCore;
+using Lots.Data;
 
 namespace FedresursScraper.Extensions;
 
 public static class DependencyInjectionExtensions
 {
+    public static IServiceCollection AddLotsDbContext(this IServiceCollection services, string connectionString)
+    {
+        var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(connectionString);
+        dataSourceBuilder.EnableDynamicJson();
+        var dataSource = dataSourceBuilder.Build();
+
+        services.AddDbContext<LotsDbContext>(options =>
+        {
+            options.UseNpgsql(dataSource);
+            options.ConfigureWarnings(warnings =>
+                warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+        });
+
+        return services;
+    }
+
     public static IServiceCollection AddEnrichmentServices(this IServiceCollection services, IConfiguration configuration)
     {
         // === МЭТС ===
