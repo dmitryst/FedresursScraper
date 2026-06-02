@@ -570,4 +570,54 @@ public class LotsController : ControllerBase
 
         return Ok(uploadedImages);
     }
+
+    [Authorize]
+    [HttpPost("{id}/reclassify")]
+    public async Task<IActionResult> ReclassifyLot(string id, [FromServices] IIndexNowService indexNowService)
+    {
+        if (!await IsAdminAsync()) return Forbid();
+
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest(new { message = "Некорректный ID лота." });
+
+        Lot? lot = null;
+        if (int.TryParse(id, out int publicId))
+        {
+            lot = await _dbContext.Lots.FirstOrDefaultAsync(l => l.PublicId == publicId);
+        }
+        else if (Guid.TryParse(id, out Guid guidId))
+        {
+            lot = await _dbContext.Lots.FirstOrDefaultAsync(l => l.Id == guidId);
+        }
+
+        if (lot == null)
+            return NotFound(new { message = "Лот не найден." });
+
+        var classificationState = await _dbContext.LotClassificationStates.FirstOrDefaultAsync(s => s.LotId == lot.Id);
+        if (classificationState == null)
+        {
+            classificationState = new LotClassificationState
+            {
+                LotId = lot.Id,
+                Status = ClassificationStatus.Pending,
+                Attempts = 0,
+                NextAttemptAt = DateTime.UtcNow
+            };
+            _dbContext.LotClassificationStates.Add(classificationState);
+        }
+        else
+        {
+            classificationState.Status = ClassificationStatus.Pending;
+            classificationState.Attempts = 0;
+            classificationState.NextAttemptAt = DateTime.UtcNow;
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        // Отправляем URL в IndexNow
+        var lotUrl = lot.GetOrGenerateLotUrl();
+        await indexNowService.SubmitUrlAsync(lotUrl);
+
+        return Ok(new { message = "Лот отправлен на переклассификацию, а URL отправлен в IndexNow." });
+    }
 }
