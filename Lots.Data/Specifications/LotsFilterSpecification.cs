@@ -23,12 +23,16 @@ public class LotsFilterSpecification : Specification<Lot>
             // Очищаем запрос от мусора для поиска по кадастру (оставляем только цифры)
             var cleanSearchQuery = new string(searchQuery.Where(char.IsDigit).ToArray());
 
+            // Подготавливаем строку для ILike, чтобы искать все слова (в том же порядке, игнорируя знаки препинания между ними)
+            var words = searchQuery.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            var ilikeQuery = "%" + string.Join("%", words) + "%";
+
             Query.Where(l =>
                 // Поиск по заголовку и описанию (FTS), используем Hunspell словарь
                 l.SearchVector.Matches(EF.Functions.WebSearchToTsQuery("russian_h", searchQuery)) ||
 
-                // Поиск по точному вхождению фразы в Title (для коротких названий)
-                EF.Functions.ILike(l.Title ?? "", $"%{searchQuery}%") ||
+                // Поиск по вхождению слов в Title (помогает находить английские слова, которые игнорирует russian_h)
+                EF.Functions.ILike(l.Title ?? "", ilikeQuery) ||
 
                 // Поиск по кадастровым номерам (если в запросе есть цифры)
                 (cleanSearchQuery.Length > 12 &&
