@@ -173,14 +173,18 @@ public class ClassificationManager : IClassificationManager
                         }
                     }
 
-                    // обновление категорий
+                    // Обновление категорий
+                    // Сначала удаляем старые категории
+                    if (lot.Categories.Any())
+                    {
+                        dbContext.LotCategories.RemoveRange(lot.Categories);
+                        lot.Categories.Clear();
+                    }
+
                     var validCategories = result.Categories.Where(c => !string.IsNullOrWhiteSpace(c)).Distinct();
                     foreach (var catName in validCategories)
                     {
-                        if (!lot.Categories.Any(c => c.Name.Equals(catName, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            dbContext.LotCategories.Add(new LotCategory { Name = catName, LotId = lotId });
-                        }
+                        dbContext.LotCategories.Add(new LotCategory { Name = catName, LotId = lotId });
                     }
 
                     // Аудит: Успех
@@ -399,13 +403,17 @@ public class ClassificationManager : IClassificationManager
                     }
 
                     // Обновление категорий
+                    // Сначала удаляем старые категории
+                    if (lot.Categories.Any())
+                    {
+                        dbContext.LotCategories.RemoveRange(lot.Categories);
+                        lot.Categories.Clear();
+                    }
+
                     var validCategories = result.Categories.Where(c => !string.IsNullOrWhiteSpace(c)).Distinct();
                     foreach (var catName in validCategories)
                     {
-                        if (!lot.Categories.Any(c => c.Name.Equals(catName, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            dbContext.LotCategories.Add(new LotCategory { Name = catName, LotId = lot.Id });
-                        }
+                        dbContext.LotCategories.Add(new LotCategory { Name = catName, LotId = lot.Id });
                     }
 
                     // Аудит: Успех
