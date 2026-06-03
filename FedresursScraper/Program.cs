@@ -96,7 +96,11 @@ builder.Services.AddScoped<TradeResultsImportService>();
 builder.Services.AddHostedService<FedresursTradeResultsBackgroundWorker>();
 
 // Фоновое извлечение динамических атрибутов (например, для авто)
-builder.Services.AddHostedService<VehicleAttributesBackgroundWorker>();
+bool vehicleAttributesEnabled = configuration.GetValue<bool>("BackgroundServices:VehicleAttributesExtractor:Enabled", true);
+if (vehicleAttributesEnabled)
+{
+    builder.Services.AddHostedService<VehicleAttributesBackgroundWorker>();
+}
 
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
