@@ -198,7 +198,21 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
                     {
                         if (!string.IsNullOrWhiteSpace(kvp.Value))
                         {
-                            lot.Attributes[kvp.Key] = kvp.Value;
+                            // Защита от некорректных данных от ИИ (чтобы не падал SQL CAST)
+                            if (kvp.Key == "year" || kvp.Key == "mileage")
+                            {
+                                // Оставляем только цифры (на случай если ИИ вернул "2002 г.")
+                                var cleanValue = new string(kvp.Value.Where(char.IsDigit).ToArray());
+                                if (string.IsNullOrWhiteSpace(cleanValue) || !decimal.TryParse(cleanValue, out _))
+                                {
+                                    continue;
+                                }
+                                lot.Attributes[kvp.Key] = cleanValue;
+                            }
+                            else
+                            {
+                                lot.Attributes[kvp.Key] = kvp.Value;
+                            }
                         }
                     }
                 }

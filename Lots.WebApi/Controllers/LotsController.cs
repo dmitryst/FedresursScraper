@@ -241,8 +241,7 @@ public class LotsController : ControllerBase
                     Url = d.Url,
                     Title = d.Title,
                     Extension = d.Extension
-                }).ToList(),
-            Attributes = lot.Attributes,
+                }).ToList()
         };
 
         if (!lot.IsActive())
