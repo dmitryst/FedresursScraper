@@ -76,14 +76,40 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
             .OrderByDescending(l => l.CreatedAt)
             .ToListAsync(token);
 
-        // Фильтруем в памяти те, у которых нет ключа "brand"
+        // Фильтруем в памяти те, у которых нет ключа "_attributes_parsed"
         lotsToProcess = lotsToProcess
-            .Where(l => l.Attributes == null || !l.Attributes.ContainsKey("brand"))
+            .Where(l => l.Attributes == null || !l.Attributes.ContainsKey("_attributes_parsed"))
             .ToList();
 
         _logger.LogInformation("Найдено {Count} лотов для извлечения атрибутов транспорта.", lotsToProcess.Count);
 
-        int batchSize = 30;
+        if (lotsToProcess.Count == 0)
+        {
+            return;
+        }
+
+        // Если лотов меньше 10, мы можем захотеть подождать, пока накопится больше, чтобы экономить токены.
+        // Но чтобы они не висели вечно, мы обрабатываем их, если самый старый лот ждет уже достаточно долго.
+        int minBatchSize = 10;
+        if (lotsToProcess.Count < minBatchSize)
+        {
+            // Проверяем время создания самого старого лота в этой выборке (они отсортированы по убыванию, значит самый старый - последний)
+            var oldestLot = lotsToProcess.Last();
+            var timeSinceCreation = DateTime.UtcNow - oldestLot.CreatedAt;
+            
+            // Если самый старый лот ждет меньше 15 минут, пропускаем обработку
+            if (timeSinceCreation < TimeSpan.FromMinutes(15))
+            {
+                _logger.LogInformation("Найдено всего {Count} лотов. Ждем накопления до {MinBatchSize} или истечения 15 минут.", lotsToProcess.Count, minBatchSize);
+                return;
+            }
+            else
+            {
+                _logger.LogInformation("Найдено {Count} лотов. Самый старый лот ждет уже {Minutes} минут, начинаем обработку.", lotsToProcess.Count, Math.Round(timeSinceCreation.TotalMinutes));
+            }
+        }
+
+        int batchSize = 15;
         for (int i = 0; i < lotsToProcess.Count; i += batchSize)
         {
             var batch = lotsToProcess.Skip(i).Take(batchSize).ToList();
@@ -173,10 +199,14 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
 
             foreach (var lot in batch)
             {
+                lot.Attributes ??= new Dictionary<string, string>();
+                
+                // Ставим системный флаг, что лот был обработан ИИ, 
+                // чтобы не обрабатывать его повторно, даже если ИИ ничего не нашел
+                lot.Attributes["_attributes_parsed"] = "true";
+
                 if (batchResult.TryGetValue(lot.Id.ToString(), out var extractedAttributes))
                 {
-                    lot.Attributes ??= new Dictionary<string, string>();
-                    
                     foreach (var kvp in extractedAttributes)
                     {
                         if (!string.IsNullOrWhiteSpace(kvp.Value))

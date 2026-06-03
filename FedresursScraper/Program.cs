@@ -94,6 +94,9 @@ builder.Services.AddScoped<TradeResultsImportService>();
 // парсинг результатов торгов
 builder.Services.AddHostedService<FedresursTradeResultsBackgroundWorker>();
 
+// Фоновое извлечение динамических атрибутов (например, для авто)
+builder.Services.AddHostedService<VehicleAttributesBackgroundWorker>();
+
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 
