@@ -101,10 +101,9 @@ public class LotsFilterSpecification : Specification<Lot>
                     var actualKey = key.Substring(0, key.Length - 5);
                     if (decimal.TryParse(value, out var numValue))
                     {
-                        // Извлекаем значение как текст и приводим к числу для сравнения
-                        // Если атрибута нет, пропускаем этот фильтр для данного лота (лот остается в выдаче)
-                        Query.Where(l => l.Attributes == null || 
-                            !EF.Functions.JsonExists(l.Attributes, actualKey) || 
+                        // Строгая фильтрация: атрибут должен существовать и удовлетворять условию
+                        Query.Where(l => l.Attributes != null && 
+                            EF.Functions.JsonExists(l.Attributes, actualKey) && 
                             Convert.ToDecimal(LotsDbContext.JsonbExtractPathText(l.Attributes, actualKey)) >= numValue);
                     }
                 }
@@ -113,17 +112,17 @@ public class LotsFilterSpecification : Specification<Lot>
                     var actualKey = key.Substring(0, key.Length - 3);
                     if (decimal.TryParse(value, out var numValue))
                     {
-                        Query.Where(l => l.Attributes == null || 
-                            !EF.Functions.JsonExists(l.Attributes, actualKey) || 
+                        // Строгая фильтрация: атрибут должен существовать и удовлетворять условию
+                        Query.Where(l => l.Attributes != null && 
+                            EF.Functions.JsonExists(l.Attributes, actualKey) && 
                             Convert.ToDecimal(LotsDbContext.JsonbExtractPathText(l.Attributes, actualKey)) <= numValue);
                     }
                 }
                 else
                 {
                     // Точное совпадение (используем JsonContains для надежной трансляции в Postgres)
-                    // Если атрибута нет, пропускаем этот фильтр для данного лота
-                    Query.Where(l => l.Attributes == null || 
-                        !EF.Functions.JsonExists(l.Attributes, key) || 
+                    // Строгая фильтрация: атрибут должен существовать и совпадать
+                    Query.Where(l => l.Attributes != null && 
                         EF.Functions.JsonContains(l.Attributes, $"{{\"{key}\": \"{value}\"}}"));
                 }
             }
