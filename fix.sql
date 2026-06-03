@@ -1,0 +1,1 @@
+UPDATE "Lots" SET "Attributes" = "Attributes" - 'year' WHERE "Attributes" ? 'year' AND "Attributes"->>'year' !~ '^[0-9]+(\.[0-9]+)?$';
