@@ -88,28 +88,15 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
             return;
         }
 
-        // Если лотов меньше 10, мы можем захотеть подождать, пока накопится больше, чтобы экономить токены.
-        // Но чтобы они не висели вечно, мы обрабатываем их, если самый старый лот ждет уже достаточно долго.
-        int minBatchSize = 10;
+        // Если лотов меньше 30, мы просто ждем, пока накопится больше, чтобы экономить токены.
+        int minBatchSize = 30;
         if (lotsToProcess.Count < minBatchSize)
         {
-            // Проверяем время создания самого старого лота в этой выборке (они отсортированы по убыванию, значит самый старый - последний)
-            var oldestLot = lotsToProcess.Last();
-            var timeSinceCreation = DateTime.UtcNow - oldestLot.CreatedAt;
-            
-            // Если самый старый лот ждет меньше 15 минут, пропускаем обработку
-            if (timeSinceCreation < TimeSpan.FromMinutes(15))
-            {
-                _logger.LogInformation("Найдено всего {Count} лотов. Ждем накопления до {MinBatchSize} или истечения 15 минут.", lotsToProcess.Count, minBatchSize);
-                return;
-            }
-            else
-            {
-                _logger.LogInformation("Найдено {Count} лотов. Самый старый лот ждет уже {Minutes} минут, начинаем обработку.", lotsToProcess.Count, Math.Round(timeSinceCreation.TotalMinutes));
-            }
+            _logger.LogInformation("Найдено всего {Count} лотов. Ждем накопления до {MinBatchSize}.", lotsToProcess.Count, minBatchSize);
+            return;
         }
 
-        int batchSize = 15;
+        int batchSize = 30;
         for (int i = 0; i < lotsToProcess.Count; i += batchSize)
         {
             var batch = lotsToProcess.Skip(i).Take(batchSize).ToList();

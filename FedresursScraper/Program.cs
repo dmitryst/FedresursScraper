@@ -38,6 +38,7 @@ builder.Services.AddTransient<ITradeCardLotsStatusScraper, TradeCardLotsStatusSc
 builder.Services.AddTransient<ICadastralNumberExtractor, CadastralNumberExtractor>();
 builder.Services.AddTransient<IRosreestrService, RosreestrService>();
 builder.Services.AddScoped<ILotCopyService, LotCopyService>();
+builder.Services.AddSingleton<IVehicleAttributesExtractor, VehicleAttributesExtractor>();
 
 // Регистрация фоновых сервисов
 bool parsersEnabled = configuration.GetValue<bool>("BackgroundParsers:Enabled");
