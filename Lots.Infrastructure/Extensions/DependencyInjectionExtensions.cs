@@ -141,12 +141,13 @@ public static class DependencyInjectionExtensions
             var accessKey = configuration["S3:AccessKey"] ?? throw new ArgumentNullException("S3:AccessKey");
             var secretKey = configuration["S3:SecretKey"] ?? throw new ArgumentNullException("S3:SecretKey");
             var serviceUrl = configuration["S3:ServiceUrl"] ?? throw new ArgumentNullException("S3:ServiceUrl");
+            var useHttp = serviceUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase);
 
             var s3Config = new AmazonS3Config
             {
                 ServiceURL = serviceUrl,
                 ForcePathStyle = true,
-                UseHttp = true // Оставьте true, если используете локальный MinIO без SSL, иначе лучше false
+                UseHttp = useHttp
             };
 
             return new AmazonS3Client(accessKey, secretKey, s3Config);
