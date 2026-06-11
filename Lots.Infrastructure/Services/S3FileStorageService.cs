@@ -41,9 +41,6 @@ public class S3FileStorageService : IFileStorageService
         _s3Client = s3Client ?? throw new ArgumentNullException(nameof(s3Client));
         _bucketName = bucketName ?? throw new ArgumentNullException(nameof(bucketName));
         _publicUrlBase = publicUrlBase ?? throw new ArgumentNullException(nameof(publicUrlBase));
-
-        // авто-создания бакета
-        EnsureBucketExistsAsync().Wait();
     }
 
     public async Task<string> UploadAsync(byte[] fileData, string fileName, string contentType = "image/jpeg")
