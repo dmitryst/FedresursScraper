@@ -66,9 +66,13 @@ namespace FedresursScraper.Controllers
 
             // Вызываем напрямую для синхронного тестирования батча
             // Внимание: может занять некоторое время
-            await _classificationManager.ClassifyLotsBatchAsync(lotIds, "Manual/API Batch");
+            var classifiedLotIds = await _classificationManager.ClassifyLotsBatchAsync(lotIds, "Manual/API Batch");
 
-            return Ok(new { message = $"Запущена батчевая классификация для {lotIds.Count} лотов." });
+            return Ok(new
+            {
+                message = $"Батчевая классификация завершена для {lotIds.Count} лотов.",
+                successCount = classifiedLotIds.Count
+            });
         }
     }
 }

@@ -53,8 +53,6 @@ public class LotRecoveryService : BackgroundService
                     var classificationManager = scope.ServiceProvider.GetRequiredService<IClassificationManager>();
                     var indexNowService = scope.ServiceProvider.GetService<IIndexNowService>();
 
-                    var retryDelay = DateTime.UtcNow.AddHours(-1); // Не трогать лот, если пробовали за последний час
-
                     var batchSize = _configuration.GetValue("BackgroundServices:LotRecoveryService:BatchSize", 10);
                     var maxAttempts = _configuration.GetValue("BackgroundServices:LotRecoveryService:MaxAttempts", 1);
                     var now = DateTime.UtcNow;
@@ -78,8 +76,8 @@ public class LotRecoveryService : BackgroundService
                     // Быстрая выборка идентификаторов задач из инфраструктурной таблицы очереди
                     var lotIdsToProcess = await dbContext.LotClassificationStates
                         .Where(s =>
-                            s.Status == ClassificationStatus.Pending ||
-                            (s.Status == ClassificationStatus.Failed && s.Attempts < maxAttempts) ||
+                            (s.Status == ClassificationStatus.Pending && (s.NextAttemptAt == null || s.NextAttemptAt <= now)) ||
+                            (s.Status == ClassificationStatus.Failed && s.Attempts < maxAttempts && (s.NextAttemptAt == null || s.NextAttemptAt <= now)) ||
                             (s.Status == ClassificationStatus.Processing && s.NextAttemptAt <= now) // Захват зависших
                         )
                         .OrderBy(s => s.LotId)
@@ -117,14 +115,17 @@ public class LotRecoveryService : BackgroundService
                     _logger.LogInformation("Забронировано {Count} лотов. Передаем в классификатор.", lotIdsToProcess.Count);
 
                     // Запуск батчевой классификации
-                    await classificationManager.ClassifyLotsBatchAsync(lotIdsToProcess, "Recovery");
+                    var classifiedLotIds = await classificationManager.ClassifyLotsBatchAsync(lotIdsToProcess, "Recovery");
 
-                    _logger.LogInformation("Батчевая классификация для {Count} лотов завершена.", lotIdsToProcess.Count);
+                    _logger.LogInformation(
+                        "Батчевая классификация для {Count} лотов завершена. Успешно: {SuccessCount}.",
+                        lotIdsToProcess.Count,
+                        classifiedLotIds.Count);
 
-                    // Отправляем url лотов в IndexNow
+                    // Отправляем url только успешно классифицированных лотов в IndexNow
                     if (indexNowService != null)
                     {
-                        await SubmitToIndexNowAsync(dbContext, indexNowService, lotIdsToProcess, stoppingToken);
+                        await SubmitToIndexNowAsync(dbContext, indexNowService, classifiedLotIds.ToList(), stoppingToken);
                     }
                 }
                 catch (OperationCanceledException)

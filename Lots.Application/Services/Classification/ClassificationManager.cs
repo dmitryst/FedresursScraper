@@ -235,12 +235,12 @@ public class ClassificationManager : IClassificationManager
         });
     }
 
-    public async Task ClassifyLotsBatchAsync(List<Guid> lotIds, string source)
+    public async Task<IReadOnlyList<Guid>> ClassifyLotsBatchAsync(List<Guid> lotIds, string source)
     {
         if (lotIds == null || lotIds.Count == 0)
         {
             _logger.LogInformation("Список лотов для батчевой классификации пуст.");
-            return;
+            return Array.Empty<Guid>();
         }
 
         using var scope = _serviceProvider.CreateScope();
@@ -271,7 +271,7 @@ public class ClassificationManager : IClassificationManager
         if (lots.Count == 0)
         {
             await MarkLotsAsFailedAsync(dbContext, lotIds, source, "Описания лотов не найдены");
-            return;
+            return Array.Empty<Guid>();
         }
 
         // Собираем Dictionary<Guid, string> уже с обогащённым текстом
@@ -320,7 +320,7 @@ public class ClassificationManager : IClassificationManager
                 _logger.LogWarning("Батчевая классификация не вернула результатов.");
                 // Помечаем все лоты как Failure
                 await MarkLotsAsFailedAsync(dbContext, lotDescriptions.Keys.ToList(), source, "Батчевая классификация не вернула результатов");
-                return;
+                return Array.Empty<Guid>();
             }
 
             var jsonOptions = new JsonSerializerOptions
@@ -441,16 +441,20 @@ public class ClassificationManager : IClassificationManager
             {
                 await UpdateLotClassificationStateAsync(dbContext, successIds, ClassificationStatus.Success);
             }
+
+            return successIds;
         }
         catch (CircuitBreakerOpenException)
         {
             _logger.LogWarning("Circuit Breaker открыт. Помечаем все лоты как Skipped.");
             await MarkLotsAsSkippedAsync(dbContext, lotDescriptions.Keys.ToList(), source, "Circuit Breaker: API limit/balance");
+            return Array.Empty<Guid>();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Ошибка батчевой классификации");
             await MarkLotsAsFailedAsync(dbContext, lotDescriptions.Keys.ToList(), source, ex.Message);
+            return Array.Empty<Guid>();
         }
     }
 
