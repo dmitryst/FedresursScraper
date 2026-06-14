@@ -1,5 +1,6 @@
 using Lots.Data.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 /// <summary>
 /// Основной контекст базы данных для работы с лотами и связанными сущностями.
@@ -68,6 +69,15 @@ public class LotsDbContext : DbContext
     [DbFunction("jsonb_extract_path_text", "pg_catalog")]
     public static string JsonbExtractPathText(Dictionary<string, string> target, string path) => throw new NotSupportedException();
 
+    private static readonly ValueComparer<Dictionary<string, string>?> LotAttributesValueComparer = new(
+        (left, right) =>
+            ReferenceEquals(left, right) ||
+            (left != null && right != null && left.Count == right.Count && left.OrderBy(kvp => kvp.Key).SequenceEqual(right.OrderBy(kvp => kvp.Key))),
+        dict => dict == null
+            ? 0
+            : dict.Aggregate(0, (hash, kvp) => HashCode.Combine(hash, kvp.Key, kvp.Value)),
+        dict => dict == null ? null : dict.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
+
     /// <summary>
     /// Настраивает модели, связи и индексы при создании контекста.
     /// </summary>
@@ -93,7 +103,8 @@ public class LotsDbContext : DbContext
                 .HasDefaultValueSql("nextval('lots_public_id_seq')");
 
             entity.Property(e => e.Attributes)
-                .HasColumnType("jsonb");
+                .HasColumnType("jsonb")
+                .Metadata.SetValueComparer(LotAttributesValueComparer);
         });
 
         modelBuilder.Entity<LotCategory>()

@@ -64,22 +64,14 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
             "Легковой автомобиль"
         };
 
-        // Ищем активные лоты из категории транспорта, у которых еще нет заполненных атрибутов (например, brand)
+        // Активные лоты категории «Легковой автомобиль», ещё не обработанные DeepSeek
         var lotsToProcess = await dbContext.Lots
             .Include(l => l.Categories)
             .Where(Lot.IsActiveExpression)
             .Where(l => l.Categories.Any(c => vehicleCategories.Contains(c.Name)))
-            // Для JSONB в EF Core используем EF.Functions.JsonContains или проверяем на null
-            // Так как EF Core 9 может не транслировать ContainsKey для Dictionary, 
-            // мы используем проверку, что атрибуты вообще не заполнены, 
-            // либо загружаем все и фильтруем в памяти (так как активных лотов не очень много)
+            .Where(l => l.Attributes == null || !EF.Functions.JsonExists(l.Attributes, "_attributes_parsed"))
             .OrderByDescending(l => l.CreatedAt)
             .ToListAsync(token);
-
-        // Фильтруем в памяти те, у которых нет ключа "_attributes_parsed"
-        lotsToProcess = lotsToProcess
-            .Where(l => l.Attributes == null || !l.Attributes.ContainsKey("_attributes_parsed"))
-            .ToList();
 
         _logger.LogInformation("Найдено {Count} лотов для извлечения атрибутов транспорта.", lotsToProcess.Count);
 
@@ -186,11 +178,14 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
 
             foreach (var lot in batch)
             {
-                lot.Attributes ??= new Dictionary<string, string>();
-                
-                // Ставим системный флаг, что лот был обработан ИИ, 
+                // EF Core не отслеживает in-place мутации Dictionary для jsonb — нужна новая ссылка
+                var attributes = lot.Attributes != null
+                    ? new Dictionary<string, string>(lot.Attributes)
+                    : new Dictionary<string, string>();
+
+                // Ставим системный флаг, что лот был обработан ИИ,
                 // чтобы не обрабатывать его повторно, даже если ИИ ничего не нашел
-                lot.Attributes["_attributes_parsed"] = "true";
+                attributes["_attributes_parsed"] = "true";
 
                 if (batchResult.TryGetValue(lot.Id.ToString(), out var extractedAttributes))
                 {
@@ -207,19 +202,24 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
                                 {
                                     continue;
                                 }
-                                lot.Attributes[kvp.Key] = cleanValue;
+                                attributes[kvp.Key] = cleanValue;
                             }
                             else
                             {
-                                lot.Attributes[kvp.Key] = kvp.Value;
+                                attributes[kvp.Key] = kvp.Value;
                             }
                         }
                     }
                 }
+
+                lot.Attributes = attributes;
             }
 
-            await dbContext.SaveChangesAsync(token);
-            _logger.LogInformation("Успешно сохранены атрибуты для батча из {Count} лотов.", batch.Count);
+            var savedCount = await dbContext.SaveChangesAsync(token);
+            _logger.LogInformation(
+                "Успешно сохранены атрибуты для батча из {Count} лотов (записей в БД: {SavedCount}).",
+                batch.Count,
+                savedCount);
         }
         catch (Exception ex)
         {
