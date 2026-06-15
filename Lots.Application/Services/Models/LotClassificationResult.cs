@@ -13,10 +13,17 @@ public class LotClassificationResult
     public List<string> Categories { get; set; } = default!;
 
     /// <summary>
-    /// Сформированное красивое название лота.
+    /// Есть ли в описании (или в данных Росреестра) конкретная информация об имуществе.
+    /// false — только процедурный текст (контакты, график ознакомления и т.п.).
+    /// </summary>
+    [JsonPropertyName("hasPropertyDescription")]
+    public bool HasPropertyDescription { get; set; } = true;
+
+    /// <summary>
+    /// Сформированное красивое название лота. null, если hasPropertyDescription = false.
     /// </summary>
     [JsonPropertyName("title")]
-    public string Title { get; set; } = default!;
+    public string? Title { get; set; }
 
     /// <summary>
     /// Флаг долевой собственности (true, если продается доля).

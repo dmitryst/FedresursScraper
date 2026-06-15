@@ -28,7 +28,12 @@ public class Lot
     public string? Description { get; set; }
     public string? Title { get; set; }
 
-    // <summary>
+    /// <summary>
+    /// Лот классифицирован, но описание не содержит информации об имуществе — требуется ручная доработка.
+    /// </summary>
+    public bool NeedsDescriptionReview { get; set; }
+
+    /// <summary>
     /// URL-friendly название лота. Используется для формирования SEO-ссылок.
     /// </summary>
     [MaxLength(200)] // С запасом, хотя мы режем до 60
@@ -315,6 +320,26 @@ public class Lot
         }
 
         return Slug;
+    }
+
+    /// <summary>
+    /// Пересчитывает slug из Title. Возвращает старый URL, если slug изменился (для IndexNow / редиректов).
+    /// </summary>
+    public string? RegenerateSlug()
+    {
+        if (string.IsNullOrWhiteSpace(Title))
+            return null;
+
+        var newSlug = SlugHelper.GenerateSlug(Title);
+        if (string.Equals(Slug, newSlug, StringComparison.Ordinal))
+            return null;
+
+        string? oldUrl = !string.IsNullOrWhiteSpace(Slug)
+            ? $"https://s-lot.ru/lot/{Slug}-{PublicId}"
+            : null;
+
+        Slug = newSlug;
+        return oldUrl;
     }
 
     public string GetOrGenerateLotUrl()

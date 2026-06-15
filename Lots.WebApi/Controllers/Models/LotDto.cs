@@ -79,6 +79,11 @@ public class LotDto
     /// Динамические атрибуты лота
     /// </summary>
     public Dictionary<string, string>? Attributes { get; set; }
+
+    /// <summary>
+    /// Описание не содержит информации об имуществе — требуется ручная доработка.
+    /// </summary>
+    public bool NeedsDescriptionReview { get; set; }
 }
 
 public class SimilarLotDto

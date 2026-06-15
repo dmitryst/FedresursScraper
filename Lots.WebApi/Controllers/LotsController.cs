@@ -166,6 +166,7 @@ public class LotsController : ControllerBase
             PriceConfidence = lot.PriceConfidence,
             InvestmentSummary = lot.InvestmentSummary,
             Attributes = lot.Attributes,
+            NeedsDescriptionReview = lot.NeedsDescriptionReview,
 
             CadastralInfos = lot.CadastralInfos?.Select(c => new CadastralItemDto
             {
@@ -511,6 +512,26 @@ public class LotsController : ControllerBase
             return NotFound(new { message = "Лот не найден." });
 
         lot.Description = request.Description;
+
+        var classificationState = await _dbContext.LotClassificationStates.FirstOrDefaultAsync(s => s.LotId == lot.Id);
+        if (classificationState == null)
+        {
+            classificationState = new LotClassificationState
+            {
+                LotId = lot.Id,
+                Status = ClassificationStatus.Pending,
+                Attempts = 0,
+                NextAttemptAt = DateTime.UtcNow
+            };
+            _dbContext.LotClassificationStates.Add(classificationState);
+        }
+        else
+        {
+            classificationState.Status = ClassificationStatus.Pending;
+            classificationState.Attempts = 0;
+            classificationState.NextAttemptAt = DateTime.UtcNow;
+        }
+
         await _dbContext.SaveChangesAsync();
 
         return Ok(new { message = "Описание успешно обновлено." });
@@ -573,7 +594,7 @@ public class LotsController : ControllerBase
 
     [Authorize]
     [HttpPost("{id}/reclassify")]
-    public async Task<IActionResult> ReclassifyLot(string id, [FromServices] IIndexNowService indexNowService)
+    public async Task<IActionResult> ReclassifyLot(string id)
     {
         if (!await IsAdminAsync()) return Forbid();
 
@@ -592,6 +613,8 @@ public class LotsController : ControllerBase
 
         if (lot == null)
             return NotFound(new { message = "Лот не найден." });
+
+        lot.Slug = null;
 
         var classificationState = await _dbContext.LotClassificationStates.FirstOrDefaultAsync(s => s.LotId == lot.Id);
         if (classificationState == null)
@@ -614,10 +637,6 @@ public class LotsController : ControllerBase
 
         await _dbContext.SaveChangesAsync();
 
-        // Отправляем URL в IndexNow
-        var lotUrl = lot.GetOrGenerateLotUrl();
-        await indexNowService.SubmitUrlAsync(lotUrl);
-
-        return Ok(new { message = "Лот отправлен на переклассификацию, а URL отправлен в IndexNow." });
+        return Ok(new { message = "Лот поставлен в очередь на переклассификацию." });
     }
 }

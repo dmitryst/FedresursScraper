@@ -23,5 +23,10 @@ public enum ClassificationStatus
     /// <summary>
     /// Произошла программная ошибка или таймаут при классификации.
     /// </summary>
-    Failed = 3
+    Failed = 3,
+
+    /// <summary>
+    /// Описание не содержит информации об имуществе — требуется ручное дополнение (конечный статус).
+    /// </summary>
+    NeedsDescription = 4
 }

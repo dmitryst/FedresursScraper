@@ -34,6 +34,17 @@ public class LotClassifier : ILotClassifier
     private static DateTime _nextAllowedRequestTime = DateTime.MinValue;
     private static readonly object _lockObj = new object(); // Для синхронизации времени
 
+    private const string PropertyDescriptionInstructions =
+        "0. Сначала оцени hasPropertyDescription: есть ли в тексте (и в блоке «Данные Росреестра», если он есть) " +
+        "конкретная информация об имуществе (тип, адрес, площадь, марка/модель, характеристики).\n" +
+        "   hasPropertyDescription = false, если текст содержит ТОЛЬКО: порядок ознакомления, контакты/телефон, " +
+        "график работы, ссылки на документы — без указания, что именно продаётся.\n" +
+        "   hasPropertyDescription = true, если есть хотя бы одно: тип имущества, адрес/регион, площадь, " +
+        "марка/модель, оборудование, или данные Росреестра с адресом/характеристиками.\n" +
+        "   Если hasPropertyDescription = false: title = null, categories = [], suggestedCategory = null, " +
+        "marketValueMin/Max = null, priceConfidence = \"low\", investmentSummary = null. " +
+        "НЕ придумывай title вроде «лот без описания» или «имущество не указано».\n\n";
+
     public LotClassifier(
         ILogger<LotClassifier> logger,
         IConfiguration configuration,
@@ -259,6 +270,25 @@ public class LotClassifier : ILotClassifier
                 "  \"propertyRegionName\": \"Свердловская область\",\n" +
                 "  \"propertyFullAddress\": \"Свердловская обл., р-н Сысертский, п. Большой Исток\"\n" +
                 "}"),
+
+            // Пример 6: Нет описания имущества (только порядок ознакомления)
+            new UserChatMessage(
+                "Описание: Лот №2. Получить дополнительную информацию об имуществе можно в рабочие дни с 11.00 до 17.00, предварительно согласовав место и дату по тел. +7 (909) 340-28-60.\nНачальная цена лота: 29631000.00 руб."),
+            new AssistantChatMessage(
+                "{\n" +
+                "  \"hasPropertyDescription\": false,\n" +
+                "  \"categories\": [],\n" +
+                "  \"suggestedCategory\": null,\n" +
+                "  \"title\": null,\n" +
+                "  \"marketValueMin\": null,\n" +
+                "  \"marketValueMax\": null,\n" +
+                "  \"priceConfidence\": \"low\",\n" +
+                "  \"investmentSummary\": null,\n" +
+                "  \"isSharedOwnership\": false,\n" +
+                "  \"propertyRegionCode\": null,\n" +
+                "  \"propertyRegionName\": null,\n" +
+                "  \"propertyFullAddress\": null\n" +
+                "}"),
                 
             // --- РЕАЛЬНЫЙ ЗАПРОС ---
             new UserChatMessage(
@@ -268,6 +298,7 @@ public class LotClassifier : ILotClassifier
                 $"СПИСОК ДОПУСТИМЫХ КАТЕГОРИЙ:\n{categoriesPromptBuilder}\n\n" +
 
                 "ИНСТРУКЦИИ:\n" +
+                PropertyDescriptionInstructions +
                 "1. Выбери категории СТРОГО из списка выше, учитывая пояснения в скобках.\n" +
                 "2. Если лот подходит под несколько категорий, верни их списком.\n" +
                 "3. Если ни одна категория не подходит, выбери 'Прочее' и заполни поле 'suggestedCategory' своим вариантом.\n" +
@@ -292,6 +323,7 @@ public class LotClassifier : ILotClassifier
 
                 "ФОРМАТ ОТВЕТА (JSON):\n" +
                 "{ " +
+                "\"hasPropertyDescription\": true, " +
                 "\"categories\": [], " +
                 "\"suggestedCategory\": null, " +
                 "\"title\": \"...\", " +
@@ -467,12 +499,36 @@ public class LotClassifier : ILotClassifier
                 "  \"propertyFullAddress\": \"Московская обл, г. Химки\"\n" +
                 "}"),
 
+            // Пример: нет описания имущества
+            new UserChatMessage(
+                "ЛОТ 99 (ID: 00000000-0000-0000-0000-000000000099):\n" +
+                "Лот №2. Получить дополнительную информацию об имуществе можно в рабочие дни с 11.00 до 17.00, предварительно согласовав место и дату по тел. +7 (909) 340-28-60.\n" +
+                "Начальная цена лота: 29631000.00 руб.\n"),
+            new AssistantChatMessage(
+                "{\n" +
+                "  \"00000000-0000-0000-0000-000000000099\": {\n" +
+                "    \"hasPropertyDescription\": false,\n" +
+                "    \"categories\": [],\n" +
+                "    \"suggestedCategory\": null,\n" +
+                "    \"title\": null,\n" +
+                "    \"marketValueMin\": null,\n" +
+                "    \"marketValueMax\": null,\n" +
+                "    \"priceConfidence\": \"low\",\n" +
+                "    \"investmentSummary\": null,\n" +
+                "    \"isSharedOwnership\": false,\n" +
+                "    \"propertyRegionCode\": null,\n" +
+                "    \"propertyRegionName\": null,\n" +
+                "    \"propertyFullAddress\": null\n" +
+                "  }\n" +
+                "}"),
+
             // РЕАЛЬНЫЙ ЗАПРОС для батча
             new UserChatMessage(
                 $"Проанализируй описания {lotIds.Count} лотов и заполни JSON для каждого.\n\n" +
                 $"ОПИСАНИЯ ЛОТОВ:\n{lotsListBuilder}\n" +
                 $"СПИСОК ДОПУСТИМЫХ КАТЕГОРИЙ:\n{categoriesPromptBuilder}\n\n" +
                 "ИНСТРУКЦИИ:\n" +
+                PropertyDescriptionInstructions +
                 "1. Для каждого лота выбери категории СТРОГО из списка выше, учитывая пояснения в скобках.\n" +
                 "2. Если лот подходит под несколько категорий, верни их списком.\n" +
                 "3. Если ни одна категория не подходит, выбери 'Прочее' и заполни поле 'suggestedCategory' своим вариантом.\n" +
@@ -495,7 +551,7 @@ public class LotClassifier : ILotClassifier
                 "ВАЖНО: НЕ упоминай конкретные суммы, диапазоны цен или числовые значения стоимости в investmentSummary.\n\n" +
                 "ФОРМАТ ОТВЕТА (JSON объект, где ключи - это ID лотов в формате строки):\n" +
                 "{\n" +
-                string.Join(",\n", lotIds.Select(id => $"  \"{id}\": {{ \"categories\": [], \"suggestedCategory\": null, \"title\": \"...\", \"marketValueMin\": null, \"marketValueMax\": null, \"priceConfidence\": \"low\", \"investmentSummary\": null, \"isSharedOwnership\": false, \"propertyRegionCode\": null, \"propertyRegionName\": null, \"propertyFullAddress\": null }}")) +
+                string.Join(",\n", lotIds.Select(id => $"  \"{id}\": {{ \"hasPropertyDescription\": true, \"categories\": [], \"suggestedCategory\": null, \"title\": \"...\", \"marketValueMin\": null, \"marketValueMax\": null, \"priceConfidence\": \"low\", \"investmentSummary\": null, \"isSharedOwnership\": false, \"propertyRegionCode\": null, \"propertyRegionName\": null, \"propertyFullAddress\": null }}")) +
                 "\n}\n\n" +
                 $"ВАЖНО: Верни JSON объект с {lotIds.Count} элементами, где каждый ключ - это ID лота (Guid в виде строки: \"{lotIds[0]}\"), а значение - результат классификации для этого лота.")
         };

@@ -172,21 +172,25 @@ public class LotRecoveryService : BackgroundService
 
             foreach (var lot in updatedLots)
             {
+                if (lot.NeedsDescriptionReview || string.IsNullOrWhiteSpace(lot.Title))
+                    continue;
+
                 if (string.IsNullOrEmpty(lot.Slug))
                 {
-                    if (string.IsNullOrEmpty(lot.Title))
-                    {
-                        _logger.LogWarning("Внимание: Лот {LotId} остался без Title после классификации! Slug сгенерирован из Description.", lot.Id);
-                    }
-
-                    // Генерируем Slug
                     lot.Slug = lot.GetOrGenerateSlug();
                     lotsToUpdate = true;
                 }
+                else
+                {
+                    var oldUrl = lot.RegenerateSlug();
+                    if (oldUrl != null)
+                        lotsToUpdate = true;
 
-                // Формируем URL, используя сохраненный Slug
-                var url = lot.GetOrGenerateLotUrl();
-                urlsToSubmit.Add(url);
+                    if (oldUrl != null)
+                        urlsToSubmit.Add(oldUrl);
+                }
+
+                urlsToSubmit.Add(lot.GetOrGenerateLotUrl());
             }
 
             // Сохраняем Slug в БД, если были изменения

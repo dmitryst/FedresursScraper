@@ -129,63 +129,14 @@ public class ClassificationManager : IClassificationManager
                     .FirstOrDefaultAsync(l => l.Id == lotId, token);
                 if (lot != null)
                 {
-                    lot.Title = result.Title;
-                    lot.IsSharedOwnership = result.IsSharedOwnership;
-                    lot.MarketValueMin = result.MarketValueMin;
-                    lot.MarketValueMax = result.MarketValueMax;
-                    lot.PriceConfidence = result.PriceConfidence;
-                    lot.InvestmentSummary = result.InvestmentSummary;
-
-                    // Определение местонахождения имущества
-                    // 1. Если классификатор нашел местонахождение в описании, используем его
-                    if (!string.IsNullOrWhiteSpace(result.PropertyRegionCode) || !string.IsNullOrWhiteSpace(result.PropertyFullAddress))
+                    if (!result.HasPropertyDescription)
                     {
-                        lot.PropertyRegionCode = result.PropertyRegionCode;
-                        lot.PropertyFullAddress = result.PropertyFullAddress;
-
-                        // Если классификатор вернул код региона, но не название - заполняем из справочника
-                        if (!string.IsNullOrWhiteSpace(result.PropertyRegionCode) && string.IsNullOrWhiteSpace(result.PropertyRegionName))
-                        {
-                            var regionInfo = RegionCodeHelper.GetRegionByCode(result.PropertyRegionCode);
-                            if (regionInfo.HasValue)
-                            {
-                                lot.PropertyRegionName = regionInfo.Value.RegionName;
-                            }
-                            else
-                            {
-                                lot.PropertyRegionName = result.PropertyRegionName; // Оставляем как есть, если не найдено
-                            }
-                        }
-                        else
-                        {
-                            lot.PropertyRegionName = result.PropertyRegionName;
-                        }
-                    }
-                    else
-                    {
-                        // 2. По умолчанию - регион регистрации должника (первые две цифры ИНН)
-                        var regionInfo = RegionCodeHelper.GetRegionByInn(lot.Bidding?.Debtor?.Inn);
-                        if (regionInfo.HasValue)
-                        {
-                            lot.PropertyRegionCode = regionInfo.Value.RegionCode;
-                            lot.PropertyRegionName = regionInfo.Value.RegionName;
-                            lot.PropertyFullAddress = null; // Полный адрес не известен
-                        }
+                        await HandleNeedsDescriptionAsync(dbContext, lot, lotId, source, token);
+                        logger.LogInformation("Лот {LotId} помечен как требующий описания имущества.", lotId);
+                        return;
                     }
 
-                    // Обновление категорий
-                    // Сначала удаляем старые категории
-                    if (lot.Categories.Any())
-                    {
-                        dbContext.LotCategories.RemoveRange(lot.Categories);
-                        lot.Categories.Clear();
-                    }
-
-                    var validCategories = result.Categories.Where(c => !string.IsNullOrWhiteSpace(c)).Distinct();
-                    foreach (var catName in validCategories)
-                    {
-                        dbContext.LotCategories.Add(new LotCategory { Name = catName, LotId = lotId });
-                    }
+                    ApplySuccessfulClassification(dbContext, lot, result, lotId);
 
                     // Аудит: Успех
                     dbContext.LotAuditEvents.Add(new LotAuditEvent
@@ -198,8 +149,6 @@ public class ClassificationManager : IClassificationManager
                     });
 
                     await dbContext.SaveChangesAsync(token);
-
-                    // Успешное обновление инфраструктурного состояния
                     await UpdateLotClassificationStateAsync(dbContext, new List<Guid> { lotId }, ClassificationStatus.Success);
 
                     logger.LogInformation("Лот {LotId} успешно классифицирован.", lotId);
@@ -348,7 +297,6 @@ public class ClassificationManager : IClassificationManager
 
                 try
                 {
-                    // Сохраняем аналитику
                     var analysisEntry = new LotClassificationAnalysis
                     {
                         LotId = lot.Id,
@@ -357,66 +305,16 @@ public class ClassificationManager : IClassificationManager
                         RawResponseJson = JsonSerializer.Serialize(result, jsonOptions),
                         CreatedAt = DateTime.UtcNow
                     };
-
                     dbContext.LotClassificationAnalysis.Add(analysisEntry);
 
-                    // Обновление лота
-                    lot.Title = result.Title;
-                    lot.IsSharedOwnership = result.IsSharedOwnership;
-                    lot.MarketValueMin = result.MarketValueMin;
-                    lot.MarketValueMax = result.MarketValueMax;
-                    lot.PriceConfidence = result.PriceConfidence;
-                    lot.InvestmentSummary = result.InvestmentSummary;
-
-                    // Определение местонахождения имущества
-                    if (!string.IsNullOrWhiteSpace(result.PropertyRegionCode) || !string.IsNullOrWhiteSpace(result.PropertyFullAddress))
+                    if (!result.HasPropertyDescription)
                     {
-                        lot.PropertyRegionCode = result.PropertyRegionCode;
-                        lot.PropertyFullAddress = result.PropertyFullAddress;
-
-                        if (!string.IsNullOrWhiteSpace(result.PropertyRegionCode) && string.IsNullOrWhiteSpace(result.PropertyRegionName))
-                        {
-                            var regionInfo = RegionCodeHelper.GetRegionByCode(result.PropertyRegionCode);
-                            if (regionInfo.HasValue)
-                            {
-                                lot.PropertyRegionName = regionInfo.Value.RegionName;
-                            }
-                            else
-                            {
-                                lot.PropertyRegionName = result.PropertyRegionName;
-                            }
-                        }
-                        else
-                        {
-                            lot.PropertyRegionName = result.PropertyRegionName;
-                        }
-                    }
-                    else
-                    {
-                        var regionInfo = RegionCodeHelper.GetRegionByInn(lot.Bidding?.Debtor?.Inn);
-                        if (regionInfo.HasValue)
-                        {
-                            lot.PropertyRegionCode = regionInfo.Value.RegionCode;
-                            lot.PropertyRegionName = regionInfo.Value.RegionName;
-                            lot.PropertyFullAddress = null;
-                        }
+                        await HandleNeedsDescriptionAsync(dbContext, lot, lot.Id, source, CancellationToken.None);
+                        continue;
                     }
 
-                    // Обновление категорий
-                    // Сначала удаляем старые категории
-                    if (lot.Categories.Any())
-                    {
-                        dbContext.LotCategories.RemoveRange(lot.Categories);
-                        lot.Categories.Clear();
-                    }
+                    ApplySuccessfulClassification(dbContext, lot, result, lot.Id);
 
-                    var validCategories = result.Categories.Where(c => !string.IsNullOrWhiteSpace(c)).Distinct();
-                    foreach (var catName in validCategories)
-                    {
-                        dbContext.LotCategories.Add(new LotCategory { Name = catName, LotId = lot.Id });
-                    }
-
-                    // Аудит: Успех
                     dbContext.LotAuditEvents.Add(new LotAuditEvent
                     {
                         LotId = lot.Id,
@@ -512,6 +410,90 @@ public class ClassificationManager : IClassificationManager
         }
 
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Применяет успешный результат классификации к лоту.
+    /// </summary>
+    private static void ApplySuccessfulClassification(
+        LotsDbContext dbContext,
+        Lot lot,
+        LotClassificationResult result,
+        Guid lotId)
+    {
+        lot.NeedsDescriptionReview = false;
+        lot.Title = result.Title;
+        lot.IsSharedOwnership = result.IsSharedOwnership;
+        lot.MarketValueMin = result.MarketValueMin;
+        lot.MarketValueMax = result.MarketValueMax;
+        lot.PriceConfidence = result.PriceConfidence;
+        lot.InvestmentSummary = result.InvestmentSummary;
+
+        if (!string.IsNullOrWhiteSpace(result.PropertyRegionCode) || !string.IsNullOrWhiteSpace(result.PropertyFullAddress))
+        {
+            lot.PropertyRegionCode = result.PropertyRegionCode;
+            lot.PropertyFullAddress = result.PropertyFullAddress;
+
+            if (!string.IsNullOrWhiteSpace(result.PropertyRegionCode) && string.IsNullOrWhiteSpace(result.PropertyRegionName))
+            {
+                var regionInfo = RegionCodeHelper.GetRegionByCode(result.PropertyRegionCode);
+                lot.PropertyRegionName = regionInfo.HasValue
+                    ? regionInfo.Value.RegionName
+                    : result.PropertyRegionName;
+            }
+            else
+            {
+                lot.PropertyRegionName = result.PropertyRegionName;
+            }
+        }
+        else
+        {
+            var regionInfo = RegionCodeHelper.GetRegionByInn(lot.Bidding?.Debtor?.Inn);
+            if (regionInfo.HasValue)
+            {
+                lot.PropertyRegionCode = regionInfo.Value.RegionCode;
+                lot.PropertyRegionName = regionInfo.Value.RegionName;
+                lot.PropertyFullAddress = null;
+            }
+        }
+
+        if (lot.Categories.Any())
+        {
+            dbContext.LotCategories.RemoveRange(lot.Categories);
+            lot.Categories.Clear();
+        }
+
+        var validCategories = result.Categories.Where(c => !string.IsNullOrWhiteSpace(c)).Distinct();
+        foreach (var catName in validCategories)
+        {
+            dbContext.LotCategories.Add(new LotCategory { Name = catName, LotId = lotId });
+        }
+    }
+
+    /// <summary>
+    /// Помечает лот как требующий ручного дополнения описания имущества.
+    /// </summary>
+    private async Task HandleNeedsDescriptionAsync(
+        LotsDbContext dbContext,
+        Lot lot,
+        Guid lotId,
+        string source,
+        CancellationToken token)
+    {
+        lot.NeedsDescriptionReview = true;
+
+        dbContext.LotAuditEvents.Add(new LotAuditEvent
+        {
+            LotId = lotId,
+            EventType = "Classification",
+            Status = "NeedsDescription",
+            Source = source,
+            Timestamp = DateTime.UtcNow,
+            Details = "Описание не содержит информации об имуществе"
+        });
+
+        await dbContext.SaveChangesAsync(token);
+        await UpdateLotClassificationStateAsync(dbContext, new List<Guid> { lotId }, ClassificationStatus.NeedsDescription);
     }
 
     /// <summary>
