@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -12,9 +13,11 @@ using NpgsqlTypes;
 namespace Lots.Data.Migrations
 {
     [DbContext(typeof(LotsDbContext))]
-    partial class LotsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260615135057_AddSuccessRewardToUserLotContractPermission")]
+    partial class AddSuccessRewardToUserLotContractPermission
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -106,7 +109,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("LegalCaseId");
 
-                    b.ToTable("Biddings", (string)null);
+                    b.ToTable("Biddings");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.BiddingScheduleUpdate", b =>
@@ -129,7 +132,7 @@ namespace Lots.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BiddingScheduleUpdates", (string)null);
+                    b.ToTable("BiddingScheduleUpdates");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.CadastralInfo", b =>
@@ -183,7 +186,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("LotId");
 
-                    b.ToTable("CadastralInfo", (string)null);
+                    b.ToTable("CadastralInfo");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.EnrichmentState", b =>
@@ -205,7 +208,7 @@ namespace Lots.Data.Migrations
 
                     b.HasKey("BiddingId");
 
-                    b.ToTable("EnrichmentStates", (string)null);
+                    b.ToTable("EnrichmentStates");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.Favorite", b =>
@@ -225,7 +228,7 @@ namespace Lots.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Favorites", (string)null);
+                    b.ToTable("Favorites");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.LegalCase", b =>
@@ -240,7 +243,7 @@ namespace Lots.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LegalCases", (string)null);
+                    b.ToTable("LegalCases");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.Lot", b =>
@@ -363,7 +366,7 @@ namespace Lots.Data.Migrations
                         .HasDatabaseName("IX_Lots_Coordinates")
                         .HasFilter("\"Latitude\" IS NOT NULL AND \"Longitude\" IS NOT NULL");
 
-                    b.ToTable("Lots", (string)null);
+                    b.ToTable("Lots");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.LotAlert", b =>
@@ -407,7 +410,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("LotAlerts", (string)null);
+                    b.ToTable("LotAlerts");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.LotAlertMatch", b =>
@@ -441,7 +444,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("LotId");
 
-                    b.ToTable("LotAlertMatches", (string)null);
+                    b.ToTable("LotAlertMatches");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.LotAuditEvent", b =>
@@ -479,7 +482,7 @@ namespace Lots.Data.Migrations
                     b.HasIndex("LotId", "EventType")
                         .HasDatabaseName("IX_LotAuditEvents_LotId_EventType");
 
-                    b.ToTable("LotAuditEvents", (string)null);
+                    b.ToTable("LotAuditEvents");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.LotCadastralNumber", b =>
@@ -509,7 +512,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("LotId");
 
-                    b.ToTable("LotCadastralNumbers", (string)null);
+                    b.ToTable("LotCadastralNumbers");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.LotCategory", b =>
@@ -531,7 +534,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("LotId");
 
-                    b.ToTable("LotCategories", (string)null);
+                    b.ToTable("LotCategories");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.LotClassificationAnalysis", b =>
@@ -565,7 +568,7 @@ namespace Lots.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LotClassificationAnalysis", (string)null);
+                    b.ToTable("LotClassificationAnalysis");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.LotClassificationState", b =>
@@ -588,7 +591,7 @@ namespace Lots.Data.Migrations
                         .HasDatabaseName("IX_ClassificationStates_Queue")
                         .HasFilter("\"Status\" IN (0, 1, 3)");
 
-                    b.ToTable("LotClassificationStates", (string)null);
+                    b.ToTable("LotClassificationStates");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.LotDocument", b =>
@@ -618,7 +621,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("LotId");
 
-                    b.ToTable("Documents", (string)null);
+                    b.ToTable("Documents");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.LotEvaluation", b =>
@@ -667,7 +670,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("LotId");
 
-                    b.ToTable("LotEvaluations", (string)null);
+                    b.ToTable("LotEvaluations");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.LotEvaluationUserRunStatistics", b =>
@@ -689,7 +692,7 @@ namespace Lots.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LotEvaluationUserRunStatistics", (string)null);
+                    b.ToTable("LotEvaluationUserRunStatistics");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.LotImage", b =>
@@ -712,7 +715,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("LotId");
 
-                    b.ToTable("LotImages", (string)null);
+                    b.ToTable("LotImages");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.LotPriceSchedule", b =>
@@ -746,7 +749,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("LotId");
 
-                    b.ToTable("LotPriceSchedules", (string)null);
+                    b.ToTable("LotPriceSchedules");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.LotTradeResult", b =>
@@ -800,7 +803,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("BiddingId");
 
-                    b.ToTable("LotTradeResults", (string)null);
+                    b.ToTable("LotTradeResults");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.RawFedresursMessage", b =>
@@ -842,7 +845,7 @@ namespace Lots.Data.Migrations
 
                     b.HasKey("Guid");
 
-                    b.ToTable("RawFedresursMessages", (string)null);
+                    b.ToTable("RawFedresursMessages");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.SimilarLot", b =>
@@ -872,7 +875,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("TargetLotId");
 
-                    b.ToTable("SimilarLots", (string)null);
+                    b.ToTable("SimilarLots");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.Subject", b =>
@@ -903,7 +906,7 @@ namespace Lots.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Subjects", (string)null);
+                    b.ToTable("Subjects");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.User", b =>
@@ -937,7 +940,7 @@ namespace Lots.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.UserAd", b =>
@@ -987,7 +990,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserAds", (string)null);
+                    b.ToTable("UserAds");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.UserAdChatMessage", b =>
@@ -1016,7 +1019,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("ChatRoomId");
 
-                    b.ToTable("ChatMessages", (string)null);
+                    b.ToTable("ChatMessages");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.UserAdChatRoom", b =>
@@ -1041,7 +1044,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("AdId");
 
-                    b.ToTable("ChatRooms", (string)null);
+                    b.ToTable("ChatRooms");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.UserAdImage", b =>
@@ -1067,7 +1070,7 @@ namespace Lots.Data.Migrations
 
                     b.HasIndex("UserAdId");
 
-                    b.ToTable("UserAdImages", (string)null);
+                    b.ToTable("UserAdImages");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.UserLotContractPermission", b =>
@@ -1098,7 +1101,7 @@ namespace Lots.Data.Migrations
                     b.HasIndex("UserId", "LotId")
                         .IsUnique();
 
-                    b.ToTable("UserLotContractPermissions", (string)null);
+                    b.ToTable("UserLotContractPermissions");
                 });
 
             modelBuilder.Entity("Lots.Data.Entities.Bidding", b =>

@@ -23,8 +23,10 @@ public class ContractGenerationService
 
     public async Task<byte[]> GenerateContractAsync(Guid userId, Guid lotId, DTOs.ContractGenerationRequest request, string templatePath)
     {
-        var hasPermission = await HasPermissionAsync(userId, lotId);
-        if (!hasPermission)
+        var permission = await _dbContext.UserLotContractPermissions
+            .FirstOrDefaultAsync(p => p.UserId == userId && p.LotId == lotId);
+
+        if (permission == null)
         {
             throw new UnauthorizedAccessException("У пользователя нет прав на формирование договора для данного лота.");
         }
@@ -65,7 +67,11 @@ public class ContractGenerationService
                     { "{{FedresursLink}}", lot.Bidding?.BankruptMessageId != Guid.Empty 
                         ? $"https://fedresurs.ru/bankruptmessages/{lot.Bidding!.BankruptMessageId}" 
                         : "Нет данных" },
-                    { "{{MaxPrice}}", request.MaxPrice.HasValue ? request.MaxPrice.Value.ToString("N2") : "________________" }
+                    { "{{MaxPrice}}", request.MaxPrice.HasValue ? request.MaxPrice.Value.ToString("N2") : "________________" },
+                    { "{{FixedRewardAmount}}", RussianMoneyFormatter.FormatAmount(permission.FixedRewardAmount) },
+                    { "{{FixedRewardAmountWords}}", RussianMoneyFormatter.ToWords(permission.FixedRewardAmount) },
+                    { "{{SuccessRewardAmount}}", RussianMoneyFormatter.FormatAmount(permission.SuccessRewardAmount) },
+                    { "{{SuccessRewardAmountWords}}", RussianMoneyFormatter.ToWords(permission.SuccessRewardAmount) }
                 };
 
                 foreach (var para in body.Elements<Paragraph>())
@@ -103,11 +109,42 @@ public class ContractGenerationService
                         }
                         para.AppendChild(newRun);
                     }
+
+                    EnsureJustified(para);
                 }
             }
             wordDoc.MainDocumentPart?.Document.Save();
         }
 
         return memoryStream.ToArray();
+    }
+
+    /// <summary>
+    /// Выравнивание по ширине страницы. Центрированные абзацы (заголовки) не трогаем.
+    /// </summary>
+    private static void EnsureJustified(Paragraph para)
+    {
+        var paraProps = para.GetFirstChild<ParagraphProperties>();
+        if (paraProps == null)
+        {
+            paraProps = new ParagraphProperties();
+            para.PrependChild(paraProps);
+        }
+
+        var justification = paraProps.GetFirstChild<Justification>();
+        var alignment = justification?.Val?.Value;
+        if (alignment == JustificationValues.Center || alignment == JustificationValues.Right)
+        {
+            return;
+        }
+
+        if (justification == null)
+        {
+            paraProps.AppendChild(new Justification { Val = JustificationValues.Both });
+        }
+        else
+        {
+            justification.Val = JustificationValues.Both;
+        }
     }
 }

@@ -131,6 +131,10 @@ public class LotsDbContext : DbContext
             .HasForeignKey(p => p.LotId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<UserLotContractPermission>()
+            .HasIndex(p => new { p.UserId, p.LotId })
+            .IsUnique();
+
         // Настройка объявлений
         modelBuilder.Entity<UserAd>(entity =>
         {

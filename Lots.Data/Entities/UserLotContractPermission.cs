@@ -17,5 +17,15 @@ public class UserLotContractPermission
     [ForeignKey("LotId")]
     public Lot Lot { get; set; } = default!;
 
+    /// <summary>
+    /// Фиксированная часть вознаграждения за подготовку и подачу заявки (руб.)
+    /// </summary>
+    public decimal FixedRewardAmount { get; set; }
+
+    /// <summary>
+    /// Бонусная часть вознаграждения агента в случае победы в торгах (руб.)
+    /// </summary>
+    public decimal SuccessRewardAmount { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
