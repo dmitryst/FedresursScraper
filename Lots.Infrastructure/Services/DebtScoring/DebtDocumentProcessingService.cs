@@ -411,7 +411,7 @@ public class DebtDocumentProcessingService : IDebtDocumentProcessingService
             }
             else
             {
-                profile.Status = DebtLotProcessingStatus.DocumentsProcessed;
+                profile.Status = DebtLotProcessingStatus.PendingEnrichment;
                 profile.LastError = null;
             }
 

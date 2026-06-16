@@ -34,4 +34,16 @@ public class DebtScoringOptions
     /// URL Python-сервиса OCR (POST /ocr).
     /// </summary>
     public string? OcrServiceUrl { get; set; }
+
+    public int EnrichmentMaxAttempts { get; set; } = 3;
+
+    public int EnrichmentRetryDelayMinutes { get; set; } = 30;
+
+    public bool EnableDadataStep { get; set; }
+
+    public bool EnableBankruptcyStep { get; set; }
+
+    public bool EnableKadStep { get; set; }
+
+    public bool EnableFsspStep { get; set; }
 }

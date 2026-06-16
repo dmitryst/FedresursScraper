@@ -1,8 +1,11 @@
 using Lots.Application.Services.DebtScoring;
+using Lots.Application.Services.DebtScoring.Enrichment;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using FedresursScraper.Services.DebtScoring;
+using FedresursScraper.Services.DebtScoring.Enrichment;
+using FedresursScraper.Services.DebtScoring.Enrichment.Steps;
 
 namespace FedresursScraper.Extensions;
 
@@ -19,7 +22,14 @@ public static class DebtScoringServiceCollectionExtensions
         services.AddSingleton<DocxDocumentTextExtractor>();
         services.AddScoped<IDebtLotDiscoveryService, DebtLotDiscoveryService>();
         services.AddScoped<IDebtDocumentProcessingService, DebtDocumentProcessingService>();
+        services.AddScoped<IDebtEnrichmentService, DebtEnrichmentService>();
+        services.AddScoped<IDebtEnrichmentIdentityResolver, DebtEnrichmentIdentityResolver>();
         services.AddSingleton<IPersonalDataProtector, PersonalDataProtector>();
+
+        services.AddSingleton<IDebtEnrichmentStep, DadataEnrichmentStep>();
+        services.AddSingleton<IDebtEnrichmentStep, BankruptcyEnrichmentStep>();
+        services.AddSingleton<IDebtEnrichmentStep, KadEnrichmentStep>();
+        services.AddSingleton<IDebtEnrichmentStep, FsspEnrichmentStep>();
 
         services.AddHttpClient("DebtScoring", client =>
         {
@@ -58,6 +68,7 @@ public static class DebtScoringServiceCollectionExtensions
         });
 
         services.AddHostedService<DebtScoringWorker>();
+        services.AddHostedService<DebtEnrichmentWorker>();
 
         return services;
     }

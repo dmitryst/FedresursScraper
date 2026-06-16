@@ -70,6 +70,11 @@ public class LotsDbContext : DbContext
     public DbSet<DebtLotProfile> DebtLotProfiles { get; set; }
     public DbSet<DebtCourtDocument> DebtCourtDocuments { get; set; }
     public DbSet<DebtExtractedEntity> DebtExtractedEntities { get; set; }
+    public DbSet<DebtorEnrichmentProfile> DebtorEnrichmentProfiles { get; set; }
+    public DbSet<DebtorFnsSnapshot> DebtorFnsSnapshots { get; set; }
+    public DbSet<DebtorBankruptcyCheck> DebtorBankruptcyChecks { get; set; }
+    public DbSet<DebtorKadCaseSnapshot> DebtorKadCaseSnapshots { get; set; }
+    public DbSet<DebtorFsspRecord> DebtorFsspRecords { get; set; }
 
     [DbFunction("jsonb_extract_path_text", "pg_catalog")]
     public static string JsonbExtractPathText(Dictionary<string, string> target, string path) => throw new NotSupportedException();
@@ -303,7 +308,59 @@ public class LotsDbContext : DbContext
 
             entity.HasIndex(e => new { e.Status, e.NextAttemptAt })
                 .HasDatabaseName("IX_DebtLotProfiles_Queue")
-                .HasFilter("\"Status\" IN (0, 1, 3, 5)");
+                .HasFilter("\"Status\" IN (0, 1, 5)");
+
+            entity.HasIndex(e => new { e.Status, e.NextAttemptAt })
+                .HasDatabaseName("IX_DebtLotProfiles_EnrichmentQueue")
+                .HasFilter("\"Status\" IN (2, 3, 6)");
+        });
+
+        modelBuilder.Entity<DebtorEnrichmentProfile>(entity =>
+        {
+            entity.HasOne(e => e.DebtLotProfile)
+                .WithOne(p => p.EnrichmentProfile)
+                .HasForeignKey<DebtorEnrichmentProfile>(e => e.LotId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Subject)
+                .WithMany()
+                .HasForeignKey(e => e.SubjectId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<DebtorFnsSnapshot>(entity =>
+        {
+            entity.HasOne(e => e.EnrichmentProfile)
+                .WithOne(p => p.FnsSnapshot)
+                .HasForeignKey<DebtorFnsSnapshot>(e => e.LotId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<DebtorBankruptcyCheck>(entity =>
+        {
+            entity.HasOne(e => e.EnrichmentProfile)
+                .WithOne(p => p.BankruptcyCheck)
+                .HasForeignKey<DebtorBankruptcyCheck>(e => e.LotId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<DebtorKadCaseSnapshot>(entity =>
+        {
+            entity.HasOne(e => e.EnrichmentProfile)
+                .WithOne(p => p.KadCaseSnapshot)
+                .HasForeignKey<DebtorKadCaseSnapshot>(e => e.LotId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<DebtorFsspRecord>(entity =>
+        {
+            entity.HasOne(e => e.EnrichmentProfile)
+                .WithMany(p => p.FsspRecords)
+                .HasForeignKey(e => e.LotId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.LotId)
+                .HasDatabaseName("IX_DebtorFsspRecords_LotId");
         });
 
         modelBuilder.Entity<DebtCourtDocument>(entity =>

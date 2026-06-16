@@ -53,4 +53,6 @@ public class DebtLotProfile
     public ICollection<DebtCourtDocument> CourtDocuments { get; set; } = new List<DebtCourtDocument>();
 
     public ICollection<DebtExtractedEntity> ExtractedEntities { get; set; } = new List<DebtExtractedEntity>();
+
+    public DebtorEnrichmentProfile? EnrichmentProfile { get; set; }
 }
