@@ -80,15 +80,15 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
             return;
         }
 
-        // Если лотов меньше 30, мы просто ждем, пока накопится больше, чтобы экономить токены.
-        int minBatchSize = 30;
+        // Если лотов меньше 20, мы просто ждем, пока накопится больше, чтобы экономить токены.
+        int minBatchSize = 20;
         if (lotsToProcess.Count < minBatchSize)
         {
             _logger.LogInformation("Найдено всего {Count} лотов. Ждем накопления до {MinBatchSize}.", lotsToProcess.Count, minBatchSize);
             return;
         }
 
-        int batchSize = 30;
+        int batchSize = 20;
         for (int i = 0; i < lotsToProcess.Count; i += batchSize)
         {
             var batch = lotsToProcess.Skip(i).Take(batchSize).ToList();
