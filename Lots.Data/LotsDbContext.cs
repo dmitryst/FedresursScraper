@@ -1,4 +1,5 @@
 using Lots.Data.Entities;
+using Lots.Data.Entities.DebtScoring;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
@@ -65,6 +66,10 @@ public class LotsDbContext : DbContext
     public DbSet<UserAdImage> UserAdImages { get; set; }
     public DbSet<UserAdChatRoom> ChatRooms { get; set; }
     public DbSet<UserAdChatMessage> ChatMessages { get; set; }
+
+    public DbSet<DebtLotProfile> DebtLotProfiles { get; set; }
+    public DbSet<DebtCourtDocument> DebtCourtDocuments { get; set; }
+    public DbSet<DebtExtractedEntity> DebtExtractedEntities { get; set; }
 
     [DbFunction("jsonb_extract_path_text", "pg_catalog")]
     public static string JsonbExtractPathText(Dictionary<string, string> target, string path) => throw new NotSupportedException();
@@ -287,6 +292,50 @@ public class LotsDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.TargetLotId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<DebtLotProfile>(entity =>
+        {
+            entity.HasOne(e => e.Lot)
+                .WithOne()
+                .HasForeignKey<DebtLotProfile>(e => e.LotId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => new { e.Status, e.NextAttemptAt })
+                .HasDatabaseName("IX_DebtLotProfiles_Queue")
+                .HasFilter("\"Status\" IN (0, 1, 3, 5)");
+        });
+
+        modelBuilder.Entity<DebtCourtDocument>(entity =>
+        {
+            entity.HasOne(e => e.Profile)
+                .WithMany(p => p.CourtDocuments)
+                .HasForeignKey(e => e.LotId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.LotDocument)
+                .WithMany()
+                .HasForeignKey(e => e.LotDocumentId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => new { e.LotId, e.SourceUrl })
+                .HasDatabaseName("IX_DebtCourtDocuments_LotId_SourceUrl");
+        });
+
+        modelBuilder.Entity<DebtExtractedEntity>(entity =>
+        {
+            entity.HasOne(e => e.Profile)
+                .WithMany(p => p.ExtractedEntities)
+                .HasForeignKey(e => e.LotId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.CourtDocument)
+                .WithMany(d => d.ExtractedEntities)
+                .HasForeignKey(e => e.CourtDocumentId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => new { e.LotId, e.EntityType })
+                .HasDatabaseName("IX_DebtExtractedEntities_LotId_EntityType");
         });
 
         // Автоматическая настройка всех DateTime свойств для всех сущностей

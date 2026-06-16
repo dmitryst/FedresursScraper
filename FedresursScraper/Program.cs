@@ -115,6 +115,8 @@ builder.Services.AddFileStorageServices(builder.Configuration);
 // Регистрируем сервисы дообогащения торгов (МЭТС, ЦДТ)
 builder.Services.AddEnrichmentServices(configuration);
 
+builder.Services.AddDebtScoringServices(configuration);
+
 if (string.IsNullOrWhiteSpace(rosreestrServiceUrl))
 {
     // Можно выбросить исключение или установить значение по умолчанию для локальной разработки
