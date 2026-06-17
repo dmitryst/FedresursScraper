@@ -2383,6 +2383,25 @@
       "models": []
     },
     {
+      "canonical": "Hongqi",
+      "aliases": ["HONGQI", "Hong Qi", "FAW Hongqi", "Хongqi", "Хонqi", "Хонги", "ХОНГИ", "红旗"],
+      "models": [
+        { "canonical": "H5", "aliases": ["Hongqi H5", "H5 2.0T"] },
+        { "canonical": "H6", "aliases": ["Hongqi H6"] },
+        { "canonical": "H7", "aliases": ["Hongqi H7"] },
+        { "canonical": "H9", "aliases": ["Hongqi H9", "H9 2.0T", "H9 3.0T"] },
+        { "canonical": "HS3", "aliases": ["Hongqi HS3"] },
+        { "canonical": "HS5", "aliases": ["Hongqi HS5"] },
+        { "canonical": "HS6", "aliases": ["Hongqi HS6"] },
+        { "canonical": "HS7", "aliases": ["Hongqi HS7"] },
+        { "canonical": "HS9", "aliases": ["Hongqi HS9"] },
+        { "canonical": "E-QM5", "aliases": ["EQM5", "Hongqi E-QM5", "E QM5"] },
+        { "canonical": "E-HS9", "aliases": ["EHS9", "Hongqi E-HS9", "E HS9"] },
+        { "canonical": "EH7", "aliases": ["Hongqi EH7"] },
+        { "canonical": "EHS7", "aliases": ["Hongqi EHS7"] }
+      ]
+    },
+    {
       "canonical": "Hyundai",
       "aliases": [
         "Хyundai",
@@ -3889,6 +3908,18 @@
       ]
     },
     {
+      "canonical": "Li Auto",
+      "aliases": ["LI AUTO", "LiAuto", "Lixiang", "LIXIANG", "Li Xiang", "Li Auto (Lixiang)", "理想", "Li Ideal"],
+      "models": [
+        { "canonical": "L6", "aliases": ["Li L6", "L 6"] },
+        { "canonical": "L7", "aliases": ["Li L7", "L 7"] },
+        { "canonical": "L8", "aliases": ["Li L8", "L 8"] },
+        { "canonical": "L9", "aliases": ["Li L9", "L 9"] },
+        { "canonical": "MEGA", "aliases": ["Li MEGA", "Mega", "Li Mega"] },
+        { "canonical": "One", "aliases": ["Li ONE", "Li One", "ONE"] }
+      ]
+    },
+    {
       "canonical": "Lifan",
       "aliases": [
         "Лifan",
@@ -4019,9 +4050,11 @@
     },
     {
       "canonical": "Livan",
-      "aliases": [],
+      "aliases": ["LIVAN", "Li Van", "Лivan", "Ливан", "ЛИВАН"],
       "models": [
-        "Maple X3 Pro"
+        { "canonical": "X3 Pro", "aliases": ["Maple X3 Pro", "Livan X3 Pro"] },
+        { "canonical": "S6 Pro", "aliases": ["Livan S6 Pro"] },
+        { "canonical": "Maple 60S", "aliases": ["Livan Maple 60S"] }
       ]
     },
     {
