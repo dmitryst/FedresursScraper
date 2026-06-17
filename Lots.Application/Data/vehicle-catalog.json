@@ -2,33 +2,33 @@
   "brands": [
     {
       "canonical": "Chery",
-      "aliases": ["CHERRY", "Chery", "CHERY", "Cherry", "Чери", "ЧЕРИ", "ЧЕРРИ", "Черри"],
+      "aliases": ["CHERRY", "Cherry", "Чери", "ЧЕРИ", "ЧЕРРИ", "Черри"],
       "models": [
-        { "canonical": "Tiggo 2", "aliases": ["Tiggo2", "TIGGO 2", "Тигго 2"] },
-        { "canonical": "Tiggo 3", "aliases": ["Tiggo3", "TIGGO 3", "Тигго 3"] },
-        { "canonical": "Tiggo 4", "aliases": ["Tiggo4", "TIGGO 4", "Тигго 4"] },
-        { "canonical": "Tiggo 4 Pro", "aliases": ["Tiggo 4 Pro", "Tiggo4 PRO"] },
-        { "canonical": "Tiggo 7", "aliases": ["Tiggo7", "TIGGO 7", "Тигго 7"] },
-        { "canonical": "Tiggo 7 Pro", "aliases": ["Tiggo 7 PRO", "TIGGO 7 PRO", "Tiggo7 Pro"] },
-        { "canonical": "Tiggo 7 Pro Max", "aliases": ["Tiggo7 Pro Max", "TIGGO 7 PRO MAX", "Tiggo 7 ProMax"] },
-        { "canonical": "Tiggo 8", "aliases": ["Tiggo8", "TIGGO 8", "Тигго 8"] },
-        { "canonical": "Tiggo 8 Pro", "aliases": ["Tiggo 8 PRO", "TIGGO 8 PRO", "Tiggo8 Pro"] },
-        { "canonical": "Tiggo 8 Pro Max", "aliases": ["Tiggo8 Pro Max", "TIGGO 8 PRO MAX"] },
-        { "canonical": "Arrizo 8", "aliases": ["Arrizo8", "ARRIZO 8", "Аризо 8"] },
-        { "canonical": "Arrizo 7", "aliases": ["Arrizo7", "ARRIZO 7", "Аризо 7"] },
-        { "canonical": "Arrizo 5", "aliases": ["Arrizo5", "ARRIZO 5", "Аризо 5"] },
-        { "canonical": "Bonus", "aliases": ["BONUS", "Бонус"] },
-        { "canonical": "Bonus 3", "aliases": ["Bonus3", "BONUS 3"] },
-        { "canonical": "Amulet", "aliases": ["AMULET", "Амулет"] },
-        { "canonical": "Fora", "aliases": ["FORA", "Фора"] },
-        { "canonical": "IndiS", "aliases": ["INDIS", "Indis"] },
-        { "canonical": "QQ", "aliases": ["qq", "Chery QQ"] },
-        { "canonical": "M11", "aliases": ["m11"] }
+        { "canonical": "Tiggo 2", "aliases": ["Tiggo2", "Тигго 2"] },
+        { "canonical": "Tiggo 3", "aliases": ["Tiggo3", "Тигго 3"] },
+        { "canonical": "Tiggo 4", "aliases": ["Tiggo4", "Тигго 4"] },
+        { "canonical": "Tiggo 4 Pro", "aliases": ["Tiggo4 PRO"] },
+        { "canonical": "Tiggo 7", "aliases": ["Tiggo7", "Тигго 7", "Тигго7"] },
+        { "canonical": "Tiggo 7 Pro", "aliases": ["Tiggo7 Pro"] },
+        { "canonical": "Tiggo 7 Pro Max", "aliases": ["Tiggo7 Pro Max", "Tiggo 7 ProMax"] },
+        { "canonical": "Tiggo 8", "aliases": ["Tiggo8", "Тигго 8"] },
+        { "canonical": "Tiggo 8 Pro", "aliases": ["Tiggo8 Pro"] },
+        { "canonical": "Tiggo 8 Pro Max", "aliases": ["Tiggo8 Pro Max"] },
+        { "canonical": "Arrizo 8", "aliases": ["Arrizo8", "Аризо 8"] },
+        { "canonical": "Arrizo 7", "aliases": ["Arrizo7", "Аризо 7"] },
+        { "canonical": "Arrizo 5", "aliases": ["Arrizo5", "Аризо 5"] },
+        { "canonical": "Bonus", "aliases": ["Бонус"] },
+        { "canonical": "Bonus 3", "aliases": ["Bonus3", "Бонус 3"] },
+        { "canonical": "Amulet", "aliases": ["Амулет"] },
+        { "canonical": "Fora", "aliases": ["Фора"] },
+        { "canonical": "IndiS", "aliases": ["Индис"] },
+        { "canonical": "QQ", "aliases": ["Chery QQ"] },
+        { "canonical": "M11", "aliases": ["м11"] }
       ]
     },
     {
       "canonical": "Geely",
-      "aliases": ["GEELY", "Джили", "ДЖИЛИ", "Geely Auto"],
+      "aliases": ["Джили", "ДЖИЛИ", "Geely Auto"],
       "models": [
         { "canonical": "Coolray", "aliases": ["COOLRAY", "Кулрей"] },
         { "canonical": "Atlas", "aliases": ["ATLAS", "Атлас"] },
@@ -98,6 +98,7 @@
       "canonical": "Toyota",
       "aliases": ["TOYOTA", "Тoyota", "Тойота", "ТОЙОТА"],
       "models": [
+        { "canonical": "Auris", "aliases": ["Аурис"] },
         { "canonical": "Camry", "aliases": ["CAMRY", "Кamry", "Камry"] },
         { "canonical": "Corolla", "aliases": ["COROLLA", "Кorolla", "Corolla Fielder"] },
         { "canonical": "RAV4", "aliases": ["Rav4", "RAV 4", "РAV4"] },
@@ -194,31 +195,27 @@
       ]
     },
     {
-      "canonical": "LADA",
-      "aliases": ["Lada", "LADA", "Лada", "Лада", "ЛАДА", "АВТОВАЗ", "AvtoVAZ"],
+      "canonical": "Lada (ВАЗ)",
+      "aliases": ["Lada", "LADA", "Лada", "Лада", "ЛАДА", "АВТОВАЗ", "AvtoVAZ", "VAZ", "Vaz", "vaz", "ВAZ", "ВАЗ", "Вaz", "Ваз", "Lada VAZ", "Lada (VAZ)"],
       "models": [
-        { "canonical": "Vesta", "aliases": ["VESTA", "Вesta", "Lada Vesta"] },
-        { "canonical": "Granta", "aliases": ["GRANTA", "Гranta", "Lada Granta", "Granta 219140"] },
-        { "canonical": "Largus", "aliases": ["LARGUS", "Lada Largus"] },
-        { "canonical": "Niva", "aliases": ["NIVA", "Niva Travel", "Niva Legend", "4x4"] },
-        { "canonical": "XRAY", "aliases": ["XRay", "X-RAY", "X Ray"] },
-        { "canonical": "Kalina", "aliases": ["KALINA"] },
-        { "canonical": "Priora", "aliases": ["PRIORA"] }
-      ]
-    },
-    {
-      "canonical": "ВАЗ",
-      "aliases": ["VAZ", "Vaz", "vaz", "Вaz", "Ваз", "Lada VAZ"],
-      "models": [
-        { "canonical": "2107", "aliases": ["ВАЗ 2107", "VAZ 2107", "2107"] },
-        { "canonical": "2106", "aliases": ["ВАЗ 2106", "VAZ 2106", "2106"] },
-        { "canonical": "2105", "aliases": ["ВАЗ 2105", "VAZ 2105", "2105"] },
-        { "canonical": "2104", "aliases": ["ВАЗ 2104", "VAZ 2104", "2104"] },
+        { "canonical": "Vesta", "aliases": ["Вesta", "Lada Vesta"] },
+        { "canonical": "Granta", "aliases": ["Гranta", "Lada Granta", "Granta 219040", "Granta 219140"] },
+        { "canonical": "Largus", "aliases": ["Lada Largus"] },
+        { "canonical": "Niva", "aliases": ["Niva Travel", "Niva Legend", "4x4", "Lada Niva"] },
+        { "canonical": "XRAY", "aliases": ["X-RAY", "X Ray"] },
+        { "canonical": "Kalina", "aliases": ["Kalina 111930"] },
+        { "canonical": "Priora", "aliases": ["Приора", "ВАЗ 2170", "ВАЗ 2172", "ВАЗ 217230"] },
+        { "canonical": "2107", "aliases": ["ВАЗ 2107", "VAZ 2107"] },
+        { "canonical": "21074", "aliases": ["ВАЗ 21074", "VAZ 21074"] },
+        { "canonical": "2106", "aliases": ["ВАЗ 2106", "VAZ 2106"] },
+        { "canonical": "2105", "aliases": ["ВАЗ 2105", "VAZ 2105"] },
+        { "canonical": "2104", "aliases": ["ВАЗ 2104", "VAZ 2104"] },
+        { "canonical": "21093", "aliases": ["ВАЗ 21093", "VAZ 21093"] },
         { "canonical": "21099", "aliases": ["ВАЗ 21099", "VAZ 21099"] },
         { "canonical": "2110", "aliases": ["ВАЗ 2110", "VAZ 2110"] },
         { "canonical": "2114", "aliases": ["ВАЗ 2114", "VAZ 2114"] },
         { "canonical": "2115", "aliases": ["ВАЗ 2115", "VAZ 2115"] },
-        { "canonical": "2121", "aliases": ["ВАЗ 2121", "VAZ 2121", "Niva"] },
+        { "canonical": "2121", "aliases": ["ВАЗ 2121", "VAZ 2121", "2121", "Niva 2121"] },
         { "canonical": "21214", "aliases": ["ВАЗ 21214", "VAZ 21214"] }
       ]
     },
@@ -238,12 +235,13 @@
       "canonical": "Mercedes-Benz",
       "aliases": ["MERCEDES", "Mercedes", "Mercedes Benz", "MERCEDES-BENZ", "Мercedes", "Мерседес", "МЕРСЕДЕС", "MB"],
       "models": [
+        { "canonical": "M-Class", "aliases": ["M Class", "М-Класс", "ML320"] },
         { "canonical": "E-Class", "aliases": ["E Class", "E-Класс", "E200", "E220", "E350", "W212", "W213"] },
         { "canonical": "C-Class", "aliases": ["C Class", "C-Класс", "C200", "C180", "W204", "W205"] },
         { "canonical": "S-Class", "aliases": ["S Class", "S-Класс", "S350", "S500", "W221", "W222"] },
         { "canonical": "GLC", "aliases": ["glc", "GLC-Class"] },
         { "canonical": "GLE", "aliases": ["gle", "GLE-Class", "ML-Class", "ML"] },
-        { "canonical": "GLA", "aliases": ["gla"] },
+        { "canonical": "GLA", "aliases": ["gla", "GLA 200", "GLA 200 CDI"] },
         { "canonical": "Sprinter", "aliases": ["SPRINTER"] }
       ]
     },
@@ -257,7 +255,8 @@
         { "canonical": "Q5", "aliases": ["q5", "Q 5"] },
         { "canonical": "Q7", "aliases": ["q7", "Q 7"] },
         { "canonical": "Q3", "aliases": ["q3", "Q 3"] },
-        { "canonical": "A5", "aliases": ["a5", "A 5", "Audi A5"] }
+        { "canonical": "A5", "aliases": ["a5", "A 5", "Audi A5"] },
+        { "canonical": "A8", "aliases": ["a8", "A 8", "A8L", "Audi A8"] }
       ]
     },
     {
@@ -315,7 +314,8 @@
         { "canonical": "Outlander", "aliases": ["OUTLANDER"] },
         { "canonical": "Pajero", "aliases": ["PAJERO", "PAJERO SPORT"] },
         { "canonical": "Lancer", "aliases": ["LANCER", "LANCER 1.6"] },
-        { "canonical": "ASX", "aliases": ["asx"] }
+        { "canonical": "ASX", "aliases": ["asx"] },
+        { "canonical": "Legnum", "aliases": ["Легнум"] }
       ]
     },
     {
@@ -335,7 +335,7 @@
       "canonical": "Lexus",
       "aliases": ["LEXUS", "Лexus", "Лексус", "ЛЕКСУС"],
       "models": [
-        { "canonical": "RX", "aliases": ["RX350", "RX 350", "RX450h"] },
+        { "canonical": "RX", "aliases": ["RX300", "RX 300", "RX350", "RX 350", "RX450h"] },
         { "canonical": "LX", "aliases": ["LX570", "LX 570"] },
         { "canonical": "ES", "aliases": ["ES350", "ES 350"] },
         { "canonical": "NX", "aliases": ["NX200", "NX 200"] }
@@ -345,8 +345,9 @@
       "canonical": "Land Rover",
       "aliases": ["LAND ROVER", "LandRover", "Ленд Рover", "Ленд Ровер"],
       "models": [
-        { "canonical": "Range Rover", "aliases": ["RANGE ROVER", "RangeRover"] },
-        { "canonical": "Range Rover Sport", "aliases": ["RANGE ROVER SPORT"] },
+        { "canonical": "Range Rover", "aliases": ["RangeRover"] },
+        { "canonical": "Range Rover Sport", "aliases": ["RangeRover Sport"] },
+        { "canonical": "Range Rover Evoque", "aliases": ["RangeRover Evoque"] },
         { "canonical": "Discovery", "aliases": ["DISCOVERY"] },
         { "canonical": "Defender", "aliases": ["DEFENDER"] },
         { "canonical": "Freelander", "aliases": ["FREELANDER"] }
