@@ -4,6 +4,7 @@ using FedresursScraper.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Lots.Application.Extensions;
 using FedresursScraper.Extensions;
 using FedresursScraper.TradeStatuses;
 //using FedresursScraper.UserAds.Hubs;
@@ -38,6 +39,7 @@ builder.Services.AddTransient<ITradeCardLotsStatusScraper, TradeCardLotsStatusSc
 builder.Services.AddTransient<ICadastralNumberExtractor, CadastralNumberExtractor>();
 builder.Services.AddTransient<IRosreestrService, RosreestrService>();
 builder.Services.AddScoped<ILotCopyService, LotCopyService>();
+builder.Services.AddVehicleNormalization(configuration);
 builder.Services.AddSingleton<IVehicleAttributesExtractor, VehicleAttributesExtractor>();
 
 // Регистрация фоновых сервисов

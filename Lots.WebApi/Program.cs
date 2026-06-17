@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using FedresursScraper.Extensions;
 using FedresursScraper.UserAds.Hubs;
 using FedresursScraper.Services;
+using Lots.Application.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -26,6 +27,9 @@ builder.Services.AddFileStorageServices(configuration);
 // Регистрация Application и Infrastructure сервисов, необходимых для WebApi
 builder.Services.AddScoped<ILotCopyService, LotCopyService>();
 builder.Services.AddScoped<ILotEvaluationService, LotEvaluationService>();
+builder.Services.AddVehicleFilterOptions(configuration);
+builder.Services.AddVehicleNormalization(configuration, registerBackfillWorker: true);
+builder.Services.AddVehicleAttributesAdmin();
 builder.Services.AddSingleton<IBiddingDataCache, InMemoryBiddingDataCache>();
 builder.Services.AddScoped<TradeResultsImportService>();
 builder.Services.AddHttpClient<IIndexNowService, IndexNowService>();

@@ -9,6 +9,7 @@ using System.Security.Claims;
 using Lots.Data.Entities;
 using Ardalis.Specification;
 using Lots.Data.Models;
+using Lots.Application.Services.VehicleFilters;
 
 
 namespace FedresursScraper.Controllers;
@@ -19,13 +20,16 @@ public class LotsController : ControllerBase
 {
     private readonly ILotCopyService _lotCopyService;
     private readonly LotsDbContext _dbContext;
+    private readonly IVehicleFilterOptionsCache _vehicleFilterOptionsCache;
 
     public LotsController(
         ILotCopyService lotCopyService,
-        LotsDbContext dbContext)
+        LotsDbContext dbContext,
+        IVehicleFilterOptionsCache vehicleFilterOptionsCache)
     {
         _lotCopyService = lotCopyService;
         _dbContext = dbContext;
+        _vehicleFilterOptionsCache = vehicleFilterOptionsCache;
     }
 
     [HttpGet("list")]
@@ -105,6 +109,15 @@ public class LotsController : ControllerBase
         var result = new PaginatedResult<LotDto>(lotDtos, totalCount, page, pageSize);
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Справочник марок и моделей для фильтра «Легковой автомобиль» (из in-memory кэша).
+    /// </summary>
+    [HttpGet("vehicle-filter-options")]
+    public IActionResult GetVehicleFilterOptions()
+    {
+        return Ok(_vehicleFilterOptionsCache.Get());
     }
 
     [HttpGet("{id}")]

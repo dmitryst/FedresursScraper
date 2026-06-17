@@ -1,4 +1,5 @@
 using Lots.Data.Entities;
+using Lots.Application.Services.VehicleNormalization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,10 +13,14 @@ namespace FedresursScraper.Controllers;
 public class AdminLotsController : ControllerBase
 {
     private readonly LotsDbContext _dbContext;
+    private readonly IVehicleAttributesAdminService _vehicleAttributesAdminService;
 
-    public AdminLotsController(LotsDbContext dbContext)
+    public AdminLotsController(
+        LotsDbContext dbContext,
+        IVehicleAttributesAdminService vehicleAttributesAdminService)
     {
         _dbContext = dbContext;
+        _vehicleAttributesAdminService = vehicleAttributesAdminService;
     }
 
     private async Task<bool> IsAdminAsync()
@@ -118,5 +123,71 @@ public class AdminLotsController : ControllerBase
 
         var count = await query.CountAsync();
         return Ok(new { count });
+    }
+
+    /// <summary>
+    /// Лоты «Легковой автомобиль» с маркой или моделью вне справочника.
+    /// </summary>
+    [HttpGet("unmatched-vehicle-attributes")]
+    public async Task<IActionResult> GetUnmatchedVehicleAttributes(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        [FromQuery] bool activeOnly = true,
+        CancellationToken cancellationToken = default)
+    {
+        if (!await IsAdminAsync()) return Forbid();
+
+        var (items, totalCount) = await _vehicleAttributesAdminService.GetUnmatchedLotsAsync(
+            page,
+            pageSize,
+            activeOnly,
+            cancellationToken);
+
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        return Ok(new
+        {
+            items,
+            totalCount,
+            page,
+            pageSize,
+            totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        });
+    }
+
+    [HttpGet("unmatched-vehicle-attributes/count")]
+    public async Task<IActionResult> GetUnmatchedVehicleAttributesCount(
+        [FromQuery] bool activeOnly = true,
+        CancellationToken cancellationToken = default)
+    {
+        if (!await IsAdminAsync()) return Forbid();
+
+        var count = await _vehicleAttributesAdminService.GetUnmatchedLotsCountAsync(activeOnly, cancellationToken);
+        return Ok(new { count });
+    }
+
+    /// <summary>
+    /// Исправить или сбросить марку/модель лота (значения из справочника).
+    /// </summary>
+    [HttpPatch("{publicId:int}/vehicle-attributes")]
+    public async Task<IActionResult> UpdateLotVehicleAttributes(
+        int publicId,
+        [FromBody] UpdateLotVehicleAttributesRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (!await IsAdminAsync()) return Forbid();
+
+        var result = await _vehicleAttributesAdminService.UpdateLotVehicleAttributesAsync(
+            publicId,
+            request,
+            cancellationToken);
+
+        if (result == null)
+        {
+            return NotFound(new { message = $"Лот {publicId} не найден или не является легковым автомобилем." });
+        }
+
+        return Ok(result);
     }
 }

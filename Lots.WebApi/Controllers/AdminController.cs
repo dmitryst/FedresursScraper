@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Lots.Application.Services.VehicleNormalization;
 using FedresursScraper.Services;
 using FedresursScraper.Services.Models;
 using Lots.Data.Entities;
@@ -494,5 +495,49 @@ public class AdminController : ControllerBase
         });
 
         return Accepted(new { Message = "Задача по извлечению атрибутов транспортных средств запущена в фоновом режиме." });
+    }
+
+    /// <summary>
+    /// Неразобранные марки (нет в справочнике). Требует пройденной нормализации (_brand_matched = false).
+    /// </summary>
+    [HttpGet("vehicle-unmatched-brands")]
+    public async Task<IActionResult> GetUnmatchedBrands(
+        [FromServices] IVehicleUnmatchedAttributesService unmatchedService,
+        [FromQuery] int limit = 100,
+        CancellationToken cancellationToken = default)
+    {
+        var items = await unmatchedService.GetUnmatchedBrandsAsync(limit, cancellationToken);
+        return Ok(new { Items = items, Total = items.Count });
+    }
+
+    /// <summary>
+    /// Неразобранные модели (марка известна, модель — нет). _brand_matched = true, _model_matched = false.
+    /// </summary>
+    [HttpGet("vehicle-unmatched-models")]
+    public async Task<IActionResult> GetUnmatchedModels(
+        [FromServices] IVehicleUnmatchedAttributesService unmatchedService,
+        [FromQuery] int limit = 100,
+        CancellationToken cancellationToken = default)
+    {
+        var items = await unmatchedService.GetUnmatchedModelsAsync(limit, cancellationToken);
+        return Ok(new { Items = items, Total = items.Count });
+    }
+
+    /// <summary>
+    /// Сбрасывает флаги нормализации для повторного прогона worker'ом (после обновления справочника).
+    /// </summary>
+    [HttpPost("vehicle-reset-normalization")]
+    public async Task<IActionResult> ResetVehicleNormalization(
+        [FromServices] IVehicleUnmatchedAttributesService unmatchedService,
+        CancellationToken cancellationToken = default)
+    {
+        var resetCount = await unmatchedService.ResetNormalizationFlagsAsync(cancellationToken);
+        _logger.LogInformation("Сброшены флаги нормализации марок/моделей для {Count} лотов.", resetCount);
+
+        return Ok(new
+        {
+            Message = "Флаги нормализации сброшены. Worker прогонит лоты заново.",
+            ResetCount = resetCount
+        });
     }
 }

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Lots.Data.Entities;
+using Lots.Application.Services.VehicleNormalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,7 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<VehicleAttributesExtractor> _logger;
+    private readonly IVehicleAttributesNormalizationService _normalizationService;
     private readonly ChatClient _chatClient;
     private readonly string _modelName = "deepseek-chat";
     
@@ -31,10 +33,12 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
     public VehicleAttributesExtractor(
         IServiceScopeFactory scopeFactory,
         ILogger<VehicleAttributesExtractor> logger,
+        IVehicleAttributesNormalizationService normalizationService,
         IConfiguration configuration)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
+        _normalizationService = normalizationService;
 
         string apiKey = configuration["DeepSeek:ApiKey"] ?? throw new InvalidOperationException("API Key not found");
         string apiUrl = configuration["DeepSeek:ApiUrl"] ?? throw new InvalidOperationException("API URL not found");
@@ -212,6 +216,7 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
                     }
                 }
 
+                _normalizationService.NormalizeAttributes(attributes);
                 lot.Attributes = attributes;
             }
 

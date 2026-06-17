@@ -6,6 +6,9 @@ namespace Lots.Data.Specifications;
 
 public class LotsFilterSpecification : Specification<Lot>
 {
+    private static readonly HashSet<string> CaseInsensitiveAttributeFilterKeys =
+        new(StringComparer.OrdinalIgnoreCase) { "brand", "model" };
+
     public LotsFilterSpecification(
         string[]? categories,
         string? searchQuery = null,
@@ -121,6 +124,13 @@ public class LotsFilterSpecification : Specification<Lot>
                             EF.Functions.JsonExists(l.Attributes, actualKey) && 
                             Convert.ToDecimal(LotsDbContext.JsonbExtractPathText(l.Attributes, actualKey)) <= numValue);
                     }
+                }
+                else if (CaseInsensitiveAttributeFilterKeys.Contains(key))
+                {
+                    var matchValue = value.Trim();
+                    Query.Where(l => l.Attributes != null &&
+                        EF.Functions.JsonExists(l.Attributes, key) &&
+                        LotsDbContext.JsonbExtractPathText(l.Attributes, key).ToLower() == matchValue.ToLower());
                 }
                 else
                 {

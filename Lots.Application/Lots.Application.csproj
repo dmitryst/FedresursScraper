@@ -25,4 +25,8 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Data\vehicle-catalog.json" />
+  </ItemGroup>
+
 </Project>
