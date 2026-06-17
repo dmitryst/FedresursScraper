@@ -1,809 +1,6985 @@
 {
   "brands": [
     {
-      "canonical": "Chery",
-      "aliases": ["CHERRY", "Cherry", "Чери", "ЧЕРИ", "ЧЕРРИ", "Черри"],
-      "models": [
-        { "canonical": "Tiggo 2", "aliases": ["Tiggo2", "Тигго 2"] },
-        { "canonical": "Tiggo 3", "aliases": ["Tiggo3", "Тигго 3"] },
-        { "canonical": "Tiggo 4", "aliases": ["Tiggo4", "Тигго 4"] },
-        { "canonical": "Tiggo 4 Pro", "aliases": ["Tiggo4 PRO"] },
-        { "canonical": "Tiggo 7", "aliases": ["Tiggo7", "Тигго 7", "Тигго7"] },
-        { "canonical": "Tiggo 7 Pro", "aliases": ["Tiggo7 Pro"] },
-        { "canonical": "Tiggo 7 Pro Max", "aliases": ["Tiggo7 Pro Max", "Tiggo 7 ProMax"] },
-        { "canonical": "Tiggo 8", "aliases": ["Tiggo8", "Тигго 8"] },
-        { "canonical": "Tiggo 8 Pro", "aliases": ["Tiggo8 Pro"] },
-        { "canonical": "Tiggo 8 Pro Max", "aliases": ["Tiggo8 Pro Max"] },
-        { "canonical": "Arrizo 8", "aliases": ["Arrizo8", "Аризо 8"] },
-        { "canonical": "Arrizo 7", "aliases": ["Arrizo7", "Аризо 7"] },
-        { "canonical": "Arrizo 5", "aliases": ["Arrizo5", "Аризо 5"] },
-        { "canonical": "Bonus", "aliases": ["Бонус"] },
-        { "canonical": "Bonus 3", "aliases": ["Bonus3", "Бонус 3"] },
-        { "canonical": "Amulet", "aliases": ["Амулет"] },
-        { "canonical": "Fora", "aliases": ["Фора"] },
-        { "canonical": "IndiS", "aliases": ["Индис"] },
-        { "canonical": "QQ", "aliases": ["Chery QQ"] },
-        { "canonical": "M11", "aliases": ["м11"] }
-      ]
+      "canonical": "Acura",
+      "aliases": [],
+      "models": []
     },
     {
-      "canonical": "Geely",
-      "aliases": ["Джили", "ДЖИЛИ", "Geely Auto"],
-      "models": [
-        { "canonical": "Coolray", "aliases": ["COOLRAY", "Кулрей"] },
-        { "canonical": "Atlas", "aliases": ["ATLAS", "Атлас"] },
-        { "canonical": "Atlas Pro", "aliases": ["AtlasPro", "ATLAS PRO"] },
-        { "canonical": "Monjaro", "aliases": ["MONJARO", "Монжаро"] },
-        { "canonical": "Emgrand", "aliases": ["EMGRAND", "Эмgrand", "Emgrand 7", "Emgrand X7", "Emgrand (FE-1)"] },
-        { "canonical": "Tugella", "aliases": ["TUGELLA", "Тугella"] },
-        { "canonical": "Okavango", "aliases": ["OKAVANGO"] },
-        { "canonical": "Preface", "aliases": ["PREFACE"] },
-        { "canonical": "MK", "aliases": ["mk", "Geely MK", "MK Cross", "MK-2"] }
-      ]
-    },
-    {
-      "canonical": "Haval",
-      "aliases": ["HAVAL", "Хaval", "Хавал", "ХАВАЛ"],
-      "models": [
-        { "canonical": "Jolion", "aliases": ["JOLION", "Джолион"] },
-        { "canonical": "F7", "aliases": ["f7", "F 7"] },
-        { "canonical": "F7x", "aliases": ["F7X", "F 7x"] },
-        { "canonical": "H6", "aliases": ["h6", "H 6"] },
-        { "canonical": "H9", "aliases": ["h9", "H 9"] },
-        { "canonical": "Dargo", "aliases": ["DARGO", "Дargo"] },
-        { "canonical": "M6", "aliases": ["m6"] }
-      ]
-    },
-    {
-      "canonical": "Changan",
-      "aliases": ["CHANGAN", "Чangan", "Чанган", "ЧАНГАН"],
-      "models": [
-        { "canonical": "CS35 Plus", "aliases": ["CS35", "CS35PLUS", "CS 35 Plus"] },
-        { "canonical": "CS55 Plus", "aliases": ["CS55", "CS55PLUS", "CS 55 Plus"] },
-        { "canonical": "CS75 Plus", "aliases": ["CS75", "CS75PLUS", "CS 75 Plus"] },
-        { "canonical": "UNI-K", "aliases": ["UNIK", "Uni K", "Uni-K"] },
-        { "canonical": "UNI-T", "aliases": ["UNIT", "Uni T", "Uni-T"] },
-        { "canonical": "UNI-V", "aliases": ["UNIV", "Uni V", "Uni-V"] },
-        { "canonical": "Alsvin", "aliases": ["ALSVIN"] },
-        { "canonical": "Eado", "aliases": ["EADO"] }
-      ]
-    },
-    {
-      "canonical": "Omoda",
-      "aliases": ["OMODA", "Оmoda", "Омода", "ОМОДА"],
-      "models": [
-        { "canonical": "C5", "aliases": ["c5", "Omoda C5", "OMODA C5"] },
-        { "canonical": "S5", "aliases": ["s5", "Omoda S5", "OMODA S5"] }
-      ]
-    },
-    {
-      "canonical": "Exeed",
-      "aliases": ["EXEED", "Exeed", "Икsid", "Экsid", "ЭКСИД"],
-      "models": [
-        { "canonical": "TXL", "aliases": ["txl"] },
-        { "canonical": "VX", "aliases": ["vx"] },
-        { "canonical": "LX", "aliases": ["lx"] },
-        { "canonical": "RX", "aliases": ["rx"] }
-      ]
-    },
-    {
-      "canonical": "Jaecoo",
-      "aliases": ["JAECOO", "Jaecoo", "Джекoo", "ДЖЕКOO"],
-      "models": [
-        { "canonical": "J7", "aliases": ["j7"] },
-        { "canonical": "J8", "aliases": ["j8"] }
-      ]
-    },
-    {
-      "canonical": "Toyota",
-      "aliases": ["TOYOTA", "Тoyota", "Тойота", "ТОЙОТА"],
-      "models": [
-        { "canonical": "Auris", "aliases": ["Аурис"] },
-        { "canonical": "Camry", "aliases": ["CAMRY", "Кamry", "Камry"] },
-        { "canonical": "Corolla", "aliases": ["COROLLA", "Кorolla", "Corolla Fielder"] },
-        { "canonical": "RAV4", "aliases": ["Rav4", "RAV 4", "РAV4"] },
-        { "canonical": "Land Cruiser", "aliases": ["LandCruiser", "LAND CRUISER", "LC200", "LC 200", "Land Cruiser 200", "Land Cruiser 300"] },
-        { "canonical": "Prado", "aliases": ["PRADO", "Land Cruiser Prado"] },
-        { "canonical": "Highlander", "aliases": ["HIGHLANDER"] },
-        { "canonical": "Hilux", "aliases": ["HILUX"] },
-        { "canonical": "Yaris", "aliases": ["YARIS"] },
-        { "canonical": "C-HR", "aliases": ["CHR", "C HR", "C-HR"] },
-        { "canonical": "Avensis", "aliases": ["AVENSIS", "Toyota Avensis"] },
-        { "canonical": "Prius", "aliases": ["PRIUS", "Toyota Prius"] },
-        { "canonical": "Vitz", "aliases": ["VITZ", "Toyota Vitz"] },
-        { "canonical": "Carina", "aliases": ["CARINA", "Toyota Carina"] }
-      ]
-    },
-    {
-      "canonical": "Hyundai",
-      "aliases": ["HYUNDAI", "Хyundai", "Хендай", "ХЕНДАЙ", "Хундай"],
-      "models": [
-        { "canonical": "Solaris", "aliases": ["SOLARIS", "Сolaris", "Accent"] },
-        { "canonical": "Creta", "aliases": ["CRETA", "Крeta"] },
-        { "canonical": "Tucson", "aliases": ["TUCSON", "Тucson"] },
-        { "canonical": "Santa Fe", "aliases": ["SantaFe", "SANTA FE"] },
-        { "canonical": "Sonata", "aliases": ["SONATA"] },
-        { "canonical": "Elantra", "aliases": ["ELANTRA"] },
-        { "canonical": "Palisade", "aliases": ["PALISADE"] },
-        { "canonical": "ix35", "aliases": ["IX35", "Ix 35"] },
-        { "canonical": "Getz", "aliases": ["GETZ", "Hyundai Getz"] },
-        { "canonical": "i30", "aliases": ["I30", "i 30", "Hyundai i30"] }
-      ]
-    },
-    {
-      "canonical": "Kia",
-      "aliases": ["KIA", "Кia", "Киа", "КИА", "КIA"],
-      "models": [
-        { "canonical": "Rio", "aliases": ["RIO", "Рio"] },
-        { "canonical": "Sportage", "aliases": ["SPORTAGE", "Спортage"] },
-        { "canonical": "Cerato", "aliases": ["CERATO"] },
-        { "canonical": "K5", "aliases": ["k5", "Optima"] },
-        { "canonical": "Sorento", "aliases": ["SORENTO"] },
-        { "canonical": "Seltos", "aliases": ["SELТOS", "Seltos"] },
-        { "canonical": "Ceed", "aliases": ["CEED", "Cee'd", "Ceed"] },
-        { "canonical": "Picanto", "aliases": ["PICANTO"] },
-        { "canonical": "Spectra", "aliases": ["SPECTRA", "Kia Spectra"] },
-        { "canonical": "Soul", "aliases": ["SOUL", "Kia Soul"] }
-      ]
-    },
-    {
-      "canonical": "Volkswagen",
-      "aliases": ["VOLKSWAGEN", "VW", "Фольксваген", "ФОЛЬКСВАГЕН", "Volkswagen AG"],
-      "models": [
-        { "canonical": "Polo", "aliases": ["POLO", "Пolo"] },
-        { "canonical": "Tiguan", "aliases": ["TIGUAN"] },
-        { "canonical": "Passat", "aliases": ["PASSAT"] },
-        { "canonical": "Jetta", "aliases": ["JETTA"] },
-        { "canonical": "Golf", "aliases": ["GOLF"] },
-        { "canonical": "Taos", "aliases": ["TAOS"] },
-        { "canonical": "Touareg", "aliases": ["TOUAREG"] },
-        { "canonical": "Transporter", "aliases": ["TRANSPORTER", "Caravelle", "Multivan"] }
-      ]
-    },
-    {
-      "canonical": "Renault",
-      "aliases": ["RENAULT", "Рenault", "Рено", "РЕНО"],
-      "models": [
-        { "canonical": "Logan", "aliases": ["LOGAN", "Лogan"] },
-        { "canonical": "Sandero", "aliases": ["SANDERO"] },
-        { "canonical": "Duster", "aliases": ["DUSTER", "Дuster"] },
-        { "canonical": "Arkana", "aliases": ["ARKANA"] },
-        { "canonical": "Kaptur", "aliases": ["KAPTUR"] },
-        { "canonical": "Megane", "aliases": ["MEGANE", "Megane II"] },
-        { "canonical": "Fluence", "aliases": ["FLUENCE"] },
-        { "canonical": "Symbol", "aliases": ["SYMBOL", "Renault Symbol", "Thalia"] }
-      ]
-    },
-    {
-      "canonical": "Nissan",
-      "aliases": ["NISSAN", "Нissan", "Ниссан", "НИССАН"],
-      "models": [
-        { "canonical": "Qashqai", "aliases": ["QASHQAI", "Кashqai"] },
-        { "canonical": "X-Trail", "aliases": ["XTrail", "X TRAIL", "Xtrail"] },
-        { "canonical": "Almera", "aliases": ["ALMERA"] },
-        { "canonical": "Almera Classic", "aliases": ["ALMERA CLASSIC", "AlmeraClassic", "Nissan Almera Classic"] },
-        { "canonical": "Note", "aliases": ["NOTE", "Nissan Note"] },
-        { "canonical": "Terrano", "aliases": ["TERRANO", "Nissan Terrano", "Террано"] },
-        { "canonical": "Tiida", "aliases": ["TIIDA", "Nissan Tiida", "Tiida Latio"] },
-        { "canonical": "Primera", "aliases": ["PRIMERA", "Nissan Primera"] },
-        { "canonical": "Sunny", "aliases": ["SUNNY", "Nissan Sunny"] },
-        { "canonical": "Wingroad", "aliases": ["WINGROAD", "Nissan Wingroad", "AD", "Nissan AD"] },
-        { "canonical": "Teana", "aliases": ["TEANA"] },
-        { "canonical": "Juke", "aliases": ["JUKE"] },
-        { "canonical": "Murano", "aliases": ["MURANO"] },
-        { "canonical": "Patrol", "aliases": ["PATROL"] }
-      ]
-    },
-    {
-      "canonical": "Lada (ВАЗ)",
-      "aliases": ["Lada", "LADA", "Лada", "Лада", "ЛАДА", "АВТОВАЗ", "AvtoVAZ", "VAZ", "Vaz", "vaz", "ВAZ", "ВАЗ", "Вaz", "Ваз", "Lada VAZ", "Lada (VAZ)"],
-      "models": [
-        { "canonical": "Vesta", "aliases": ["Вesta", "Lada Vesta"] },
-        { "canonical": "Granta", "aliases": ["Гranta", "Lada Granta", "Granta 219040", "Granta 219140"] },
-        { "canonical": "Largus", "aliases": ["Lada Largus"] },
-        { "canonical": "Niva", "aliases": ["Niva Travel", "Niva Legend", "4x4", "Lada Niva"] },
-        { "canonical": "XRAY", "aliases": ["X-RAY", "X Ray"] },
-        { "canonical": "Kalina", "aliases": ["Kalina 111930"] },
-        { "canonical": "Priora", "aliases": ["Приора", "ВАЗ 2170", "ВАЗ 2172", "ВАЗ 217230"] },
-        { "canonical": "2107", "aliases": ["ВАЗ 2107", "VAZ 2107"] },
-        { "canonical": "21074", "aliases": ["ВАЗ 21074", "VAZ 21074"] },
-        { "canonical": "2106", "aliases": ["ВАЗ 2106", "VAZ 2106"] },
-        { "canonical": "2105", "aliases": ["ВАЗ 2105", "VAZ 2105"] },
-        { "canonical": "2104", "aliases": ["ВАЗ 2104", "VAZ 2104"] },
-        { "canonical": "21093", "aliases": ["ВАЗ 21093", "VAZ 21093"] },
-        { "canonical": "21099", "aliases": ["ВАЗ 21099", "VAZ 21099"] },
-        { "canonical": "2110", "aliases": ["ВАЗ 2110", "VAZ 2110"] },
-        { "canonical": "2114", "aliases": ["ВАЗ 2114", "VAZ 2114"] },
-        { "canonical": "2115", "aliases": ["ВАЗ 2115", "VAZ 2115"] },
-        { "canonical": "2121", "aliases": ["ВАЗ 2121", "VAZ 2121", "2121", "Niva 2121"] },
-        { "canonical": "21214", "aliases": ["ВАЗ 21214", "VAZ 21214"] }
-      ]
-    },
-    {
-      "canonical": "BMW",
-      "aliases": ["Bmw", "bmw", "БMW", "БМВ"],
-      "models": [
-        { "canonical": "X5", "aliases": ["x5", "X 5"] },
-        { "canonical": "X3", "aliases": ["x3", "X 3"] },
-        { "canonical": "X6", "aliases": ["x6", "X 6"] },
-        { "canonical": "3 Series", "aliases": ["3-Series", "320", "325", "330", "E90", "F30", "G20"] },
-        { "canonical": "5 Series", "aliases": ["5-Series", "520", "525", "530", "E60", "F10", "G30"] },
-        { "canonical": "7 Series", "aliases": ["7-Series", "730", "740", "750"] }
-      ]
-    },
-    {
-      "canonical": "Mercedes-Benz",
-      "aliases": ["MERCEDES", "Mercedes", "Mercedes Benz", "MERCEDES-BENZ", "Мercedes", "Мерседес", "МЕРСЕДЕС", "MB"],
-      "models": [
-        { "canonical": "M-Class", "aliases": ["M Class", "М-Класс", "ML320"] },
-        { "canonical": "E-Class", "aliases": ["E Class", "E-Класс", "E200", "E220", "E350", "W212", "W213"] },
-        { "canonical": "C-Class", "aliases": ["C Class", "C-Класс", "C200", "C180", "W204", "W205"] },
-        { "canonical": "S-Class", "aliases": ["S Class", "S-Класс", "S350", "S500", "W221", "W222"] },
-        { "canonical": "GLC", "aliases": ["glc", "GLC-Class"] },
-        { "canonical": "GLE", "aliases": ["gle", "GLE-Class", "ML-Class", "ML"] },
-        { "canonical": "GLA", "aliases": ["gla", "GLA 200", "GLA 200 CDI"] },
-        { "canonical": "Sprinter", "aliases": ["SPRINTER"] }
-      ]
+      "canonical": "Alfa Romeo",
+      "aliases": [],
+      "models": []
     },
     {
       "canonical": "Audi",
-      "aliases": ["AUDI", "Аudi", "Ауди", "АУДИ"],
+      "aliases": [
+        "Аudi",
+        "Ауди",
+        "АУДИ"
+      ],
       "models": [
-        { "canonical": "A4", "aliases": ["a4", "A 4"] },
-        { "canonical": "A6", "aliases": ["a6", "A 6"] },
-        { "canonical": "A3", "aliases": ["a3", "A 3"] },
-        { "canonical": "Q5", "aliases": ["q5", "Q 5"] },
-        { "canonical": "Q7", "aliases": ["q7", "Q 7"] },
-        { "canonical": "Q3", "aliases": ["q3", "Q 3"] },
-        { "canonical": "A5", "aliases": ["a5", "A 5", "Audi A5"] },
-        { "canonical": "A8", "aliases": ["a8", "A 8", "A8L", "Audi A8"] }
-      ]
-    },
-    {
-      "canonical": "Ford",
-      "aliases": ["FORD", "Фord", "Форд", "ФОРД"],
-      "models": [
-        { "canonical": "Focus", "aliases": ["FOCUS"] },
-        { "canonical": "Mondeo", "aliases": ["MONDEO"] },
-        { "canonical": "Kuga", "aliases": ["KUGA"] },
-        { "canonical": "Explorer", "aliases": ["EXPLORER"] },
-        { "canonical": "Transit", "aliases": ["TRANSIT"] },
-        { "canonical": "Fiesta", "aliases": ["FIESTA"] },
-        { "canonical": "Fusion", "aliases": ["FUSION", "Ford Fusion"] }
-      ]
-    },
-    {
-      "canonical": "Skoda",
-      "aliases": ["SKODA", "Škoda", "Шkoda", "Шкода", "ШКОДА"],
-      "models": [
-        { "canonical": "Octavia", "aliases": ["OCTAVIA"] },
-        { "canonical": "Rapid", "aliases": ["RAPID"] },
-        { "canonical": "Kodiaq", "aliases": ["KODIAQ"] },
-        { "canonical": "Karoq", "aliases": ["KAROQ"] },
-        { "canonical": "Superb", "aliases": ["SUPERB"] },
-        { "canonical": "Fabia", "aliases": ["FABIA", "Skoda Fabia"] },
-        { "canonical": "Yeti", "aliases": ["YETI", "Skoda Yeti"] }
-      ]
-    },
-    {
-      "canonical": "Mazda",
-      "aliases": ["MAZDA", "Мazda", "Мазда", "МАЗДА"],
-      "models": [
-        { "canonical": "CX-5", "aliases": ["CX5", "CX 5"] },
-        { "canonical": "CX-7", "aliases": ["CX7", "CX 7"] },
-        { "canonical": "Mazda 3", "aliases": ["Mazda3", "MAZDA 3", "3"] },
-        { "canonical": "Mazda 6", "aliases": ["Mazda6", "MAZDA 6", "6"] },
-        { "canonical": "Demio", "aliases": ["DEMIO", "Mazda Demio", "Mazda 2", "Mazda2"] }
-      ]
-    },
-    {
-      "canonical": "Honda",
-      "aliases": ["HONDA", "Хonda", "Хонда", "ХОНДА"],
-      "models": [
-        { "canonical": "Civic", "aliases": ["CIVIC"] },
-        { "canonical": "Accord", "aliases": ["ACCORD"] },
-        { "canonical": "CR-V", "aliases": ["CRV", "CR V"] },
-        { "canonical": "Pilot", "aliases": ["PILOT"] },
-        { "canonical": "Fit", "aliases": ["FIT"] }
-      ]
-    },
-    {
-      "canonical": "Mitsubishi",
-      "aliases": ["MITSUBISHI", "Мitsubishi", "Мitsubishi", "МИЦУБИСИ", "Мицубиси"],
-      "models": [
-        { "canonical": "Outlander", "aliases": ["OUTLANDER"] },
-        { "canonical": "Pajero", "aliases": ["PAJERO", "PAJERO SPORT"] },
-        { "canonical": "Lancer", "aliases": ["LANCER", "LANCER 1.6"] },
-        { "canonical": "ASX", "aliases": ["asx"] },
-        { "canonical": "Legnum", "aliases": ["Легнум"] }
-      ]
-    },
-    {
-      "canonical": "Chevrolet",
-      "aliases": ["CHEVROLET", "Chevy", "Шevrolet", "Шевроле", "ШЕВРОЛЕ"],
-      "models": [
-        { "canonical": "Niva", "aliases": ["NIVA", "Chevrolet Niva"] },
-        { "canonical": "Cruze", "aliases": ["CRUZE"] },
-        { "canonical": "Aveo", "aliases": ["AVEO"] },
-        { "canonical": "Captiva", "aliases": ["CAPTIVA"] },
-        { "canonical": "Lacetti", "aliases": ["LACETTI"] },
-        { "canonical": "Lanos", "aliases": ["LANOS", "Chevrolet Lanos"] },
-        { "canonical": "Orlando", "aliases": ["ORLANDO", "Chevrolet Orlando"] }
-      ]
-    },
-    {
-      "canonical": "Lexus",
-      "aliases": ["LEXUS", "Лexus", "Лексус", "ЛЕКСУС"],
-      "models": [
-        { "canonical": "RX", "aliases": ["RX300", "RX 300", "RX350", "RX 350", "RX450h"] },
-        { "canonical": "LX", "aliases": ["LX570", "LX 570"] },
-        { "canonical": "ES", "aliases": ["ES350", "ES 350"] },
-        { "canonical": "NX", "aliases": ["NX200", "NX 200"] }
-      ]
-    },
-    {
-      "canonical": "Land Rover",
-      "aliases": ["LAND ROVER", "LandRover", "Ленд Рover", "Ленд Ровер"],
-      "models": [
-        { "canonical": "Range Rover", "aliases": ["RangeRover"] },
-        { "canonical": "Range Rover Sport", "aliases": ["RangeRover Sport"] },
-        { "canonical": "Range Rover Evoque", "aliases": ["RangeRover Evoque"] },
-        { "canonical": "Discovery", "aliases": ["DISCOVERY"] },
-        { "canonical": "Defender", "aliases": ["DEFENDER"] },
-        { "canonical": "Freelander", "aliases": ["FREELANDER"] }
-      ]
-    },
-    {
-      "canonical": "УАЗ",
-      "aliases": ["UAZ", "Uaz", "uaz", "Уaz"],
-      "models": [
-        { "canonical": "Patriot", "aliases": ["PATRIOT", "Пatriot", "Патриот"] },
-        { "canonical": "Hunter", "aliases": ["HUNTER"] },
-        { "canonical": "Pickup", "aliases": ["PICKUP"] },
-        { "canonical": "469", "aliases": ["УАЗ 469", "UAZ 469"] },
-        { "canonical": "452", "aliases": ["УАЗ 452", "UAZ 452", "Буханка"] }
-      ]
-    },
-    {
-      "canonical": "ГАЗ",
-      "aliases": ["GAZ", "Gaz", "gaz", "Гaz"],
-      "models": [
-        { "canonical": "Газель", "aliases": ["Gazel", "GAZEL", "Gazelle", "ГAZEL"] },
-        { "canonical": "Соболь", "aliases": ["Sobol", "SOBOL"] },
-        { "canonical": "Волga", "aliases": ["Volga", "VOLGA", "3110", "31105"] }
-      ]
-    },
-    {
-      "canonical": "Tesla",
-      "aliases": ["TESLA", "Тesla", "Тесла", "ТЕСЛА"],
-      "models": [
-        { "canonical": "Model 3", "aliases": ["Model3", "MODEL 3"] },
-        { "canonical": "Model Y", "aliases": ["ModelY", "MODEL Y"] },
-        { "canonical": "Model S", "aliases": ["ModelS", "MODEL S"] },
-        { "canonical": "Model X", "aliases": ["ModelX", "MODEL X"] }
-      ]
-    },
-    {
-      "canonical": "Opel",
-      "aliases": ["OPEL", "Opel", "Оpel", "Опель", "ОПЕЛЬ", "General Motors Opel"],
-      "models": [
-        { "canonical": "Astra", "aliases": ["ASTRA", "Opel Astra", "Астра"] },
-        { "canonical": "Corsa", "aliases": ["CORSA", "Opel Corsa", "Корса"] },
-        { "canonical": "Insignia", "aliases": ["INSIGNIA", "Opel Insignia", "Иnsignia"] },
-        { "canonical": "Zafira", "aliases": ["ZAFIRA", "Opel Zafira", "Zafira Life"] },
-        { "canonical": "Meriva", "aliases": ["MERIVA", "Opel Meriva"] },
-        { "canonical": "Antara", "aliases": ["ANTARA", "Opel Antara"] },
-        { "canonical": "Mokka", "aliases": ["MOKKA", "Opel Mokka", "Mokka X", "Mokka-e"] },
-        { "canonical": "Crossland", "aliases": ["CROSSLAND", "Crossland X", "Opel Crossland"] },
-        { "canonical": "Grandland", "aliases": ["GRANDLAND", "Grandland X", "Opel Grandland"] },
-        { "canonical": "Vectra", "aliases": ["VECTRA", "Opel Vectra"] },
-        { "canonical": "Omega", "aliases": ["OMEGA", "Opel Omega"] },
-        { "canonical": "Frontera", "aliases": ["FRONTERA", "Opel Frontera"] },
-        { "canonical": "Combo", "aliases": ["COMBO", "Opel Combo", "Combo Life"] },
-        { "canonical": "Vivaro", "aliases": ["VIVARO", "Opel Vivaro"] }
-      ]
-    },
-    {
-      "canonical": "Peugeot",
-      "aliases": ["PEUGEOT", "Peugeot", "Пeugeot", "Пежо", "ПЕЖО"],
-      "models": [
-        { "canonical": "206", "aliases": ["Peugeot 206", "Пежо 206"] },
-        { "canonical": "207", "aliases": ["Peugeot 207", "Пежо 207"] },
-        { "canonical": "208", "aliases": ["Peugeot 208", "Пежо 208"] },
-        { "canonical": "301", "aliases": ["Peugeot 301", "Пежо 301"] },
-        { "canonical": "307", "aliases": ["Peugeot 307", "Пежо 307"] },
-        { "canonical": "308", "aliases": ["Peugeot 308", "Пежо 308"] },
-        { "canonical": "406", "aliases": ["Peugeot 406", "Пежо 406"] },
-        { "canonical": "407", "aliases": ["Peugeot 407", "Пежо 407"] },
-        { "canonical": "408", "aliases": ["Peugeot 408", "Пежо 408"] },
-        { "canonical": "508", "aliases": ["Peugeot 508", "Пежо 508"] },
-        { "canonical": "3008", "aliases": ["Peugeot 3008", "Пежо 3008"] },
-        { "canonical": "4007", "aliases": ["Peugeot 4007", "Пежо 4007"] },
-        { "canonical": "4008", "aliases": ["Peugeot 4008", "Пежо 4008"] },
-        { "canonical": "5008", "aliases": ["Peugeot 5008", "Пежо 5008"] },
-        { "canonical": "Partner", "aliases": ["PARTNER", "Peugeot Partner", "Partner Tepee"] },
-        { "canonical": "Boxer", "aliases": ["BOXER", "Peugeot Boxer"] },
-        { "canonical": "Expert", "aliases": ["EXPERT", "Peugeot Expert"] },
-        { "canonical": "Traveller", "aliases": ["TRAVELLER", "Peugeot Traveller"] }
-      ]
-    },
-    {
-      "canonical": "Lifan",
-      "aliases": ["LIFAN", "Lifan", "Лifan", "Лифан", "ЛИФАН"],
-      "models": [
-        { "canonical": "X60", "aliases": ["x60", "X 60", "Lifan X60"] },
-        { "canonical": "X50", "aliases": ["x50", "X 50", "Lifan X50"] },
-        { "canonical": "X70", "aliases": ["x70", "X 70", "Lifan X70"] },
-        { "canonical": "Solano", "aliases": ["SOLANO", "Lifan Solano", "Solano II"] },
-        { "canonical": "Smily", "aliases": ["SMILY", "Smiley", "Lifan Smily"] },
-        { "canonical": "Breez", "aliases": ["BREEZ", "Breeze", "Lifan Breez", "520"] },
-        { "canonical": "Cebrium", "aliases": ["CEBRIUM", "Lifan Cebrium", "720"] },
-        { "canonical": "Murman", "aliases": ["MURMAN", "Lifan Murman"] },
-        { "canonical": "Myway", "aliases": ["MYWAY", "My Way", "Lifan Myway"] }
-      ]
-    },
-    {
-      "canonical": "Daewoo",
-      "aliases": ["DAEWOO", "Daewoo", "Дaewoo", "Дэу", "ДЭУ", "Deu"],
-      "models": [
-        { "canonical": "Nexia", "aliases": ["NEXIA", "Daewoo Nexia", "Нexia", "Нексия"] },
-        { "canonical": "Matiz", "aliases": ["MATIZ", "Daewoo Matiz", "Мatiz", "Матиз"] },
-        { "canonical": "Lanos", "aliases": ["LANOS", "Daewoo Lanos", "Лanos"] },
-        { "canonical": "Leganza", "aliases": ["LEGANZA", "Daewoo Leganza"] },
-        { "canonical": "Sens", "aliases": ["SENS", "Daewoo Sens"] },
-        { "canonical": "Gentra", "aliases": ["GENTRA", "Daewoo Gentra", "Ravon Gentra"] },
-        { "canonical": "Espero", "aliases": ["ESPERO", "Daewoo Espero"] },
-        { "canonical": "Nubira", "aliases": ["NUBIRA", "Daewoo Nubira"] },
-        { "canonical": "Tico", "aliases": ["TICO", "Daewoo Tico"] }
-      ]
-    },
-    {
-      "canonical": "Citroen",
-      "aliases": ["CITROEN", "Citroen", "Citroën", "Сitroen", "Ситроен", "СИТРОЕН"],
-      "models": [
-        { "canonical": "C3", "aliases": ["c3", "C 3", "Citroen C3"] },
-        { "canonical": "C4", "aliases": ["c4", "C 4", "Citroen C4", "C4 Picasso"] },
-        { "canonical": "C5", "aliases": ["c5", "C 5", "Citroen C5"] },
-        { "canonical": "C-Elysee", "aliases": ["C Elysee", "C-Elysée", "Citroen C-Elysee", "Elysee"] },
-        { "canonical": "Berlingo", "aliases": ["BERLINGO", "Citroen Berlingo"] },
-        { "canonical": "Jumper", "aliases": ["JUMPER", "Citroen Jumper"] },
-        { "canonical": "Xsara", "aliases": ["XSARA", "Citroen Xsara", "Xsara Picasso"] },
-        { "canonical": "C-Crosser", "aliases": ["C Crosser", "C-Crosser", "Citroen C-Crosser"] },
-        { "canonical": "C4 Aircross", "aliases": ["C4 Aircross", "C4 AIRCROSS"] },
-        { "canonical": "DS4", "aliases": ["ds4", "DS 4", "Citroen DS4"] },
-        { "canonical": "DS5", "aliases": ["ds5", "DS 5", "Citroen DS5"] },
-        { "canonical": "SpaceTourer", "aliases": ["SPACE TOURER", "Spacetourer"] }
-      ]
-    },
-    {
-      "canonical": "Suzuki",
-      "aliases": ["SUZUKI", "Suzuki", "Сuzuki", "Сузуки", "СУЗУКИ"],
-      "models": [
-        { "canonical": "Grand Vitara", "aliases": ["GRAND VITARA", "GrandVitara", "Vitara Grand"] },
-        { "canonical": "Vitara", "aliases": ["VITARA", "Suzuki Vitara", "New Vitara"] },
-        { "canonical": "SX4", "aliases": ["sx4", "SX 4", "S-Cross", "S Cross"] },
-        { "canonical": "Swift", "aliases": ["SWIFT", "Suzuki Swift"] },
-        { "canonical": "Jimny", "aliases": ["JIMNY", "Suzuki Jimny"] },
-        { "canonical": "Liana", "aliases": ["LIANA", "Suzuki Liana"] },
-        { "canonical": "Baleno", "aliases": ["BALENO", "Suzuki Baleno"] },
-        { "canonical": "Ignis", "aliases": ["IGNIS", "Suzuki Ignis"] },
-        { "canonical": "Kizashi", "aliases": ["KIZASHI", "Suzuki Kizashi"] },
-        { "canonical": "Splash", "aliases": ["SPLASH", "Suzuki Splash"] }
-      ]
-    },
-    {
-      "canonical": "Subaru",
-      "aliases": ["SUBARU", "Subaru", "Субaru", "Субару", "СУБАРУ"],
-      "models": [
-        { "canonical": "Forester", "aliases": ["FORESTER", "Subaru Forester"] },
-        { "canonical": "Outback", "aliases": ["OUTBACK", "Subaru Outback"] },
-        { "canonical": "Impreza", "aliases": ["IMPREZA", "Subaru Impreza", "WRX", "WRX STI"] },
-        { "canonical": "Legacy", "aliases": ["LEGACY", "Subaru Legacy", "Legacy B4"] },
-        { "canonical": "XV", "aliases": ["xv", "Subaru XV", "Crosstrek"] },
-        { "canonical": "Tribeca", "aliases": ["TRIBECA", "Subaru Tribeca"] },
-        { "canonical": "BRZ", "aliases": ["brz", "Subaru BRZ"] },
-        { "canonical": "Levorg", "aliases": ["LEVORG", "Subaru Levorg"] }
-      ]
-    },
-    {
-      "canonical": "Volvo",
-      "aliases": ["VOLVO", "Volvo", "Вolvo", "Вольво", "ВОЛЬВО"],
-      "models": [
-        { "canonical": "XC90", "aliases": ["xc90", "XC 90"] },
-        { "canonical": "XC60", "aliases": ["xc60", "XC 60"] },
-        { "canonical": "XC40", "aliases": ["xc40", "XC 40"] },
-        { "canonical": "S60", "aliases": ["s60", "S 60"] },
-        { "canonical": "S80", "aliases": ["s80", "S 80"] },
-        { "canonical": "S40", "aliases": ["s40", "S 40"] },
-        { "canonical": "V40", "aliases": ["v40", "V 40"] },
-        { "canonical": "V60", "aliases": ["v60", "V 60"] },
-        { "canonical": "V70", "aliases": ["v70", "V 70"] },
-        { "canonical": "C30", "aliases": ["c30", "C 30"] },
-        { "canonical": "850", "aliases": ["Volvo 850"] },
-        { "canonical": "940", "aliases": ["Volvo 940"] }
-      ]
-    },
-    {
-      "canonical": "Datsun",
-      "aliases": ["DATSUN", "Datsun", "Дatsun", "Датsun", "ДАТСУН"],
-      "models": [
-        { "canonical": "on-DO", "aliases": ["on-DO", "on DO", "ON-DO", "Datsun on-DO", "onDO"] },
-        { "canonical": "mi-DO", "aliases": ["mi-DO", "mi DO", "MI-DO", "Datsun mi-DO", "miDO"] },
-        { "canonical": "redi-GO", "aliases": ["redi-GO", "redi GO", "Redi-GO"] }
-      ]
-    },
-    {
-      "canonical": "SsangYong",
-      "aliases": ["SSANGYONG", "SsangYong", "Ssang Yong", "Ssangyong", "СangYong", "СангYong", "ССАНГЙОНГ", "KGM"],
-      "models": [
-        { "canonical": "Actyon", "aliases": ["ACTYON", "Actyon Sports", "SsangYong Actyon"] },
-        { "canonical": "Kyron", "aliases": ["KYRON", "SsangYong Kyron"] },
-        { "canonical": "Rexton", "aliases": ["REXTON", "SsangYong Rexton", "Rexton Sports"] },
-        { "canonical": "Korando", "aliases": ["KORANDO", "SsangYong Korando", "New Korando"] },
-        { "canonical": "Musso", "aliases": ["MUSSO", "SsangYong Musso", "Musso Sports"] },
-        { "canonical": "Chairman", "aliases": ["CHAIRMAN", "SsangYong Chairman"] },
-        { "canonical": "Torres", "aliases": ["TORRES", "SsangYong Torres"] }
-      ]
-    },
-    {
-      "canonical": "Kaiyi",
-      "aliases": ["KAIYI", "Kaiyi", "Kai Yi", "Кaiyi", "Кайи", "КАЙИ"],
-      "models": [
-        { "canonical": "E5", "aliases": ["e5", "Kaiyi E5"] },
-        { "canonical": "X3", "aliases": ["x3", "Kaiyi X3", "X3 Pro"] },
-        { "canonical": "X3 Pro", "aliases": ["X3PRO", "X3 PRO", "Kaiyi X3 Pro"] },
-        { "canonical": "X7 Kunlun", "aliases": ["X7", "Kunlun", "Kaiyi X7", "X7 Kunlun"] }
-      ]
-    },
-    {
-      "canonical": "Great Wall",
-      "aliases": ["GREAT WALL", "Great Wall", "GreatWall", "GWM", "Гreat Wall", "Грейт Уолл", "ГРЕЙТ УОЛЛ", "Great Wall Motor"],
-      "models": [
-        { "canonical": "Hover", "aliases": ["HOVER", "Great Wall Hover"] },
-        { "canonical": "Hover H3", "aliases": ["H3", "Hover H3", "GW Hover H3"] },
-        { "canonical": "Hover H5", "aliases": ["H5", "Hover H5", "GW Hover H5"] },
-        { "canonical": "Hover H6", "aliases": ["H6", "Hover H6", "GW Hover H6"] },
-        { "canonical": "Wingle", "aliases": ["WINGLE", "Great Wall Wingle", "Wingle 5", "Wingle 7"] },
-        { "canonical": "Deer", "aliases": ["DEER", "Great Wall Deer"] },
-        { "canonical": "Safe", "aliases": ["SAFE", "Great Wall Safe", "SUV Safe"] },
-        { "canonical": "Poer", "aliases": ["POER", "GWM Poer", "Pao", "Pao 300"] },
-        { "canonical": "Cannon", "aliases": ["CANNON", "GWM Cannon"] },
-        { "canonical": "Peri", "aliases": ["PERI", "Great Wall Peri"] }
-      ]
-    },
-    {
-      "canonical": "Jetour",
-      "aliases": ["JETOUR", "Jetour", "Джetour", "Джетур", "ДЖЕТУР"],
-      "models": [
-        { "canonical": "X70", "aliases": ["x70", "X 70", "Jetour X70"] },
-        { "canonical": "X70 Plus", "aliases": ["X70 PLUS", "X70Plus", "Jetour X70 Plus"] },
-        { "canonical": "X90", "aliases": ["x90", "X 90", "Jetour X90"] },
-        { "canonical": "X90 Plus", "aliases": ["X90 PLUS", "X90Plus", "Jetour X90 Plus"] },
-        { "canonical": "X95", "aliases": ["x95", "X 95", "Jetour X95"] },
-        { "canonical": "Dashing", "aliases": ["DASHING", "Jetour Dashing"] },
-        { "canonical": "T2", "aliases": ["t2", "Jetour T2"] },
-        { "canonical": "Traveller", "aliases": ["TRAVELLER", "Jetour Traveller"] }
-      ]
-    },
-    {
-      "canonical": "Infiniti",
-      "aliases": ["INFINITI", "Infiniti", "Иnfiniti", "Инфiniti", "ИНФИНИТИ", "Infinity", "Infiniti Motor"],
-      "models": [
-        { "canonical": "Q50", "aliases": ["q50", "Q 50"] },
-        { "canonical": "Q70", "aliases": ["q70", "Q 70", "M", "M37", "M25"] },
-        { "canonical": "QX50", "aliases": ["qx50", "QX 50", "EX", "EX35", "EX37"] },
-        { "canonical": "QX56", "aliases": ["qx56", "QX 56"] },
-        { "canonical": "QX60", "aliases": ["qx60", "QX 60", "JX", "JX35"] },
-        { "canonical": "QX70", "aliases": ["qx70", "QX 70", "FX", "FX35", "FX37", "FX45", "FX50"] },
-        { "canonical": "QX80", "aliases": ["qx80", "QX 80"] },
-        { "canonical": "G", "aliases": ["G25", "G35", "G37", "Infiniti G"] },
-        { "canonical": "Q30", "aliases": ["q30", "Q 30"] },
-        { "canonical": "QX30", "aliases": ["qx30", "QX 30"] }
-      ]
-    },
-    {
-      "canonical": "Москвич",
-      "aliases": ["MOSKVICH", "Moskvich", "Москvich", "Moscvich", "AZLK", "АЗЛК", "МОСКВИЧ"],
-      "models": [
-        { "canonical": "3", "aliases": ["Москвич 3", "Moskvich 3", "Moskvich-3"] },
-        { "canonical": "3е", "aliases": ["3e", "3E", "Москвич 3е", "Moskvich 3e", "Moskvich-3e"] },
-        { "canonical": "412", "aliases": ["ИЖ 412", "AZLK 412", "Москвич-412"] },
-        { "canonical": "2140", "aliases": ["Москвич 2140", "Moskvich 2140"] },
-        { "canonical": "2141", "aliases": ["Москвич 2141", "Moskvich 2141", "Святогор"] },
-        { "canonical": "2335", "aliases": ["Москвich 2335", "2335"] },
-        { "canonical": "400", "aliases": ["Москвич 400", "Moskvich 400"] }
-      ]
-    },
-    {
-      "canonical": "JAC",
-      "aliases": ["JAC", "Jac", "Jac Motors", "ДжAC", "ДЖAC", "JAC Motors"],
-      "models": [
-        { "canonical": "S3", "aliases": ["s3", "S 3", "JAC S3"] },
-        { "canonical": "S5", "aliases": ["s5", "S 5", "JAC S5"] },
-        { "canonical": "S7", "aliases": ["s7", "S 7", "JAC S7"] },
-        { "canonical": "J7", "aliases": ["j7", "J 7", "JAC J7"] },
-        { "canonical": "T6", "aliases": ["t6", "T 6", "JAC T6"] },
-        { "canonical": "T8", "aliases": ["t8", "T 8", "JAC T8"] },
-        { "canonical": "JS4", "aliases": ["js4", "JS 4", "JAC JS4"] },
-        { "canonical": "Refine", "aliases": ["REFINE", "JAC Refine", "M1", "M5"] },
-        { "canonical": "iEV7S", "aliases": ["IEV7S", "iEV 7S"] }
-      ]
-    },
-    {
-      "canonical": "Vortex",
-      "aliases": ["VORTEX", "Vortex", "Вortex", "Вортекс", "ВОРТЕКС", "TagAZ", "ТагАЗ", "TAGAZ"],
-      "models": [
-        { "canonical": "Estina", "aliases": ["ESTINA", "Vortex Estina", "Chery Estina"] },
-        { "canonical": "Corda", "aliases": ["CORDA", "Vortex Corda"] },
-        { "canonical": "Tingo", "aliases": ["TINGO", "Vortex Tingo", "Tingo FL"] },
-        { "canonical": "Tager", "aliases": ["TAGER", "Vortex Tager"] }
-      ]
-    },
-    {
-      "canonical": "Porsche",
-      "aliases": ["PORSCHE", "Porsche", "Пorsche", "Порше", "ПОРШЕ"],
-      "models": [
-        { "canonical": "Cayenne", "aliases": ["CAYENNE", "Porsche Cayenne", "Cayenne S", "Cayenne Turbo"] },
-        { "canonical": "Macan", "aliases": ["MACAN", "Porsche Macan"] },
-        { "canonical": "Panamera", "aliases": ["PANAMERA", "Porsche Panamera"] },
-        { "canonical": "911", "aliases": ["911 Carrera", "Carrera", "Porsche 911", "991", "992"] },
-        { "canonical": "Boxster", "aliases": ["BOXSTER", "Porsche Boxster", "718 Boxster"] },
-        { "canonical": "Cayman", "aliases": ["CAYMAN", "Porsche Cayman", "718 Cayman"] },
-        { "canonical": "Taycan", "aliases": ["TAYCAN", "Porsche Taycan"] }
-      ]
-    },
-    {
-      "canonical": "FAW",
-      "aliases": ["FAW", "Faw", "FAW Group", "ФAW", "ФАВ", "First Auto Works"],
-      "models": [
-        { "canonical": "Besturn B50", "aliases": ["B50", "Besturn B50", "FAW B50", "Besturn"] },
-        { "canonical": "Besturn B70", "aliases": ["B70", "Besturn B70", "FAW B70"] },
-        { "canonical": "Besturn X40", "aliases": ["X40", "Besturn X40", "FAW X40"] },
-        { "canonical": "Besturn X80", "aliases": ["X80", "Besturn X80", "FAW X80"] },
-        { "canonical": "Oley", "aliases": ["OLEY", "FAW Oley"] },
-        { "canonical": "V2", "aliases": ["FAW V2", "Vita V2"] },
-        { "canonical": "V5", "aliases": ["FAW V5", "Vita V5"] },
-        { "canonical": "Vita", "aliases": ["VITA", "FAW Vita"] }
-      ]
-    },
-    {
-      "canonical": "Fiat",
-      "aliases": ["FIAT", "Fiat", "Фiat", "Фиat", "Фиат", "ФИАТ"],
-      "models": [
-        { "canonical": "Punto", "aliases": ["PUNTO", "Fiat Punto", "Grande Punto"] },
-        { "canonical": "Doblo", "aliases": ["DOBLO", "Fiat Doblo"] },
-        { "canonical": "Ducato", "aliases": ["DUCATO", "Fiat Ducato"] },
-        { "canonical": "Albea", "aliases": ["ALBEA", "Fiat Albea"] },
-        { "canonical": "Linea", "aliases": ["LINEA", "Fiat Linea"] },
-        { "canonical": "Panda", "aliases": ["PANDA", "Fiat Panda"] },
-        { "canonical": "500", "aliases": ["Fiat 500", "500C", "500L", "500X"] },
-        { "canonical": "Fullback", "aliases": ["FULLBACK", "Fiat Fullback"] },
-        { "canonical": "Bravo", "aliases": ["BRAVO", "Fiat Bravo"] },
-        { "canonical": "Freemont", "aliases": ["FREEMONT", "Fiat Freemont"] }
+        {
+          "canonical": "100",
+          "aliases": [
+            "100 2.2 E"
+          ]
+        },
+        {
+          "canonical": "80",
+          "aliases": []
+        },
+        {
+          "canonical": "A1",
+          "aliases": [
+            "A1 Sportback"
+          ]
+        },
+        {
+          "canonical": "A2",
+          "aliases": []
+        },
+        {
+          "canonical": "A3",
+          "aliases": [
+            "A 3"
+          ]
+        },
+        {
+          "canonical": "A4",
+          "aliases": [
+            "A 4",
+            "A4 Avant"
+          ]
+        },
+        {
+          "canonical": "A5",
+          "aliases": [
+            "A 5",
+            "Audi A5"
+          ]
+        },
+        {
+          "canonical": "A6",
+          "aliases": [
+            "A 6",
+            "A6 1.8",
+            "A6 2.0",
+            "A6 Allroad",
+            "A6 ALLROAD QUATTRO"
+          ]
+        },
+        {
+          "canonical": "A7",
+          "aliases": []
+        },
+        {
+          "canonical": "A8",
+          "aliases": [
+            "A 8",
+            "A8 L",
+            "A8L",
+            "Audi A8"
+          ]
+        },
+        {
+          "canonical": "Allroad",
+          "aliases": []
+        },
+        {
+          "canonical": "E-Tron",
+          "aliases": []
+        },
+        {
+          "canonical": "Q3",
+          "aliases": [
+            "Q 3"
+          ]
+        },
+        {
+          "canonical": "Q5",
+          "aliases": [
+            "Q 5"
+          ]
+        },
+        {
+          "canonical": "Q7",
+          "aliases": [
+            "Q 7"
+          ]
+        },
+        {
+          "canonical": "Q8",
+          "aliases": [
+            "Q8 3.0 AT"
+          ]
+        },
+        {
+          "canonical": "S8",
+          "aliases": []
+        },
+        {
+          "canonical": "TT",
+          "aliases": []
+        }
       ]
     },
     {
       "canonical": "BAIC",
-      "aliases": ["BAIC", "Baic", "BAW", "Beijing", "Beijing Auto", "БAIC", "БАИК", "Baic Motor"],
+      "aliases": [
+        "BAW",
+        "Beijing",
+        "Beijing Auto",
+        "БAIC",
+        "БАИК",
+        "Baic Motor"
+      ],
       "models": [
-        { "canonical": "X35", "aliases": ["x35", "X 35", "BAIC X35", "Senova X35"] },
-        { "canonical": "X55", "aliases": ["x55", "X 55", "BAIC X55", "Senova X55"] },
-        { "canonical": "X75", "aliases": ["x75", "X 75", "BAIC X75"] },
-        { "canonical": "U5", "aliases": ["u5", "U 5", "BAIC U5", "U5 Plus"] },
-        { "canonical": "U5 Plus", "aliases": ["U5 PLUS", "U5Plus", "BAIC U5 Plus"] },
-        { "canonical": "U7", "aliases": ["u7", "U 7", "BAIC U7"] },
-        { "canonical": "BJ40", "aliases": ["BJ 40", "Beijing BJ40", "BAIC BJ40"] },
-        { "canonical": "Senova", "aliases": ["SENOVA", "BAIC Senova", "D20", "D50"] }
-      ]
-    },
-    {
-      "canonical": "Cadillac",
-      "aliases": ["CADILLAC", "Cadillac", "Кadillac", "Кадillac", "Кадиллак", "КАДИЛЛАК"],
-      "models": [
-        { "canonical": "Escalade", "aliases": ["ESCALADE", "Cadillac Escalade"] },
-        { "canonical": "SRX", "aliases": ["srx", "Cadillac SRX"] },
-        { "canonical": "CTS", "aliases": ["cts", "Cadillac CTS"] },
-        { "canonical": "ATS", "aliases": ["ats", "Cadillac ATS"] },
-        { "canonical": "XT5", "aliases": ["xt5", "Cadillac XT5"] },
-        { "canonical": "XT6", "aliases": ["xt6", "Cadillac XT6"] },
-        { "canonical": "CT6", "aliases": ["ct6", "Cadillac CT6"] },
-        { "canonical": "BLS", "aliases": ["bls", "Cadillac BLS"] },
-        { "canonical": "STS", "aliases": ["sts", "Cadillac STS"] }
+        {
+          "canonical": "BJ40",
+          "aliases": [
+            "BAIC BJ40",
+            "Beijing BJ40",
+            "BJ 40"
+          ]
+        },
+        {
+          "canonical": "Senova",
+          "aliases": [
+            "BAIC Senova",
+            "D20",
+            "D50"
+          ]
+        },
+        {
+          "canonical": "U5",
+          "aliases": [
+            "BAIC U5",
+            "U 5",
+            "U5 Plus"
+          ]
+        },
+        {
+          "canonical": "U5 Plus",
+          "aliases": [
+            "BAIC U5 Plus",
+            "U5Plus"
+          ]
+        },
+        {
+          "canonical": "U7",
+          "aliases": [
+            "BAIC U7",
+            "U 7"
+          ]
+        },
+        {
+          "canonical": "X35",
+          "aliases": [
+            "BAIC X35",
+            "Senova X35",
+            "X 35"
+          ]
+        },
+        {
+          "canonical": "X55",
+          "aliases": [
+            "BAIC X55",
+            "Senova X55",
+            "X 55"
+          ]
+        },
+        {
+          "canonical": "X75",
+          "aliases": [
+            "BAIC X75",
+            "X 75"
+          ]
+        }
       ]
     },
     {
       "canonical": "Belgee",
-      "aliases": ["BELGEE", "Belgee", "BelGee", "Бelgee", "Белджи", "БЕЛДЖИ"],
+      "aliases": [
+        "Бelgee",
+        "Белджи",
+        "БЕЛДЖИ"
+      ],
       "models": [
-        { "canonical": "X50", "aliases": ["x50", "X 50", "Belgee X50"] },
-        { "canonical": "X70", "aliases": ["x70", "X 70", "Belgee X70"] }
+        {
+          "canonical": "X50",
+          "aliases": [
+            "Belgee X50",
+            "X 50"
+          ]
+        },
+        {
+          "canonical": "X70",
+          "aliases": [
+            "Belgee X70",
+            "X 70"
+          ]
+        }
       ]
     },
     {
-      "canonical": "Jeep",
-      "aliases": ["JEEP", "Jeep", "Джeep", "Джип", "ДЖИП"],
+      "canonical": "Bentley",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "BMW",
+      "aliases": [
+        "БMW",
+        "БМВ"
+      ],
       "models": [
-        { "canonical": "Grand Cherokee", "aliases": ["GRAND CHEROKEE", "GrandCherokee", "Jeep Grand Cherokee"] },
-        { "canonical": "Cherokee", "aliases": ["CHEROKEE", "Jeep Cherokee"] },
-        { "canonical": "Wrangler", "aliases": ["WRANGLER", "Jeep Wrangler"] },
-        { "canonical": "Compass", "aliases": ["COMPASS", "Jeep Compass"] },
-        { "canonical": "Renegade", "aliases": ["RENEGADE", "Jeep Renegade"] },
-        { "canonical": "Patriot", "aliases": ["PATRIOT", "Jeep Patriot"] },
-        { "canonical": "Liberty", "aliases": ["LIBERTY", "Jeep Liberty"] },
-        { "canonical": "Commander", "aliases": ["COMMANDER", "Jeep Commander"] }
+        {
+          "canonical": "1 Series",
+          "aliases": [
+            "116i",
+            "118i",
+            "120i"
+          ]
+        },
+        {
+          "canonical": "135i",
+          "aliases": []
+        },
+        {
+          "canonical": "3 Series",
+          "aliases": [
+            "3-Series",
+            "316",
+            "316i",
+            "318",
+            "318 I",
+            "318i",
+            "318IA",
+            "320",
+            "320D",
+            "320D XDRIVE",
+            "320i",
+            "320i xDrive GT",
+            "320IA",
+            "320iA Touring",
+            "325",
+            "3251",
+            "325i",
+            "325iA",
+            "325xi",
+            "330",
+            "330i XDRIVE",
+            "E90",
+            "F30",
+            "G20"
+          ]
+        },
+        {
+          "canonical": "3 серия",
+          "aliases": []
+        },
+        {
+          "canonical": "420D XDRIVE",
+          "aliases": []
+        },
+        {
+          "canonical": "5 Series",
+          "aliases": [
+            "5-Series",
+            "520",
+            "520d",
+            "520D XDRIVE",
+            "520i",
+            "523",
+            "523i",
+            "525",
+            "525 TDS",
+            "5251",
+            "525i",
+            "525IA",
+            "528i",
+            "528i XDRIVE",
+            "530",
+            "530d xDrive",
+            "530i",
+            "530i xDrive",
+            "530IA",
+            "535D GRAN TURISMO",
+            "535i",
+            "535I XDRIVE",
+            "535i XDrive Gran Turismo",
+            "E60",
+            "F10",
+            "G30"
+          ]
+        },
+        {
+          "canonical": "5 серии",
+          "aliases": []
+        },
+        {
+          "canonical": "540i xDrive",
+          "aliases": []
+        },
+        {
+          "canonical": "545I",
+          "aliases": []
+        },
+        {
+          "canonical": "6 SERIES",
+          "aliases": []
+        },
+        {
+          "canonical": "630 I",
+          "aliases": []
+        },
+        {
+          "canonical": "630D XDRIVE",
+          "aliases": []
+        },
+        {
+          "canonical": "7 Series",
+          "aliases": [
+            "7-Series",
+            "730",
+            "740",
+            "750"
+          ]
+        },
+        {
+          "canonical": "7 серия",
+          "aliases": []
+        },
+        {
+          "canonical": "730D",
+          "aliases": []
+        },
+        {
+          "canonical": "730I",
+          "aliases": []
+        },
+        {
+          "canonical": "730LD",
+          "aliases": []
+        },
+        {
+          "canonical": "732",
+          "aliases": []
+        },
+        {
+          "canonical": "735iA",
+          "aliases": []
+        },
+        {
+          "canonical": "750 Li xDrive",
+          "aliases": []
+        },
+        {
+          "canonical": "750Li xDrive",
+          "aliases": []
+        },
+        {
+          "canonical": "IA",
+          "aliases": []
+        },
+        {
+          "canonical": "X1SDRIVE",
+          "aliases": [
+            "X1 SDRIVE 18I",
+            "X1 sDrive18i"
+          ]
+        },
+        {
+          "canonical": "X1XDRIVE",
+          "aliases": [
+            "X1 xDrive 20d",
+            "X1 xDrive18d",
+            "X1 xDrive20d",
+            "X1 xDrive20i"
+          ]
+        },
+        {
+          "canonical": "X3",
+          "aliases": [
+            "X 3"
+          ]
+        },
+        {
+          "canonical": "X33",
+          "aliases": [
+            "X3 3.0i"
+          ]
+        },
+        {
+          "canonical": "X3XDRIVE",
+          "aliases": [
+            "X3 xDrive 30d",
+            "X3 xDrive2 0d",
+            "X3 xDrive20d",
+            "X3 xDrive20i",
+            "X3 xDrive28i"
+          ]
+        },
+        {
+          "canonical": "X4XDRIVE",
+          "aliases": [
+            "X4 xDrive20d",
+            "X4 xDrive20i"
+          ]
+        },
+        {
+          "canonical": "X5",
+          "aliases": [
+            "X 5"
+          ]
+        },
+        {
+          "canonical": "X53",
+          "aliases": [
+            "X5 3.0i"
+          ]
+        },
+        {
+          "canonical": "X5M",
+          "aliases": [
+            "X5 M50D"
+          ]
+        },
+        {
+          "canonical": "X5XDRIVE",
+          "aliases": [
+            "X5 xDrive25d",
+            "X5 XDRIVE30D",
+            "X5 xDrive35d",
+            "X5 XDRIVE35I",
+            "X5 xDrive40d",
+            "X5 xDrive40i",
+            "X5 xDrive50i"
+          ]
+        },
+        {
+          "canonical": "X6",
+          "aliases": [
+            "X 6"
+          ]
+        },
+        {
+          "canonical": "X6M",
+          "aliases": [
+            "X6 M"
+          ]
+        },
+        {
+          "canonical": "X6XDRIVE",
+          "aliases": [
+            "X6 xDrive30d",
+            "X6 xDrive35i",
+            "X6 XDRIVE40i"
+          ]
+        }
       ]
     },
     {
-      "canonical": "Daihatsu",
-      "aliases": ["DAIHATSU", "Daihatsu", "Дaihatsu", "Дайhatsu", "ДАЙХАТСУ"],
+      "canonical": "Bogdan",
+      "aliases": [
+        "БОГДАН"
+      ],
+      "models": []
+    },
+    {
+      "canonical": "Brilliance",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "BYD",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Cadillac",
+      "aliases": [
+        "Кadillac",
+        "Кадillac",
+        "Кадиллак",
+        "КАДИЛЛАК"
+      ],
       "models": [
-        { "canonical": "Terios", "aliases": ["TERIOS", "Daihatsu Terios"] },
-        { "canonical": "Sirion", "aliases": ["SIRION", "Daihatsu Sirion"] },
-        { "canonical": "Cuore", "aliases": ["CUORE", "Daihatsu Cuore"] },
-        { "canonical": "Move", "aliases": ["MOVE", "Daihatsu Move"] },
-        { "canonical": "Materia", "aliases": ["MATERIA", "Daihatsu Materia"] },
-        { "canonical": "Rocky", "aliases": ["ROCKY", "Daihatsu Rocky"] },
-        { "canonical": "YRV", "aliases": ["yrv", "Daihatsu YRV"] }
+        {
+          "canonical": "ATS",
+          "aliases": [
+            "Cadillac ATS"
+          ]
+        },
+        {
+          "canonical": "BLS",
+          "aliases": [
+            "Cadillac BLS"
+          ]
+        },
+        {
+          "canonical": "CT6",
+          "aliases": [
+            "Cadillac CT6"
+          ]
+        },
+        {
+          "canonical": "CTS",
+          "aliases": [
+            "Cadillac CTS"
+          ]
+        },
+        {
+          "canonical": "Escalade",
+          "aliases": [
+            "Cadillac Escalade"
+          ]
+        },
+        {
+          "canonical": "GMX 322",
+          "aliases": []
+        },
+        {
+          "canonical": "SRX",
+          "aliases": [
+            "Cadillac SRX",
+            "GMT 166 SRX",
+            "GMT265 SRX"
+          ]
+        },
+        {
+          "canonical": "STS",
+          "aliases": [
+            "Cadillac STS"
+          ]
+        },
+        {
+          "canonical": "XT5",
+          "aliases": [
+            "Cadillac XT5"
+          ]
+        },
+        {
+          "canonical": "XT6",
+          "aliases": [
+            "Cadillac XT6"
+          ]
+        }
       ]
     },
     {
-      "canonical": "Jaguar",
-      "aliases": ["JAGUAR", "Jaguar", "Яguar", "Ягуар", "ЯГУАР"],
+      "canonical": "Changan",
+      "aliases": [
+        "Чangan",
+        "Чанган",
+        "ЧАНГАН"
+      ],
       "models": [
-        { "canonical": "XF", "aliases": ["xf", "Jaguar XF"] },
-        { "canonical": "XJ", "aliases": ["xj", "Jaguar XJ"] },
-        { "canonical": "XE", "aliases": ["xe", "Jaguar XE"] },
-        { "canonical": "F-Pace", "aliases": ["F Pace", "FPACE", "F-PACE", "Jaguar F-Pace"] },
-        { "canonical": "E-Pace", "aliases": ["E Pace", "EPACE", "E-PACE", "Jaguar E-Pace"] },
-        { "canonical": "I-Pace", "aliases": ["I Pace", "IPACE", "I-PACE", "Jaguar I-Pace"] },
-        { "canonical": "F-Type", "aliases": ["F Type", "FTYPE", "F-TYPE", "Jaguar F-Type"] },
-        { "canonical": "S-Type", "aliases": ["S Type", "STYPE", "S-TYPE", "Jaguar S-Type"] },
-        { "canonical": "X-Type", "aliases": ["X Type", "XTYPE", "X-TYPE", "Jaguar X-Type"] }
+        {
+          "canonical": "Alsvin",
+          "aliases": []
+        },
+        {
+          "canonical": "CS35 Plus",
+          "aliases": [
+            "CS 35 Plus",
+            "CS35",
+            "CS35PLUS"
+          ]
+        },
+        {
+          "canonical": "CS35 SC716485",
+          "aliases": []
+        },
+        {
+          "canonical": "CS35 SC7164B5",
+          "aliases": []
+        },
+        {
+          "canonical": "CS55 Plus",
+          "aliases": [
+            "CS 55 Plus",
+            "CS55",
+            "CS55PLUS"
+          ]
+        },
+        {
+          "canonical": "CS75 Plus",
+          "aliases": [
+            "CS 75 Plus",
+            "CS75",
+            "CS75PLUS"
+          ]
+        },
+        {
+          "canonical": "CS95",
+          "aliases": [
+            "CS95NEW"
+          ]
+        },
+        {
+          "canonical": "Eado",
+          "aliases": [
+            "EADO PLUS",
+            "EADO PLYS"
+          ]
+        },
+        {
+          "canonical": "Hunter Plus",
+          "aliases": []
+        },
+        {
+          "canonical": "Lamore",
+          "aliases": []
+        },
+        {
+          "canonical": "SC7164A",
+          "aliases": []
+        },
+        {
+          "canonical": "UNI-K",
+          "aliases": [
+            "Uni K",
+            "UNIK"
+          ]
+        },
+        {
+          "canonical": "UNI-S",
+          "aliases": [
+            "UNI-S SC6452ABA6"
+          ]
+        },
+        {
+          "canonical": "UNI-T",
+          "aliases": [
+            "Uni T",
+            "UNIT"
+          ]
+        },
+        {
+          "canonical": "UNI-V",
+          "aliases": [
+            "Uni V",
+            "UNIV"
+          ]
+        }
       ]
     },
     {
-      "canonical": "ЗАЗ",
-      "aliases": ["ZAZ", "Zaz", "zaz", "ЗAZ", "Заз", "Zaporozhets", "Zaporizhzhia Auto"],
+      "canonical": "Chery",
+      "aliases": [
+        "CHERRY",
+        "Cherry",
+        "Чери",
+        "ЧЕРИ",
+        "ЧЕРРИ",
+        "Черри"
+      ],
       "models": [
-        { "canonical": "Chance", "aliases": ["CHANCE", "ЗАЗ Chance", "ZAZ Chance"] },
-        { "canonical": "Vida", "aliases": ["VIDA", "ЗАЗ Vida", "ZAZ Vida"] },
-        { "canonical": "Sens", "aliases": ["SENS", "ЗАЗ Sens", "ZAZ Sens"] },
-        { "canonical": "Lanos", "aliases": ["LANOS", "ЗАЗ Lanos", "ZAZ Lanos"] },
-        { "canonical": "1102", "aliases": ["ЗАЗ 1102", "ZAZ 1102", "Tavria", "Тavria", "Таврия"] },
-        { "canonical": "1103", "aliases": ["ЗАЗ 1103", "ZAZ 1103", "Slavuta", "Славута"] },
-        { "canonical": "1105", "aliases": ["ЗАЗ 1105", "ZAZ 1105", "Dana", "Дана"] },
-        { "canonical": "965", "aliases": ["ЗАЗ 965", "ZAZ 965", "Zaporozhets"] },
-        { "canonical": "968", "aliases": ["ЗАЗ 968", "ZAZ 968"] }
+        {
+          "canonical": "A13",
+          "aliases": []
+        },
+        {
+          "canonical": "A15",
+          "aliases": [
+            "A15 (SQR 7162)",
+            "A15 (SQR7162)"
+          ]
+        },
+        {
+          "canonical": "A19",
+          "aliases": []
+        },
+        {
+          "canonical": "A21 (SQR7201)",
+          "aliases": []
+        },
+        {
+          "canonical": "Amulet",
+          "aliases": [
+            "Amulet A15",
+            "Амулет"
+          ]
+        },
+        {
+          "canonical": "Arrizo 5",
+          "aliases": [
+            "Arrizo",
+            "Arrizo5",
+            "Аризо 5"
+          ]
+        },
+        {
+          "canonical": "Arrizo 7",
+          "aliases": [
+            "Arrizo7",
+            "Аризо 7"
+          ]
+        },
+        {
+          "canonical": "Arrizo 8",
+          "aliases": [
+            "Arrizo8",
+            "Аризо 8"
+          ]
+        },
+        {
+          "canonical": "Bonus",
+          "aliases": [
+            "Bonus (A13)",
+            "Бонус"
+          ]
+        },
+        {
+          "canonical": "Bonus 3",
+          "aliases": [
+            "Bonus3",
+            "Бонус 3"
+          ]
+        },
+        {
+          "canonical": "Fora",
+          "aliases": [
+            "Fora (A21)",
+            "Фора"
+          ]
+        },
+        {
+          "canonical": "IndiS",
+          "aliases": [
+            "Индис"
+          ]
+        },
+        {
+          "canonical": "M11",
+          "aliases": [
+            "м11"
+          ]
+        },
+        {
+          "canonical": "QQ",
+          "aliases": [
+            "Chery QQ"
+          ]
+        },
+        {
+          "canonical": "S12",
+          "aliases": [
+            "S12 (Kimo)"
+          ]
+        },
+        {
+          "canonical": "S18D",
+          "aliases": []
+        },
+        {
+          "canonical": "S21",
+          "aliases": [
+            "S21 QQ6"
+          ]
+        },
+        {
+          "canonical": "SUV Tii",
+          "aliases": []
+        },
+        {
+          "canonical": "T21",
+          "aliases": [
+            "T21 FL",
+            "T21FL"
+          ]
+        },
+        {
+          "canonical": "Tiggo",
+          "aliases": [
+            "N11 Tiggo",
+            "SUB-T11",
+            "SUV T11",
+            "T11 T11FL3",
+            "T11 Tiggo",
+            "T19 Tiggo",
+            "T21 (Tiggo 5)",
+            "Tiggo (T11)",
+            "Tiggo 9",
+            "TIGGO PRO4",
+            "Tiggo T11",
+            "Tiggo T11FL",
+            "TIGGO7 PRO MAX T32",
+            "TIGGO7 PRO T32DPL4"
+          ]
+        },
+        {
+          "canonical": "Tiggo 2",
+          "aliases": [
+            "Tiggo2",
+            "Тигго 2"
+          ]
+        },
+        {
+          "canonical": "Tiggo 3",
+          "aliases": [
+            "Tiggo3",
+            "Тигго 3"
+          ]
+        },
+        {
+          "canonical": "Tiggo 4",
+          "aliases": [
+            "Tiggo4",
+            "Тигго 4"
+          ]
+        },
+        {
+          "canonical": "Tiggo 4 Pro",
+          "aliases": [
+            "Tiggo4 PRO"
+          ]
+        },
+        {
+          "canonical": "Tiggo 7",
+          "aliases": [
+            "SQR7246 (SUV T11)",
+            "SUV T11 (SQR7246)",
+            "SUV T11 (SQR7247)",
+            "Tiggo 7Pro MAX",
+            "Tiggo7",
+            "Тигго 7",
+            "Тигго7"
+          ]
+        },
+        {
+          "canonical": "Tiggo 7 Pro",
+          "aliases": [
+            "Tiggo 7 Pro Plug-in Hybrid",
+            "Tiggo7 Pro"
+          ]
+        },
+        {
+          "canonical": "Tiggo 7 Pro Max",
+          "aliases": [
+            "Tiggo 7 Pro MAX T32",
+            "Tiggo 7 ProMax",
+            "Tiggo7 Pro Max"
+          ]
+        },
+        {
+          "canonical": "Tiggo 8",
+          "aliases": [
+            "Tiggo8",
+            "Тигго 8"
+          ]
+        },
+        {
+          "canonical": "Tiggo 8 Pro",
+          "aliases": [
+            "Tiggo8 Pro"
+          ]
+        },
+        {
+          "canonical": "Tiggo 8 Pro Max",
+          "aliases": [
+            "Tiggo8 Pro Max"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Chevrolet",
+      "aliases": [
+        "Chevy",
+        "Шevrolet",
+        "Шевроле",
+        "ШЕВРОЛЕ"
+      ],
+      "models": [
+        {
+          "canonical": "Aveo",
+          "aliases": [
+            "Aveo (KL1T)",
+            "Aveo (KLAS)",
+            "Aveo (KLIT)",
+            "Aveo (XUF) KL1T",
+            "KL1T (AVEO)",
+            "Klas (Aveo)",
+            "KLAS T200 AVEO",
+            "KLIT (Aveo)",
+            "Клас (Aveo)"
+          ]
+        },
+        {
+          "canonical": "Blazer 3506",
+          "aliases": []
+        },
+        {
+          "canonical": "C100",
+          "aliases": [
+            "KLAS C100/СН"
+          ]
+        },
+        {
+          "canonical": "Captiva",
+          "aliases": [
+            "Captiva KLAC"
+          ]
+        },
+        {
+          "canonical": "Chevrolet",
+          "aliases": [
+            "KLAS (T200/CHEVROLET AVEO)"
+          ]
+        },
+        {
+          "canonical": "Cobalt",
+          "aliases": [
+            "Cobalt (J200)"
+          ]
+        },
+        {
+          "canonical": "Cruze",
+          "aliases": [
+            "Cruze KL1J",
+            "KL1J CRUZE"
+          ]
+        },
+        {
+          "canonical": "Epica",
+          "aliases": [
+            "Epica KLAL",
+            "KLAL (Epica)"
+          ]
+        },
+        {
+          "canonical": "Equinox",
+          "aliases": []
+        },
+        {
+          "canonical": "Evanda",
+          "aliases": []
+        },
+        {
+          "canonical": "Klal",
+          "aliases": []
+        },
+        {
+          "canonical": "Lacetti",
+          "aliases": [
+            "Klan",
+            "Klan (J200 Lacetti)",
+            "Klan (J200)",
+            "Klan (J200/CHEV)",
+            "KLAN (Lacetti)",
+            "Klan J200",
+            "KLAS (Lacetti)",
+            "KLAU",
+            "Lacetti (J200)",
+            "Lacetti (KLAN J200)",
+            "Lacetti (KLAN)",
+            "Lacetti Klan",
+            "LACETTI KLAN J200"
+          ]
+        },
+        {
+          "canonical": "Lanos",
+          "aliases": [
+            "Chevrolet Lanos"
+          ]
+        },
+        {
+          "canonical": "Malibu",
+          "aliases": []
+        },
+        {
+          "canonical": "Monza",
+          "aliases": []
+        },
+        {
+          "canonical": "Nexia",
+          "aliases": []
+        },
+        {
+          "canonical": "Niva",
+          "aliases": [
+            "Chevrolet Niva",
+            "Niva 2123",
+            "Niva 212300",
+            "Niva 212300-55",
+            "NIVA 212300L",
+            "NIVA-212300-55"
+          ]
+        },
+        {
+          "canonical": "Orlando",
+          "aliases": [
+            "Chevrolet Orlando"
+          ]
+        },
+        {
+          "canonical": "Rezzo",
+          "aliases": []
+        },
+        {
+          "canonical": "Spark",
+          "aliases": []
+        },
+        {
+          "canonical": "Tahoe",
+          "aliases": [
+            "GMT900 (Tahoe)"
+          ]
+        },
+        {
+          "canonical": "Trailblazer",
+          "aliases": [
+            "TrailBlazer LS"
+          ]
+        },
+        {
+          "canonical": "Traverse",
+          "aliases": []
+        },
+        {
+          "canonical": "Viva",
+          "aliases": []
+        },
+        {
+          "canonical": "Клан",
+          "aliases": []
+        },
+        {
+          "canonical": "Клас (Авео)",
+          "aliases": []
+        },
+        {
+          "canonical": "Ланос",
+          "aliases": []
+        },
+        {
+          "canonical": "Лачетти",
+          "aliases": []
+        },
+        {
+          "canonical": "НИВА",
+          "aliases": [
+            "Нива 212300",
+            "Нива 212300-55"
+          ]
+        }
       ]
     },
     {
       "canonical": "Chrysler",
-      "aliases": ["CHRYSLER", "Chrysler", "Кhrysler", "Крайслер", "КРАЙСЛЕР"],
+      "aliases": [
+        "Кhrysler",
+        "Крайслер",
+        "КРАЙСЛЕР"
+      ],
       "models": [
-        { "canonical": "300C", "aliases": ["300 C", "300C", "Chrysler 300", "Chrysler 300C"] },
-        { "canonical": "300M", "aliases": ["300 M", "300M", "Chrysler 300M"] },
-        { "canonical": "Sebring", "aliases": ["SEBRING", "Chrysler Sebring"] },
-        { "canonical": "PT Cruiser", "aliases": ["PT CRUISER", "PTCruiser", "Chrysler PT Cruiser"] },
-        { "canonical": "Voyager", "aliases": ["VOYAGER", "Chrysler Voyager", "Grand Voyager"] },
-        { "canonical": "Pacifica", "aliases": ["PACIFICA", "Chrysler Pacifica"] },
-        { "canonical": "Crossfire", "aliases": ["CROSSFIRE", "Chrysler Crossfire"] },
-        { "canonical": "Neon", "aliases": ["NEON", "Chrysler Neon"] }
+        {
+          "canonical": "300C",
+          "aliases": [
+            "300",
+            "300 C",
+            "Chrysler 300",
+            "Chrysler 300C"
+          ]
+        },
+        {
+          "canonical": "300M",
+          "aliases": [
+            "300 M",
+            "Chrysler 300M"
+          ]
+        },
+        {
+          "canonical": "Crossfire",
+          "aliases": [
+            "Chrysler Crossfire"
+          ]
+        },
+        {
+          "canonical": "Neon",
+          "aliases": [
+            "Chrysler Neon"
+          ]
+        },
+        {
+          "canonical": "Pacifica",
+          "aliases": [
+            "Chrysler Pacifica"
+          ]
+        },
+        {
+          "canonical": "PT Cruiser",
+          "aliases": [
+            "Chrysler PT Cruiser",
+            "PTCruiser"
+          ]
+        },
+        {
+          "canonical": "Sebring",
+          "aliases": [
+            "Chrysler Sebring"
+          ]
+        },
+        {
+          "canonical": "Town & Country LX",
+          "aliases": []
+        },
+        {
+          "canonical": "Voyager",
+          "aliases": [
+            "Chrysler Voyager",
+            "Grand Voyager",
+            "Grand Voyager Limited"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Citroen",
+      "aliases": [
+        "Citroën",
+        "Сitroen",
+        "Ситроен",
+        "СИТРОЕН"
+      ],
+      "models": [
+        {
+          "canonical": "Berlingo",
+          "aliases": [
+            "Berlingo TREK",
+            "Citroen Berlingo"
+          ]
+        },
+        {
+          "canonical": "C-Crosser",
+          "aliases": [
+            "C Crosser",
+            "Citroen C-Crosser"
+          ]
+        },
+        {
+          "canonical": "C-Elysee",
+          "aliases": [
+            "C Elysee",
+            "C-Elysée",
+            "Citroen C-Elysee",
+            "Elysee"
+          ]
+        },
+        {
+          "canonical": "C3",
+          "aliases": [
+            "C 3",
+            "C3 PICASSO",
+            "Citroen C3"
+          ]
+        },
+        {
+          "canonical": "C4",
+          "aliases": [
+            "C 4",
+            "C4 Grand Picasso",
+            "C4 Picasso",
+            "Citroen C4"
+          ]
+        },
+        {
+          "canonical": "C4 Aircross",
+          "aliases": []
+        },
+        {
+          "canonical": "C5",
+          "aliases": [
+            "C 5",
+            "Citroen C5"
+          ]
+        },
+        {
+          "canonical": "DS4",
+          "aliases": [
+            "Citroen DS4",
+            "DS 4"
+          ]
+        },
+        {
+          "canonical": "DS5",
+          "aliases": [
+            "Citroen DS5",
+            "DS 5"
+          ]
+        },
+        {
+          "canonical": "Jumper",
+          "aliases": [
+            "Citroen Jumper",
+            "Jumper 1400 HDI"
+          ]
+        },
+        {
+          "canonical": "Jumpy",
+          "aliases": []
+        },
+        {
+          "canonical": "SpaceTourer",
+          "aliases": [
+            "SPACE TOURER"
+          ]
+        },
+        {
+          "canonical": "Xsara",
+          "aliases": [
+            "Citroen Xsara",
+            "Xsara Picasso"
+          ]
+        },
+        {
+          "canonical": "БЕРЛИНГО",
+          "aliases": []
+        },
+        {
+          "canonical": "С4",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Dacia",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Daewoo",
+      "aliases": [
+        "Дaewoo",
+        "Дэу",
+        "ДЭУ",
+        "Deu"
+      ],
+      "models": [
+        {
+          "canonical": "Espero",
+          "aliases": [
+            "Daewoo Espero"
+          ]
+        },
+        {
+          "canonical": "Gentra",
+          "aliases": [
+            "Daewoo Gentra",
+            "Ravon Gentra"
+          ]
+        },
+        {
+          "canonical": "Lacetti",
+          "aliases": []
+        },
+        {
+          "canonical": "Lanos",
+          "aliases": [
+            "Daewoo Lanos",
+            "Лanos"
+          ]
+        },
+        {
+          "canonical": "Leganza",
+          "aliases": [
+            "Daewoo Leganza"
+          ]
+        },
+        {
+          "canonical": "Matiz",
+          "aliases": [
+            "Daewoo Matiz",
+            "Matiz MX",
+            "Мatiz",
+            "Матиз"
+          ]
+        },
+        {
+          "canonical": "Nexia",
+          "aliases": [
+            "Daewoo Nexia",
+            "NEXIA 1.6 L GLE",
+            "Nexia 1.6L GLE",
+            "NEXIA GLE",
+            "Нexia",
+            "Нексия"
+          ]
+        },
+        {
+          "canonical": "Nexsia GLE 1.6",
+          "aliases": []
+        },
+        {
+          "canonical": "Nubira",
+          "aliases": [
+            "Daewoo Nubira"
+          ]
+        },
+        {
+          "canonical": "Sens",
+          "aliases": [
+            "Daewoo Sens"
+          ]
+        },
+        {
+          "canonical": "Tico",
+          "aliases": [
+            "Daewoo Tico"
+          ]
+        },
+        {
+          "canonical": "МАТИЗ БЕСТ",
+          "aliases": []
+        },
+        {
+          "canonical": "НЕКСИА",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Daihatsu",
+      "aliases": [
+        "Дaihatsu",
+        "Дайhatsu",
+        "ДАЙХАТСУ"
+      ],
+      "models": [
+        {
+          "canonical": "Cuore",
+          "aliases": [
+            "Daihatsu Cuore"
+          ]
+        },
+        {
+          "canonical": "Materia",
+          "aliases": [
+            "Daihatsu Materia"
+          ]
+        },
+        {
+          "canonical": "Mira",
+          "aliases": [
+            "Mira ES"
+          ]
+        },
+        {
+          "canonical": "Move",
+          "aliases": [
+            "Daihatsu Move"
+          ]
+        },
+        {
+          "canonical": "Rocky",
+          "aliases": [
+            "Daihatsu Rocky"
+          ]
+        },
+        {
+          "canonical": "Sirion",
+          "aliases": [
+            "Daihatsu Sirion"
+          ]
+        },
+        {
+          "canonical": "SONICA",
+          "aliases": []
+        },
+        {
+          "canonical": "Terios",
+          "aliases": [
+            "Daihatsu Terios",
+            "Terios Kid"
+          ]
+        },
+        {
+          "canonical": "Wake",
+          "aliases": []
+        },
+        {
+          "canonical": "YRV",
+          "aliases": [
+            "Daihatsu YRV"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Datsun",
+      "aliases": [
+        "Дatsun",
+        "Датsun",
+        "ДАТСУН"
+      ],
+      "models": [
+        {
+          "canonical": "mi-DO",
+          "aliases": [
+            "Datsun mi-DO",
+            "mi DO",
+            "miDO"
+          ]
+        },
+        {
+          "canonical": "on-DO",
+          "aliases": [
+            "Datsun on-DO",
+            "on DO",
+            "onDO"
+          ]
+        },
+        {
+          "canonical": "redi-GO",
+          "aliases": [
+            "redi GO"
+          ]
+        },
+        {
+          "canonical": "Он-До",
+          "aliases": []
+        }
       ]
     },
     {
       "canonical": "Dodge",
-      "aliases": ["DODGE", "Dodge", "Дodge", "Додж", "ДОДЖ"],
+      "aliases": [
+        "Дodge",
+        "Додж",
+        "ДОДЖ"
+      ],
       "models": [
-        { "canonical": "Caliber", "aliases": ["CALIBER", "Dodge Caliber"] },
-        { "canonical": "Caravan", "aliases": ["CARAVAN", "Dodge Caravan", "Grand Caravan"] },
-        { "canonical": "Challenger", "aliases": ["CHALLENGER", "Dodge Challenger"] },
-        { "canonical": "Charger", "aliases": ["CHARGER", "Dodge Charger"] },
-        { "canonical": "Durango", "aliases": ["DURANGO", "Dodge Durango"] },
-        { "canonical": "Journey", "aliases": ["JOURNEY", "Dodge Journey"] },
-        { "canonical": "Nitro", "aliases": ["NITRO", "Dodge Nitro"] },
-        { "canonical": "Ram", "aliases": ["RAM", "Dodge Ram", "Ram 1500", "Ram 2500"] },
-        { "canonical": "Stratus", "aliases": ["STRATUS", "Dodge Stratus"] },
-        { "canonical": "Viper", "aliases": ["VIPER", "Dodge Viper"] }
+        {
+          "canonical": "Caliber",
+          "aliases": [
+            "Dodge Caliber"
+          ]
+        },
+        {
+          "canonical": "Caravan",
+          "aliases": [
+            "Caravan SE",
+            "Dodge Caravan",
+            "Grand Caravan"
+          ]
+        },
+        {
+          "canonical": "Challenger",
+          "aliases": [
+            "Dodge Challenger"
+          ]
+        },
+        {
+          "canonical": "Charger",
+          "aliases": [
+            "Dodge Charger"
+          ]
+        },
+        {
+          "canonical": "Durango",
+          "aliases": [
+            "Dodge Durango"
+          ]
+        },
+        {
+          "canonical": "Intrepid",
+          "aliases": []
+        },
+        {
+          "canonical": "Journey",
+          "aliases": [
+            "Dodge Journey"
+          ]
+        },
+        {
+          "canonical": "Neon",
+          "aliases": []
+        },
+        {
+          "canonical": "Nitro",
+          "aliases": [
+            "Dodge Nitro"
+          ]
+        },
+        {
+          "canonical": "Ram",
+          "aliases": [
+            "Dodge Ram",
+            "Ram 1500",
+            "Ram 2500"
+          ]
+        },
+        {
+          "canonical": "Stratus",
+          "aliases": [
+            "Dodge Stratus"
+          ]
+        },
+        {
+          "canonical": "Viper",
+          "aliases": [
+            "Dodge Viper"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Exeed",
+      "aliases": [
+        "Икsid",
+        "Экsid",
+        "ЭКСИД"
+      ],
+      "models": [
+        {
+          "canonical": "LX",
+          "aliases": [
+            "LX 1.6 Premium AWD"
+          ]
+        },
+        {
+          "canonical": "RX",
+          "aliases": []
+        },
+        {
+          "canonical": "TXL",
+          "aliases": []
+        },
+        {
+          "canonical": "VX",
+          "aliases": []
+        },
+        {
+          "canonical": "X-CROSS 7",
+          "aliases": []
+        },
+        {
+          "canonical": "Yaoguang",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "FAW",
+      "aliases": [
+        "FAW Group",
+        "ФAW",
+        "ФАВ",
+        "First Auto Works"
+      ],
+      "models": [
+        {
+          "canonical": "Bestune B70",
+          "aliases": []
+        },
+        {
+          "canonical": "Bestune T55",
+          "aliases": [
+            "Bestune T55 1.5T DCT",
+            "Bestune T551"
+          ]
+        },
+        {
+          "canonical": "Bestune T77",
+          "aliases": []
+        },
+        {
+          "canonical": "BESTUNE T99 2.0T AT",
+          "aliases": []
+        },
+        {
+          "canonical": "Besturn B50",
+          "aliases": [
+            "B50",
+            "Besturn",
+            "FAW B50"
+          ]
+        },
+        {
+          "canonical": "Besturn B70",
+          "aliases": [
+            "B70",
+            "FAW B70"
+          ]
+        },
+        {
+          "canonical": "Besturn X40",
+          "aliases": [
+            "FAW X40",
+            "X40"
+          ]
+        },
+        {
+          "canonical": "Besturn X80",
+          "aliases": [
+            "FAW X80",
+            "X80"
+          ]
+        },
+        {
+          "canonical": "Oley",
+          "aliases": [
+            "FAW Oley"
+          ]
+        },
+        {
+          "canonical": "V2",
+          "aliases": [
+            "FAW V2",
+            "Vita V2"
+          ]
+        },
+        {
+          "canonical": "V5",
+          "aliases": [
+            "FAW V5",
+            "Vita V5"
+          ]
+        },
+        {
+          "canonical": "Vita",
+          "aliases": [
+            "FAW Vita"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Fiat",
+      "aliases": [
+        "Фiat",
+        "Фиat",
+        "Фиат",
+        "ФИАТ"
+      ],
+      "models": [
+        {
+          "canonical": "178CYN1A",
+          "aliases": []
+        },
+        {
+          "canonical": "500",
+          "aliases": [
+            "500C",
+            "500L",
+            "500X",
+            "Fiat 500"
+          ]
+        },
+        {
+          "canonical": "Albea",
+          "aliases": [
+            "178 CINJA ALBEA",
+            "Fiat Albea"
+          ]
+        },
+        {
+          "canonical": "Bravo",
+          "aliases": [
+            "Fiat Bravo"
+          ]
+        },
+        {
+          "canonical": "Doblo",
+          "aliases": [
+            "Fiat Doblo"
+          ]
+        },
+        {
+          "canonical": "Ducato",
+          "aliases": [
+            "Fiat Ducato"
+          ]
+        },
+        {
+          "canonical": "Freemont",
+          "aliases": [
+            "Fiat Freemont"
+          ]
+        },
+        {
+          "canonical": "FST613",
+          "aliases": []
+        },
+        {
+          "canonical": "Fullback",
+          "aliases": [
+            "Fiat Fullback"
+          ]
+        },
+        {
+          "canonical": "Linea",
+          "aliases": [
+            "Fiat Linea"
+          ]
+        },
+        {
+          "canonical": "Panda",
+          "aliases": [
+            "Fiat Panda",
+            "Panda II"
+          ]
+        },
+        {
+          "canonical": "Punto",
+          "aliases": [
+            "Fiat Punto",
+            "Grande Punto"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Ford",
+      "aliases": [
+        "Фord",
+        "Форд",
+        "ФОРД"
+      ],
+      "models": [
+        {
+          "canonical": "C-Max",
+          "aliases": []
+        },
+        {
+          "canonical": "Crown Victoria",
+          "aliases": []
+        },
+        {
+          "canonical": "EcoSport",
+          "aliases": []
+        },
+        {
+          "canonical": "Escape",
+          "aliases": []
+        },
+        {
+          "canonical": "Escort",
+          "aliases": []
+        },
+        {
+          "canonical": "Explorer",
+          "aliases": []
+        },
+        {
+          "canonical": "Fiesta",
+          "aliases": []
+        },
+        {
+          "canonical": "Focus",
+          "aliases": [
+            "Focus C-MAX",
+            "Focus III Рестайлинг",
+            "Focus SE",
+            "Focus ZTS",
+            "Focus ZX5"
+          ]
+        },
+        {
+          "canonical": "Fusion",
+          "aliases": [
+            "Ford Fusion"
+          ]
+        },
+        {
+          "canonical": "Galaxy",
+          "aliases": []
+        },
+        {
+          "canonical": "Kuga",
+          "aliases": []
+        },
+        {
+          "canonical": "Maverick XLT",
+          "aliases": [
+            "Maverick"
+          ]
+        },
+        {
+          "canonical": "Maverick XTL",
+          "aliases": []
+        },
+        {
+          "canonical": "Mondeo",
+          "aliases": []
+        },
+        {
+          "canonical": "Mustang",
+          "aliases": []
+        },
+        {
+          "canonical": "Probe 2.2",
+          "aliases": []
+        },
+        {
+          "canonical": "S-Max",
+          "aliases": []
+        },
+        {
+          "canonical": "Tourneo Courier",
+          "aliases": []
+        },
+        {
+          "canonical": "Transit",
+          "aliases": [
+            "Transit 280 TDCI"
+          ]
+        },
+        {
+          "canonical": "Windstar",
+          "aliases": []
+        },
+        {
+          "canonical": "Мондео",
+          "aliases": []
+        },
+        {
+          "canonical": "ФОКУС",
+          "aliases": []
+        },
+        {
+          "canonical": "Фьюжн",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "FST",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "GAC",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Geely",
+      "aliases": [
+        "Джили",
+        "ДЖИЛИ",
+        "Geely Auto"
+      ],
+      "models": [
+        {
+          "canonical": "Atlas",
+          "aliases": [
+            "Atlas NL-3Y",
+            "Атлас"
+          ]
+        },
+        {
+          "canonical": "Atlas Pro",
+          "aliases": [
+            "AtlasPro"
+          ]
+        },
+        {
+          "canonical": "Cityray",
+          "aliases": []
+        },
+        {
+          "canonical": "Coolray",
+          "aliases": [
+            "Coolray DA41KE5",
+            "Кулрей"
+          ]
+        },
+        {
+          "canonical": "Emegrand",
+          "aliases": []
+        },
+        {
+          "canonical": "Emgrand",
+          "aliases": [
+            "Emgrand (FE-1)",
+            "EMGRAND (FE1)",
+            "Emgrand 7",
+            "Emgrand EC7",
+            "Emgrand FE-1",
+            "Emgrand FE-2",
+            "Emgrand X7",
+            "Emgrand X7 New",
+            "Эмgrand"
+          ]
+        },
+        {
+          "canonical": "G426",
+          "aliases": []
+        },
+        {
+          "canonical": "GC6",
+          "aliases": []
+        },
+        {
+          "canonical": "Goolray",
+          "aliases": []
+        },
+        {
+          "canonical": "GS6",
+          "aliases": []
+        },
+        {
+          "canonical": "JL 7152U1 МК",
+          "aliases": []
+        },
+        {
+          "canonical": "MK",
+          "aliases": [
+            "Geely MK",
+            "MK Cross",
+            "MK-2",
+            "MK-Cross",
+            "MK-GROSS"
+          ]
+        },
+        {
+          "canonical": "Monjaro",
+          "aliases": [
+            "Монжаро"
+          ]
+        },
+        {
+          "canonical": "Okavango",
+          "aliases": []
+        },
+        {
+          "canonical": "Preface",
+          "aliases": []
+        },
+        {
+          "canonical": "Tugella",
+          "aliases": [
+            "Tugella Flagship Sport 4WD",
+            "Тугella"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Genesis",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Great Wall",
+      "aliases": [
+        "GreatWall",
+        "GWM",
+        "Гreat Wall",
+        "Грейт Уолл",
+        "ГРЕЙТ УОЛЛ",
+        "Great Wall Motor"
+      ],
+      "models": [
+        {
+          "canonical": "Cannon",
+          "aliases": [
+            "GWM Cannon"
+          ]
+        },
+        {
+          "canonical": "CC 6460 DY",
+          "aliases": []
+        },
+        {
+          "canonical": "CC 6460 KM 27",
+          "aliases": []
+        },
+        {
+          "canonical": "CC 6460 KM27",
+          "aliases": [
+            "CC 6460"
+          ]
+        },
+        {
+          "canonical": "CC 6460 KY",
+          "aliases": []
+        },
+        {
+          "canonical": "CC 6461 KM 29",
+          "aliases": []
+        },
+        {
+          "canonical": "CC 6461 KM29",
+          "aliases": []
+        },
+        {
+          "canonical": "CC 6461 KM67",
+          "aliases": []
+        },
+        {
+          "canonical": "CC 6461 KM68",
+          "aliases": []
+        },
+        {
+          "canonical": "CC1037SSK20 Sailor",
+          "aliases": []
+        },
+        {
+          "canonical": "CC6460 FMK 20",
+          "aliases": []
+        },
+        {
+          "canonical": "CC6460KM25",
+          "aliases": [
+            "CC6460"
+          ]
+        },
+        {
+          "canonical": "CC6460KM27",
+          "aliases": []
+        },
+        {
+          "canonical": "CC6461KM29",
+          "aliases": []
+        },
+        {
+          "canonical": "CC6461KM67",
+          "aliases": []
+        },
+        {
+          "canonical": "CC6469KM27",
+          "aliases": []
+        },
+        {
+          "canonical": "CC6480",
+          "aliases": []
+        },
+        {
+          "canonical": "Deer",
+          "aliases": [
+            "Great Wall Deer"
+          ]
+        },
+        {
+          "canonical": "Hover",
+          "aliases": [
+            "Great Wall Hover"
+          ]
+        },
+        {
+          "canonical": "Hover H3",
+          "aliases": [
+            "GW Hover H3",
+            "H3"
+          ]
+        },
+        {
+          "canonical": "Hover H5",
+          "aliases": [
+            "GW Hover H5",
+            "H5"
+          ]
+        },
+        {
+          "canonical": "Hover H6",
+          "aliases": [
+            "GW Hover H6",
+            "H6"
+          ]
+        },
+        {
+          "canonical": "Peri",
+          "aliases": [
+            "Great Wall Peri"
+          ]
+        },
+        {
+          "canonical": "Poer",
+          "aliases": [
+            "GWM Poer",
+            "Pao",
+            "Pao 300"
+          ]
+        },
+        {
+          "canonical": "Safe",
+          "aliases": [
+            "Great Wall Safe",
+            "SUV Safe"
+          ]
+        },
+        {
+          "canonical": "Wingle",
+          "aliases": [
+            "Great Wall Wingle",
+            "Wingle 5",
+            "Wingle 7"
+          ]
+        },
+        {
+          "canonical": "Иная",
+          "aliases": []
+        },
+        {
+          "canonical": "СС",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Haval",
+      "aliases": [
+        "Хaval",
+        "Хавал",
+        "ХАВАЛ"
+      ],
+      "models": [
+        {
+          "canonical": "Dargo",
+          "aliases": [
+            "Дargo"
+          ]
+        },
+        {
+          "canonical": "F7",
+          "aliases": [
+            "F 7"
+          ]
+        },
+        {
+          "canonical": "F7x",
+          "aliases": [
+            "F 7x",
+            "F7X CC6467UM29C"
+          ]
+        },
+        {
+          "canonical": "H3",
+          "aliases": []
+        },
+        {
+          "canonical": "H5",
+          "aliases": [
+            "H5 C"
+          ]
+        },
+        {
+          "canonical": "H6",
+          "aliases": [
+            "H 6",
+            "H6 Coupe"
+          ]
+        },
+        {
+          "canonical": "H9",
+          "aliases": [
+            "H 9"
+          ]
+        },
+        {
+          "canonical": "Jolion",
+          "aliases": [
+            "Джолион"
+          ]
+        },
+        {
+          "canonical": "M6",
+          "aliases": [
+            "Haval M6"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Honda",
+      "aliases": [
+        "Хonda",
+        "Хонда",
+        "ХОНДА"
+      ],
+      "models": [
+        {
+          "canonical": "Accord",
+          "aliases": []
+        },
+        {
+          "canonical": "Airwave",
+          "aliases": []
+        },
+        {
+          "canonical": "Avancier",
+          "aliases": []
+        },
+        {
+          "canonical": "Capa",
+          "aliases": []
+        },
+        {
+          "canonical": "Civic",
+          "aliases": [
+            "Civic Ferio",
+            "Civic Hybrid",
+            "Civic LX"
+          ]
+        },
+        {
+          "canonical": "CR-V",
+          "aliases": [
+            "CR V",
+            "CRV"
+          ]
+        },
+        {
+          "canonical": "CR-Z",
+          "aliases": []
+        },
+        {
+          "canonical": "CRider",
+          "aliases": []
+        },
+        {
+          "canonical": "Crosstour",
+          "aliases": []
+        },
+        {
+          "canonical": "Domani",
+          "aliases": []
+        },
+        {
+          "canonical": "Elysion",
+          "aliases": []
+        },
+        {
+          "canonical": "Fit",
+          "aliases": [
+            "Fit Aria",
+            "Fit Hybrid",
+            "Fit Shuttle",
+            "Fit Shuttle Hybrid"
+          ]
+        },
+        {
+          "canonical": "FREED",
+          "aliases": [
+            "FREED HYBRID",
+            "Freed Spike",
+            "Freed Spike Hybrid"
+          ]
+        },
+        {
+          "canonical": "HR-V",
+          "aliases": []
+        },
+        {
+          "canonical": "HRV",
+          "aliases": []
+        },
+        {
+          "canonical": "Insight Hybrid",
+          "aliases": [
+            "Insight"
+          ]
+        },
+        {
+          "canonical": "Integra",
+          "aliases": []
+        },
+        {
+          "canonical": "IT HYBRID",
+          "aliases": []
+        },
+        {
+          "canonical": "Life",
+          "aliases": []
+        },
+        {
+          "canonical": "Logo",
+          "aliases": []
+        },
+        {
+          "canonical": "Mobilio",
+          "aliases": []
+        },
+        {
+          "canonical": "N-BOX",
+          "aliases": []
+        },
+        {
+          "canonical": "N-WGN",
+          "aliases": []
+        },
+        {
+          "canonical": "Odyssey",
+          "aliases": []
+        },
+        {
+          "canonical": "PARTNER",
+          "aliases": []
+        },
+        {
+          "canonical": "Pilot",
+          "aliases": []
+        },
+        {
+          "canonical": "Prelude",
+          "aliases": []
+        },
+        {
+          "canonical": "Saber",
+          "aliases": []
+        },
+        {
+          "canonical": "Shuttle",
+          "aliases": [
+            "Shuttle Hybrid"
+          ]
+        },
+        {
+          "canonical": "SM-X",
+          "aliases": []
+        },
+        {
+          "canonical": "Step WGN",
+          "aliases": []
+        },
+        {
+          "canonical": "Stepwgn",
+          "aliases": [
+            "Stepwgn Spada"
+          ]
+        },
+        {
+          "canonical": "Stream",
+          "aliases": []
+        },
+        {
+          "canonical": "TORNEO",
+          "aliases": []
+        },
+        {
+          "canonical": "Vezel",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Hummer",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Hyundai",
+      "aliases": [
+        "Хyundai",
+        "Хендай",
+        "ХЕНДАЙ",
+        "Хундай"
+      ],
+      "models": [
+        {
+          "canonical": "Avante",
+          "aliases": []
+        },
+        {
+          "canonical": "Creta",
+          "aliases": [
+            "Creta II",
+            "Крeta"
+          ]
+        },
+        {
+          "canonical": "Elantra",
+          "aliases": [
+            "AD (Elantra)",
+            "Elantra 1.6 GL MT",
+            "Elantra 1.6 GLS",
+            "Elantra 1.6 GLS AT",
+            "Elantra 1.6 GLS MT",
+            "Elantra XD"
+          ]
+        },
+        {
+          "canonical": "Genesis",
+          "aliases": []
+        },
+        {
+          "canonical": "Getz",
+          "aliases": [
+            "Getz 1.4 GL AT",
+            "Getz GL 1.1",
+            "Getz Gl 1.3",
+            "Getz GL 1.4",
+            "Getz GL 1.4 AT",
+            "GETZ GL 1.4 MT",
+            "Getz GLS",
+            "GETZ GLS 1.4",
+            "Getz GLS 1.4 MT",
+            "Hyundai Getz"
+          ]
+        },
+        {
+          "canonical": "Grand Starex",
+          "aliases": [
+            "Starex"
+          ]
+        },
+        {
+          "canonical": "h-1",
+          "aliases": [
+            "H-1 2.5 LWB"
+          ]
+        },
+        {
+          "canonical": "H1-Grand-Starex",
+          "aliases": []
+        },
+        {
+          "canonical": "i20",
+          "aliases": [
+            "i20 1.4 AT"
+          ]
+        },
+        {
+          "canonical": "i30",
+          "aliases": [
+            "Hyundai i30",
+            "i 30",
+            "i30 1.6 AT GL",
+            "I30 1.6 GL MT",
+            "i30 1.6 GLS MT"
+          ]
+        },
+        {
+          "canonical": "i40",
+          "aliases": [
+            "i40 (VF)",
+            "VF (I40)"
+          ]
+        },
+        {
+          "canonical": "ix35",
+          "aliases": [
+            "Ix 35",
+            "IX35 2.0 GL MT",
+            "IX35 2.0 GLS AT"
+          ]
+        },
+        {
+          "canonical": "ix55",
+          "aliases": [
+            "IX55 3.0 AT"
+          ]
+        },
+        {
+          "canonical": "Matrix",
+          "aliases": [
+            "Matrix 1.8 GLS AT"
+          ]
+        },
+        {
+          "canonical": "MUFASA",
+          "aliases": []
+        },
+        {
+          "canonical": "NF 2.0 GL AT",
+          "aliases": []
+        },
+        {
+          "canonical": "NF 2.4 GLS",
+          "aliases": []
+        },
+        {
+          "canonical": "Palisade",
+          "aliases": []
+        },
+        {
+          "canonical": "Santa Fe",
+          "aliases": [
+            "Grand Santa Fe",
+            "Santa Fe 2.2 AT",
+            "Santa Fe 2.7 GLS AT",
+            "SantaFe"
+          ]
+        },
+        {
+          "canonical": "Santa-Fe",
+          "aliases": []
+        },
+        {
+          "canonical": "Solaria",
+          "aliases": []
+        },
+        {
+          "canonical": "Solaris",
+          "aliases": [
+            "Accent",
+            "Solaris HS",
+            "Solaris II F",
+            "Акцент",
+            "Сolaris"
+          ]
+        },
+        {
+          "canonical": "Sonata",
+          "aliases": []
+        },
+        {
+          "canonical": "Starex Grx",
+          "aliases": []
+        },
+        {
+          "canonical": "Terracan",
+          "aliases": []
+        },
+        {
+          "canonical": "Trajet",
+          "aliases": [
+            "Trajet 2.0"
+          ]
+        },
+        {
+          "canonical": "Tucson",
+          "aliases": [
+            "Tucson 2.0 GL MT",
+            "Tucson 2.0 GLS AT",
+            "TUCSON 2.7 GLS",
+            "Тucson"
+          ]
+        },
+        {
+          "canonical": "Tuscani",
+          "aliases": []
+        },
+        {
+          "canonical": "Veloster",
+          "aliases": []
+        },
+        {
+          "canonical": "Verna",
+          "aliases": []
+        },
+        {
+          "canonical": "VF",
+          "aliases": []
+        },
+        {
+          "canonical": "Элантра 1.6 GLS",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Infiniti",
+      "aliases": [
+        "Иnfiniti",
+        "Инфiniti",
+        "ИНФИНИТИ",
+        "Infinity",
+        "Infiniti Motor"
+      ],
+      "models": [
+        {
+          "canonical": "EX25",
+          "aliases": []
+        },
+        {
+          "canonical": "EX35 Premium",
+          "aliases": []
+        },
+        {
+          "canonical": "FX 35",
+          "aliases": []
+        },
+        {
+          "canonical": "G",
+          "aliases": [
+            "G25",
+            "G35",
+            "G37",
+            "G37 SPORT",
+            "Infiniti G"
+          ]
+        },
+        {
+          "canonical": "Q30",
+          "aliases": [
+            "Q 30"
+          ]
+        },
+        {
+          "canonical": "Q50",
+          "aliases": [
+            "Q 50"
+          ]
+        },
+        {
+          "canonical": "Q60",
+          "aliases": []
+        },
+        {
+          "canonical": "Q70",
+          "aliases": [
+            "M",
+            "M25",
+            "M37",
+            "Q 70"
+          ]
+        },
+        {
+          "canonical": "QX30",
+          "aliases": [
+            "QX",
+            "QX 30"
+          ]
+        },
+        {
+          "canonical": "QX50",
+          "aliases": [
+            "EX",
+            "EX35",
+            "EX37",
+            "QX 50"
+          ]
+        },
+        {
+          "canonical": "QX56",
+          "aliases": [
+            "QX 56"
+          ]
+        },
+        {
+          "canonical": "QX60",
+          "aliases": [
+            "JX",
+            "JX35",
+            "QX 60"
+          ]
+        },
+        {
+          "canonical": "QX70",
+          "aliases": [
+            "FX",
+            "FX35",
+            "FX37",
+            "FX45",
+            "FX50",
+            "QX 70"
+          ]
+        },
+        {
+          "canonical": "QX80",
+          "aliases": [
+            "QX 80"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Iran Khodro",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Isuzu",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "JAC",
+      "aliases": [
+        "Jac Motors",
+        "ДжAC",
+        "ДЖAC",
+        "JAC Motors"
+      ],
+      "models": [
+        {
+          "canonical": "iEV7S",
+          "aliases": [
+            "iEV 7S"
+          ]
+        },
+        {
+          "canonical": "J7",
+          "aliases": [
+            "J 7",
+            "JAC J7"
+          ]
+        },
+        {
+          "canonical": "JS4",
+          "aliases": [
+            "JAC JS4",
+            "JS 4"
+          ]
+        },
+        {
+          "canonical": "JS6",
+          "aliases": []
+        },
+        {
+          "canonical": "Refine",
+          "aliases": [
+            "JAC Refine",
+            "M1",
+            "M5"
+          ]
+        },
+        {
+          "canonical": "S3",
+          "aliases": [
+            "JAC S3",
+            "JS3",
+            "JS3453",
+            "S 3"
+          ]
+        },
+        {
+          "canonical": "S5",
+          "aliases": [
+            "JAC S5",
+            "S 5"
+          ]
+        },
+        {
+          "canonical": "S7",
+          "aliases": [
+            "JAC S7",
+            "S 7"
+          ]
+        },
+        {
+          "canonical": "T6",
+          "aliases": [
+            "JAC T6",
+            "T 6"
+          ]
+        },
+        {
+          "canonical": "T8",
+          "aliases": [
+            "JAC T8",
+            "T 8",
+            "T8 PRO"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Jaecoo",
+      "aliases": [
+        "Джекoo",
+        "ДЖЕКOO"
+      ],
+      "models": [
+        {
+          "canonical": "J7",
+          "aliases": []
+        },
+        {
+          "canonical": "J8",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Jaguar",
+      "aliases": [
+        "Яguar",
+        "Ягуар",
+        "ЯГУАР"
+      ],
+      "models": [
+        {
+          "canonical": "E-Pace",
+          "aliases": [
+            "E Pace",
+            "EPACE",
+            "Jaguar E-Pace"
+          ]
+        },
+        {
+          "canonical": "F-Pace",
+          "aliases": [
+            "F Pace",
+            "FPACE",
+            "Jaguar F-Pace"
+          ]
+        },
+        {
+          "canonical": "F-Type",
+          "aliases": [
+            "F Type",
+            "FTYPE",
+            "Jaguar F-Type"
+          ]
+        },
+        {
+          "canonical": "I-Pace",
+          "aliases": [
+            "I Pace",
+            "IPACE",
+            "Jaguar I-Pace"
+          ]
+        },
+        {
+          "canonical": "S-Type",
+          "aliases": [
+            "Jaguar S-Type",
+            "S Type",
+            "STYPE"
+          ]
+        },
+        {
+          "canonical": "X-Type",
+          "aliases": [
+            "Jaguar X-Type",
+            "X Type",
+            "XTYPE"
+          ]
+        },
+        {
+          "canonical": "XE",
+          "aliases": [
+            "Jaguar XE"
+          ]
+        },
+        {
+          "canonical": "XF",
+          "aliases": [
+            "Jaguar XF"
+          ]
+        },
+        {
+          "canonical": "XJ",
+          "aliases": [
+            "Jaguar XJ"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Jeep",
+      "aliases": [
+        "Джeep",
+        "Джип",
+        "ДЖИП"
+      ],
+      "models": [
+        {
+          "canonical": "Cherokee",
+          "aliases": [
+            "Jeep Cherokee"
+          ]
+        },
+        {
+          "canonical": "Commander",
+          "aliases": [
+            "Jeep Commander"
+          ]
+        },
+        {
+          "canonical": "Compass",
+          "aliases": [
+            "Jeep Compass"
+          ]
+        },
+        {
+          "canonical": "Grand Cherokee",
+          "aliases": [
+            "Grand Cherokee Limited",
+            "Grand Cherokee OVERLA",
+            "Grand Cherokee Overland",
+            "GrandCherokee",
+            "Jeep Grand Cherokee"
+          ]
+        },
+        {
+          "canonical": "Liberty",
+          "aliases": [
+            "Jeep Liberty",
+            "Liberty Limited"
+          ]
+        },
+        {
+          "canonical": "Patriot",
+          "aliases": [
+            "Jeep Patriot"
+          ]
+        },
+        {
+          "canonical": "Renegade",
+          "aliases": [
+            "Jeep Renegade"
+          ]
+        },
+        {
+          "canonical": "Wrangler",
+          "aliases": [
+            "Jeep Wrangler"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Jetour",
+      "aliases": [
+        "Джetour",
+        "Джетур",
+        "ДЖЕТУР"
+      ],
+      "models": [
+        {
+          "canonical": "Dashing",
+          "aliases": [
+            "Jetour Dashing"
+          ]
+        },
+        {
+          "canonical": "Dashlng",
+          "aliases": []
+        },
+        {
+          "canonical": "T2",
+          "aliases": [
+            "Jetour T2"
+          ]
+        },
+        {
+          "canonical": "Traveller",
+          "aliases": [
+            "Jetour Traveller"
+          ]
+        },
+        {
+          "canonical": "X70",
+          "aliases": [
+            "Jetour X70",
+            "X 70"
+          ]
+        },
+        {
+          "canonical": "X70 Plus",
+          "aliases": [
+            "Jetour X70 Plus",
+            "X70Plus"
+          ]
+        },
+        {
+          "canonical": "X90",
+          "aliases": [
+            "Jetour X90",
+            "X 90"
+          ]
+        },
+        {
+          "canonical": "X90 Plus",
+          "aliases": [
+            "Jetour X90 Plus",
+            "X90Plus"
+          ]
+        },
+        {
+          "canonical": "X95",
+          "aliases": [
+            "Jetour X95",
+            "X 95"
+          ]
+        },
+        {
+          "canonical": "Дашинг",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Kaiyi",
+      "aliases": [
+        "Kai Yi",
+        "Кaiyi",
+        "Кайи",
+        "КАЙИ"
+      ],
+      "models": [
+        {
+          "canonical": "E5",
+          "aliases": [
+            "Kaiyi E5"
+          ]
+        },
+        {
+          "canonical": "ES",
+          "aliases": []
+        },
+        {
+          "canonical": "X3",
+          "aliases": [
+            "Kaiyi X3",
+            "X3 Pro"
+          ]
+        },
+        {
+          "canonical": "X3 Pro",
+          "aliases": [
+            "Kaiyi X3 Pro",
+            "X3PRO"
+          ]
+        },
+        {
+          "canonical": "X7 Kunlun",
+          "aliases": [
+            "Kaiyi X7",
+            "Kunlun",
+            "X7"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Kia",
+      "aliases": [
+        "Кia",
+        "Киа",
+        "КИА",
+        "КIA"
+      ],
+      "models": [
+        {
+          "canonical": "BONGO III",
+          "aliases": []
+        },
+        {
+          "canonical": "Carens",
+          "aliases": []
+        },
+        {
+          "canonical": "Carnival",
+          "aliases": []
+        },
+        {
+          "canonical": "Ceed",
+          "aliases": [
+            "CD (PROCEED)",
+            "Cee'd",
+            "Ceed (JD)",
+            "CEED_D",
+            "ED",
+            "ED (Cee'd)",
+            "ED (CEED)",
+            "ED Ceed",
+            "JD (CEE'D)",
+            "JD (CEED)",
+            "JD CEED"
+          ]
+        },
+        {
+          "canonical": "Cefia",
+          "aliases": []
+        },
+        {
+          "canonical": "Cerato",
+          "aliases": [
+            "Cerato Forte",
+            "Cerato/Forte",
+            "FORTE",
+            "YD (CERATO FORTE)",
+            "YD (Cerato, Forte)"
+          ]
+        },
+        {
+          "canonical": "FB 2273",
+          "aliases": []
+        },
+        {
+          "canonical": "JD",
+          "aliases": []
+        },
+        {
+          "canonical": "K3",
+          "aliases": []
+        },
+        {
+          "canonical": "K5",
+          "aliases": [
+            "JF (OPTIMA)",
+            "JF Optima",
+            "Optima",
+            "Optima (JF)",
+            "Optima (TF)",
+            "OPTIMA TF",
+            "TF (OPTIMA)"
+          ]
+        },
+        {
+          "canonical": "K7",
+          "aliases": []
+        },
+        {
+          "canonical": "K8",
+          "aliases": []
+        },
+        {
+          "canonical": "Magentis",
+          "aliases": [
+            "MAGENTIS OPTIMA"
+          ]
+        },
+        {
+          "canonical": "Mohave",
+          "aliases": []
+        },
+        {
+          "canonical": "OPIRUS",
+          "aliases": []
+        },
+        {
+          "canonical": "Picanto",
+          "aliases": [
+            "Picanto TA"
+          ]
+        },
+        {
+          "canonical": "Quoris",
+          "aliases": [
+            "Quoris (KH)"
+          ]
+        },
+        {
+          "canonical": "Rio",
+          "aliases": [
+            "Rio (JB)",
+            "Rio X-Line",
+            "Рio",
+            "РИО"
+          ]
+        },
+        {
+          "canonical": "Seltos",
+          "aliases": [
+            "SELТOS"
+          ]
+        },
+        {
+          "canonical": "SEPHIA",
+          "aliases": []
+        },
+        {
+          "canonical": "Shuma 2",
+          "aliases": []
+        },
+        {
+          "canonical": "SHUMA II",
+          "aliases": []
+        },
+        {
+          "canonical": "SID ED",
+          "aliases": []
+        },
+        {
+          "canonical": "Sorento",
+          "aliases": [
+            "Sorento JC",
+            "XM FL Sorento"
+          ]
+        },
+        {
+          "canonical": "Soul",
+          "aliases": [
+            "Kia Soul",
+            "PS (SOUL)"
+          ]
+        },
+        {
+          "canonical": "Spectra",
+          "aliases": [
+            "FB 2272 (SPECTRA)",
+            "FB2272 (SPECTRA)",
+            "Kia Spectra",
+            "SPECTRA (FB2272)",
+            "Spectra 1.6",
+            "Spectra FB2272",
+            "Spectra LX"
+          ]
+        },
+        {
+          "canonical": "Spektra",
+          "aliases": []
+        },
+        {
+          "canonical": "Sportage",
+          "aliases": [
+            "SLS (Sportage)",
+            "SLS Sportage SL SLS",
+            "Sportage (SL)",
+            "Sportage (SLS)",
+            "Спортage"
+          ]
+        },
+        {
+          "canonical": "Stinger",
+          "aliases": []
+        },
+        {
+          "canonical": "VENGA",
+          "aliases": []
+        },
+        {
+          "canonical": "YD",
+          "aliases": []
+        },
+        {
+          "canonical": "Маджентис",
+          "aliases": []
+        },
+        {
+          "canonical": "Пиканто",
+          "aliases": []
+        },
+        {
+          "canonical": "СИД ED",
+          "aliases": []
+        },
+        {
+          "canonical": "СПОРТЕИДЖ",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Lada (ВАЗ)",
+      "aliases": [
+        "Lada",
+        "LADA",
+        "Лada",
+        "Лада",
+        "ЛАДА",
+        "АВТОВАЗ",
+        "AvtoVAZ",
+        "VAZ",
+        "Vaz",
+        "vaz",
+        "ВAZ",
+        "ВАЗ",
+        "Вaz",
+        "Ваз",
+        "Lada VAZ",
+        "Lada (VAZ)"
+      ],
+      "models": [
+        {
+          "canonical": "1111",
+          "aliases": [
+            "1111 30 (Ока)",
+            "11113",
+            "11113-40",
+            "111130-21",
+            "2111",
+            "21110",
+            "21112",
+            "211120",
+            "21113",
+            "21114",
+            "211140",
+            "211140 LADA 111",
+            "211140-26"
+          ]
+        },
+        {
+          "canonical": "112",
+          "aliases": []
+        },
+        {
+          "canonical": "1212",
+          "aliases": [
+            "121240 LADA 112"
+          ]
+        },
+        {
+          "canonical": "2100",
+          "aliases": [
+            "210041-30",
+            "210099"
+          ]
+        },
+        {
+          "canonical": "2101",
+          "aliases": [
+            "21011",
+            "21013"
+          ]
+        },
+        {
+          "canonical": "2104",
+          "aliases": [
+            "21041-20",
+            "21041-30",
+            "21041-40",
+            "21043",
+            "VAZ 2104",
+            "ВАЗ 2104"
+          ]
+        },
+        {
+          "canonical": "2104140",
+          "aliases": []
+        },
+        {
+          "canonical": "2105",
+          "aliases": [
+            "21053",
+            "210540",
+            "VAZ 2105",
+            "ВАЗ 2105"
+          ]
+        },
+        {
+          "canonical": "2106",
+          "aliases": [
+            "21060",
+            "21061",
+            "21063",
+            "210630",
+            "21065",
+            "VAZ 2106",
+            "ВАЗ 2106"
+          ]
+        },
+        {
+          "canonical": "2107",
+          "aliases": [
+            "21070",
+            "21074 (LADA 2107)",
+            "21074 LADA 2107",
+            "21074 Лада 2107",
+            "210740",
+            "VAZ 2107",
+            "ВАЗ 2107"
+          ]
+        },
+        {
+          "canonical": "21074",
+          "aliases": [
+            "VAZ 21074",
+            "ВАЗ 21074"
+          ]
+        },
+        {
+          "canonical": "2108",
+          "aliases": [
+            "21083"
+          ]
+        },
+        {
+          "canonical": "2109",
+          "aliases": [
+            "210930",
+            "210990"
+          ]
+        },
+        {
+          "canonical": "21093",
+          "aliases": [
+            "VAZ 21093",
+            "ВАЗ 21093"
+          ]
+        },
+        {
+          "canonical": "21099",
+          "aliases": [
+            "VAZ 21099",
+            "ВАЗ 21099"
+          ]
+        },
+        {
+          "canonical": "2110",
+          "aliases": [
+            "21100",
+            "21101",
+            "21102",
+            "21103",
+            "21104",
+            "21104 LADA 110",
+            "VAZ 2110",
+            "ВАЗ 2110"
+          ]
+        },
+        {
+          "canonical": "2112",
+          "aliases": [
+            "21120",
+            "21121",
+            "21121 ЛАДА 112",
+            "21122",
+            "21123",
+            "211230",
+            "21124",
+            "21124 (ЛАДА 112)",
+            "21124 LADA 112",
+            "21124 ЛАДА 112",
+            "211240"
+          ]
+        },
+        {
+          "canonical": "2114",
+          "aliases": [
+            "VAZ 2114",
+            "ВАЗ 2114"
+          ]
+        },
+        {
+          "canonical": "2115",
+          "aliases": [
+            "VAZ 2115",
+            "ВАЗ 2115"
+          ]
+        },
+        {
+          "canonical": "2120",
+          "aliases": [
+            "21200"
+          ]
+        },
+        {
+          "canonical": "2121",
+          "aliases": [
+            "Niva 2121",
+            "VAZ 2121",
+            "ВАЗ 2121"
+          ]
+        },
+        {
+          "canonical": "21214",
+          "aliases": [
+            "VAZ 21214",
+            "ВАЗ 21214"
+          ]
+        },
+        {
+          "canonical": "2124",
+          "aliases": [
+            "21240"
+          ]
+        },
+        {
+          "canonical": "Granta",
+          "aliases": [
+            "2190",
+            "2190 GRANTA",
+            "219000",
+            "219010",
+            "219010 (Granta)",
+            "219050",
+            "219059-010",
+            "219070 GRANTA",
+            "219070 LADA GRANTA",
+            "21911 Гранта",
+            "219110",
+            "219170",
+            "219410",
+            "219410 КАЛИНА",
+            "Granta (219110)",
+            "Granta 219000",
+            "Granta 219010",
+            "Granta 219020",
+            "Granta 219040",
+            "Granta 219060",
+            "GRANTA 219070",
+            "GRANTA 219110",
+            "Granta 219120",
+            "Granta 219140",
+            "Granta 219170",
+            "Granta 21944",
+            "Granta 219440",
+            "Granta 219470",
+            "Granta 21970",
+            "Granta Cross",
+            "Granta Drive Active",
+            "Granta Sport",
+            "Granta Sportline",
+            "Granta лифтбек",
+            "Granta фургон",
+            "Lada Granta",
+            "Гranta",
+            "ГРАНТА",
+            "ГРАНТА 219010",
+            "ГРАНТА L"
+          ]
+        },
+        {
+          "canonical": "Kalina",
+          "aliases": [
+            "1117 KALINA",
+            "111730",
+            "111730 KALINA",
+            "111730 LADA KALINA",
+            "111730 Калина",
+            "111740",
+            "111740 Kalina",
+            "111740 LADA KALINA",
+            "111760 Kalina",
+            "11183",
+            "11183 KALINA",
+            "11183 LADA KALINA",
+            "11183 Калина",
+            "11183 Лада Калина",
+            "111830",
+            "111830 Kalina",
+            "111830 LADA KALINA",
+            "111830 Калина",
+            "111840 Kalina",
+            "111840 LADA KALINA",
+            "111840 Калина",
+            "111860 (Калина)",
+            "1119 Kalina",
+            "11193",
+            "11193 (Калина)",
+            "11193 (Лада Калина)",
+            "11193 Kalina",
+            "11193 LADA KALINA",
+            "111930",
+            "111930 KALINA",
+            "111930 LADA KALINA",
+            "111930 Калина",
+            "111930 Лада Калина",
+            "111940 Kalina",
+            "111960 Калина",
+            "219210 Lada Kalina",
+            "Kalina (111930)",
+            "Kalina 111930",
+            "Kalina 219470",
+            "KALINA SPORT",
+            "Калина 111740",
+            "Калина 111760",
+            "Калина 111830",
+            "Калина 111930",
+            "Калина"
+          ]
+        },
+        {
+          "canonical": "Largus",
+          "aliases": [
+            "Lada Largus",
+            "Largus KS015L",
+            "Largus KS025L",
+            "Largus KS045L",
+            "Ларгус"
+          ]
+        },
+        {
+          "canonical": "Niva",
+          "aliases": [
+            "2121 (4x4)",
+            "2121 (Нива)",
+            "2121 Нива",
+            "21213",
+            "21213 (Нива)",
+            "21214 (Нива)",
+            "212140",
+            "212140 (4x4)",
+            "212140 (Нива 4x4)",
+            "212140 (Нива)",
+            "212140 4x4",
+            "212140 4x4 (Нива)",
+            "212140 4Х4",
+            "212140 LADA 4x4",
+            "212180",
+            "2123",
+            "21230 Niva",
+            "2131 (4x4)",
+            "2131 NIVA",
+            "21310",
+            "21310 LADA 4x4",
+            "213100",
+            "213100 (LADA 4x4)",
+            "213100 4x4",
+            "213100 LADA 4x4",
+            "4x4",
+            "4x4 (Нива)",
+            "4x4 212140",
+            "4x4 213100",
+            "4x4 5D (213100)",
+            "Bronto 212140",
+            "Lada Niva",
+            "Niva 1.7",
+            "Niva 212140",
+            "NIVA 212300",
+            "Niva 212300-80",
+            "Niva 4x4",
+            "Niva 4x4 212140",
+            "Niva Legend",
+            "Niva Sport",
+            "Niva Travel",
+            "Нива 08",
+            "Шевроле Нива",
+            "БРОНТО"
+          ]
+        },
+        {
+          "canonical": "Priora",
+          "aliases": [
+            "2170 PRIORA",
+            "217010",
+            "217010 ЛАДА ПРИОРА",
+            "21703",
+            "21703 LADA PRIORA",
+            "21703 ЛАДА ПРИОРА",
+            "217030",
+            "217030 (LADA PRIORA)",
+            "217030 LADA PRIORA",
+            "217030 PRIORA",
+            "217050",
+            "217130",
+            "217130 LADA Priora",
+            "217130 PRIORA",
+            "21723",
+            "217230",
+            "217230 (LADA Priora)",
+            "217230 (Приора)",
+            "217230 LADA PRIORA",
+            "217230 Priora",
+            "217230 Лада Приора",
+            "217230 Приора",
+            "217250 Priora",
+            "217280 LADA Priora Sport",
+            "PRIORA (LADA 217030)",
+            "Priora (ВАЗ 21703)",
+            "PRIORA 217010",
+            "Priora 217050",
+            "Priora 217130",
+            "PRIORA 217230",
+            "ВАЗ 2170",
+            "ВАЗ 2172",
+            "ВАЗ 217230",
+            "Приора",
+            "Приора (217230)",
+            "Приора 217030"
+          ]
+        },
+        {
+          "canonical": "Samara",
+          "aliases": [
+            "2113",
+            "21130 LADA SAMARA",
+            "211340 Samara",
+            "211340 САМАРА",
+            "2114 SAMARA",
+            "21140",
+            "21140 LADA SAMARA",
+            "21144",
+            "21144 LADA SAMARA",
+            "21144 Лада Самара",
+            "211440",
+            "211440 (Самара)",
+            "211440 LADA SAMARA",
+            "211440 Samara",
+            "211440 ЛАДА САМАРА",
+            "211440-26",
+            "21150",
+            "21150 LADA SAMARA",
+            "21150 SAMARA",
+            "21150 Самара",
+            "211500",
+            "21154",
+            "21154 LADA SAMARA",
+            "211540",
+            "211540 LADA SAMARA",
+            "211540 SAMARA",
+            "211540 Лада Самара",
+            "Samara 211440",
+            "Samara 211540",
+            "ВАЗ 21140 Samara",
+            "ВАЗ-211440",
+            "ВАЗ211440",
+            "Самара"
+          ]
+        },
+        {
+          "canonical": "Vesta",
+          "aliases": [
+            "Lada Vesta",
+            "Vesta Cross",
+            "Vesta GFK110",
+            "Vesta GFK330",
+            "VESTA GFK440",
+            "VESTA GFL 110",
+            "Vesta GFL110",
+            "VESTA GFL120",
+            "Vesta GFL130",
+            "VESTA GFL350",
+            "VESTA GFL440",
+            "Vesta седан",
+            "Вesta",
+            "Веста",
+            "GFL110"
+          ]
+        },
+        {
+          "canonical": "XRAY",
+          "aliases": [
+            "X Ray",
+            "X-RAY",
+            "XRAY GAB320",
+            "GAB110"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Land Rover",
+      "aliases": [
+        "LandRover",
+        "Ленд Рover",
+        "Ленд Ровер"
+      ],
+      "models": [
+        {
+          "canonical": "Defender",
+          "aliases": []
+        },
+        {
+          "canonical": "Discovery",
+          "aliases": [
+            "Discovery 3",
+            "Discovery 4",
+            "Discovery Sport"
+          ]
+        },
+        {
+          "canonical": "Freelander",
+          "aliases": [
+            "Freelander 2"
+          ]
+        },
+        {
+          "canonical": "HSE",
+          "aliases": []
+        },
+        {
+          "canonical": "Range Rover",
+          "aliases": [
+            "RangeRover"
+          ]
+        },
+        {
+          "canonical": "Range Rover Evoque",
+          "aliases": [
+            "Evoque",
+            "RangeRover Evoque"
+          ]
+        },
+        {
+          "canonical": "Range Rover Sport",
+          "aliases": [
+            "RangeRover Sport"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Lexus",
+      "aliases": [
+        "Лexus",
+        "Лексус",
+        "ЛЕКСУС"
+      ],
+      "models": [
+        {
+          "canonical": "CT200H",
+          "aliases": []
+        },
+        {
+          "canonical": "ES",
+          "aliases": [
+            "ES 200",
+            "ES 250",
+            "ES 330",
+            "ES 350",
+            "ES250",
+            "ES350"
+          ]
+        },
+        {
+          "canonical": "GS 300",
+          "aliases": []
+        },
+        {
+          "canonical": "GS300",
+          "aliases": []
+        },
+        {
+          "canonical": "GS350",
+          "aliases": []
+        },
+        {
+          "canonical": "GX 460",
+          "aliases": []
+        },
+        {
+          "canonical": "GX460",
+          "aliases": []
+        },
+        {
+          "canonical": "IS250",
+          "aliases": []
+        },
+        {
+          "canonical": "LC500",
+          "aliases": []
+        },
+        {
+          "canonical": "LS 460",
+          "aliases": []
+        },
+        {
+          "canonical": "LS500",
+          "aliases": []
+        },
+        {
+          "canonical": "LS600H",
+          "aliases": []
+        },
+        {
+          "canonical": "LX",
+          "aliases": [
+            "LX 470",
+            "LX 570",
+            "LX450D",
+            "LX570"
+          ]
+        },
+        {
+          "canonical": "NX",
+          "aliases": [
+            "NX 200",
+            "NX200",
+            "NX300"
+          ]
+        },
+        {
+          "canonical": "RX",
+          "aliases": [
+            "RX 200T",
+            "RX 270",
+            "RX 300",
+            "RX 330",
+            "RX 350",
+            "RX200T",
+            "RX270",
+            "RX300",
+            "RX350",
+            "RX450h"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Lifan",
+      "aliases": [
+        "Лifan",
+        "Лифан",
+        "ЛИФАН"
+      ],
+      "models": [
+        {
+          "canonical": "113300",
+          "aliases": []
+        },
+        {
+          "canonical": "113321",
+          "aliases": []
+        },
+        {
+          "canonical": "214801",
+          "aliases": []
+        },
+        {
+          "canonical": "214804 (Celliya)",
+          "aliases": []
+        },
+        {
+          "canonical": "214811",
+          "aliases": []
+        },
+        {
+          "canonical": "214813",
+          "aliases": [
+            "214813 Solano"
+          ]
+        },
+        {
+          "canonical": "214814",
+          "aliases": []
+        },
+        {
+          "canonical": "214815",
+          "aliases": []
+        },
+        {
+          "canonical": "214835",
+          "aliases": []
+        },
+        {
+          "canonical": "215800",
+          "aliases": []
+        },
+        {
+          "canonical": "Breez",
+          "aliases": [
+            "520",
+            "520 (Breez)",
+            "Breeze",
+            "Lifan Breez"
+          ]
+        },
+        {
+          "canonical": "Cebrium",
+          "aliases": [
+            "720",
+            "Lifan Cebrium"
+          ]
+        },
+        {
+          "canonical": "Murman",
+          "aliases": [
+            "Lifan Murman"
+          ]
+        },
+        {
+          "canonical": "Myway",
+          "aliases": [
+            "Lifan Myway",
+            "My Way"
+          ]
+        },
+        {
+          "canonical": "Smily",
+          "aliases": [
+            "Lifan Smily",
+            "Smiley"
+          ]
+        },
+        {
+          "canonical": "Solano",
+          "aliases": [
+            "Lifan Solano",
+            "Solano II"
+          ]
+        },
+        {
+          "canonical": "X3PRO",
+          "aliases": []
+        },
+        {
+          "canonical": "X50",
+          "aliases": [
+            "Lifan X50",
+            "X 50"
+          ]
+        },
+        {
+          "canonical": "X60",
+          "aliases": [
+            "Lifan X60",
+            "X 60",
+            "X60FL"
+          ]
+        },
+        {
+          "canonical": "X70",
+          "aliases": [
+            "Lifan X70",
+            "X 70"
+          ]
+        },
+        {
+          "canonical": "МУWАУ",
+          "aliases": []
+        },
+        {
+          "canonical": "Соланд",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Livan",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Maserati",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Mazda",
+      "aliases": [
+        "Мazda",
+        "Мазда",
+        "МАЗДА"
+      ],
+      "models": [
+        {
+          "canonical": "3 Touring",
+          "aliases": []
+        },
+        {
+          "canonical": "323F",
+          "aliases": [
+            "323"
+          ]
+        },
+        {
+          "canonical": "626",
+          "aliases": []
+        },
+        {
+          "canonical": "6S",
+          "aliases": []
+        },
+        {
+          "canonical": "ATENZA",
+          "aliases": []
+        },
+        {
+          "canonical": "Axela",
+          "aliases": []
+        },
+        {
+          "canonical": "B2500",
+          "aliases": [
+            "2"
+          ]
+        },
+        {
+          "canonical": "Bongo",
+          "aliases": [
+            "Bongo Brawny",
+            "Bongo Friendee",
+            "Bongo Friendy"
+          ]
+        },
+        {
+          "canonical": "Capella",
+          "aliases": []
+        },
+        {
+          "canonical": "CX-3",
+          "aliases": []
+        },
+        {
+          "canonical": "CX-5",
+          "aliases": [
+            "5",
+            "CX 5",
+            "CX5"
+          ]
+        },
+        {
+          "canonical": "CX-7",
+          "aliases": [
+            "CX 7",
+            "CX7"
+          ]
+        },
+        {
+          "canonical": "CX-9",
+          "aliases": []
+        },
+        {
+          "canonical": "Demio",
+          "aliases": [
+            "Mazda 2",
+            "Mazda Demio",
+            "Mazda2"
+          ]
+        },
+        {
+          "canonical": "Efini",
+          "aliases": []
+        },
+        {
+          "canonical": "Familia",
+          "aliases": []
+        },
+        {
+          "canonical": "Mazda 3",
+          "aliases": [
+            "3",
+            "Mazda3"
+          ]
+        },
+        {
+          "canonical": "Mazda 6",
+          "aliases": [
+            "6",
+            "Mazda6"
+          ]
+        },
+        {
+          "canonical": "MPV",
+          "aliases": []
+        },
+        {
+          "canonical": "NEО",
+          "aliases": []
+        },
+        {
+          "canonical": "Premacy",
+          "aliases": []
+        },
+        {
+          "canonical": "RX-8",
+          "aliases": []
+        },
+        {
+          "canonical": "Sentia",
+          "aliases": []
+        },
+        {
+          "canonical": "Tribute",
+          "aliases": []
+        },
+        {
+          "canonical": "Xedos",
+          "aliases": [
+            "Xedos 9"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Mercedes-Benz",
+      "aliases": [
+        "MERCEDES",
+        "Mercedes",
+        "Mercedes Benz",
+        "Мercedes",
+        "Мерседес",
+        "МЕРСЕДЕС",
+        "MB"
+      ],
+      "models": [
+        {
+          "canonical": "190",
+          "aliases": []
+        },
+        {
+          "canonical": "223203",
+          "aliases": []
+        },
+        {
+          "canonical": "223212",
+          "aliases": []
+        },
+        {
+          "canonical": "230CLK",
+          "aliases": []
+        },
+        {
+          "canonical": "400 4MATIC",
+          "aliases": []
+        },
+        {
+          "canonical": "A 180",
+          "aliases": []
+        },
+        {
+          "canonical": "A-Class",
+          "aliases": [
+            "CLA-CLASS"
+          ]
+        },
+        {
+          "canonical": "A140",
+          "aliases": []
+        },
+        {
+          "canonical": "A150",
+          "aliases": []
+        },
+        {
+          "canonical": "AMG 4",
+          "aliases": []
+        },
+        {
+          "canonical": "B 200",
+          "aliases": []
+        },
+        {
+          "canonical": "B160",
+          "aliases": []
+        },
+        {
+          "canonical": "B200",
+          "aliases": []
+        },
+        {
+          "canonical": "BENZ",
+          "aliases": []
+        },
+        {
+          "canonical": "C-Class",
+          "aliases": [
+            "C 180",
+            "C 180 KOMPRESSOR",
+            "C 200",
+            "C 200 KOMP",
+            "C Class",
+            "C-180",
+            "C-CLASS 2013",
+            "C-Klasse",
+            "C-Класс",
+            "C180",
+            "C180 CGI",
+            "C180 Esprit",
+            "C180CGI",
+            "C200",
+            "C200 4MATIC",
+            "C220 AVANGARDE",
+            "C220CDI",
+            "C250",
+            "C250 BLUETEC 4MATIC",
+            "C280",
+            "C500",
+            "Citan",
+            "CL 500",
+            "CLA 200",
+            "CLA 250",
+            "CLA180",
+            "CLA200",
+            "CLC 200 Kompressor",
+            "CLC-class",
+            "CLK 200",
+            "CLK 200 Kompressor",
+            "CLS 350 D 4MATIC",
+            "W204",
+            "W205"
+          ]
+        },
+        {
+          "canonical": "E-Class",
+          "aliases": [
+            "AMG E 63 S",
+            "E 200",
+            "E 200 4MATIC",
+            "E 200 CDI",
+            "E 200 KOMPRESSOR",
+            "E 220 D 4 MATIC",
+            "E 220 D 4MATIC",
+            "E 240",
+            "E 250 CGI",
+            "E 320",
+            "E 350 4MATIC",
+            "E Class",
+            "E-Class E 220 CDI",
+            "E-Класс",
+            "E200",
+            "E200 4MATIC",
+            "E200 CGI",
+            "E200d",
+            "E220",
+            "E220D 4MATIC",
+            "E230",
+            "E230 Classic",
+            "E250 CGI",
+            "E280",
+            "E300",
+            "E350",
+            "E350 4MATIC",
+            "E400 4MATIC",
+            "W212",
+            "W213"
+          ]
+        },
+        {
+          "canonical": "G-Class",
+          "aliases": []
+        },
+        {
+          "canonical": "GL-Class",
+          "aliases": [
+            "GL",
+            "GL 350 BLU",
+            "GL 350 CDI 4MATIC",
+            "GL 500 4MATIC",
+            "GL350",
+            "GL350 BLUETEC 4MATIC",
+            "GL350 CDI 4MATIC",
+            "GL450",
+            "GL500",
+            "GL63 AMG"
+          ]
+        },
+        {
+          "canonical": "GLA",
+          "aliases": [
+            "GLA 180",
+            "GLA 200",
+            "GLA 200 CDI",
+            "GLA 250 4MATIC",
+            "GLA Class A",
+            "GLA-Klasse"
+          ]
+        },
+        {
+          "canonical": "GLC",
+          "aliases": [
+            "GLC 300 4MATIC",
+            "GLC-Class"
+          ]
+        },
+        {
+          "canonical": "GLE",
+          "aliases": [
+            "AMG GLE 63",
+            "GLE 350",
+            "GLE 350 D",
+            "GLE CLASS",
+            "GLE-Class",
+            "ML",
+            "ML-Class"
+          ]
+        },
+        {
+          "canonical": "GLK",
+          "aliases": [
+            "GLK 220",
+            "GLK 220 CDI",
+            "GLK 220 CDI 4MATIC",
+            "GLK 280 4MATIC",
+            "GLK 300 4MATIC",
+            "GLK 4MATIC",
+            "GLK220 CDI 4MATIC"
+          ]
+        },
+        {
+          "canonical": "GLS",
+          "aliases": [
+            "GLS 400 4",
+            "GLS 400 D 4MATIC"
+          ]
+        },
+        {
+          "canonical": "M-Class",
+          "aliases": [
+            "M Class",
+            "ML 300 4MATIC",
+            "ML 320",
+            "ML 320 CDI",
+            "ML 320 CDI 4Matic",
+            "ML 350",
+            "ML 350 4MATIC",
+            "ML 350 4WD",
+            "ML320",
+            "ML350",
+            "ML350 4MATIC",
+            "ML500",
+            "М-Класс"
+          ]
+        },
+        {
+          "canonical": "M-KLASSE",
+          "aliases": []
+        },
+        {
+          "canonical": "Maybach S-Класс 450",
+          "aliases": []
+        },
+        {
+          "canonical": "R320",
+          "aliases": []
+        },
+        {
+          "canonical": "R350 4MATIC",
+          "aliases": []
+        },
+        {
+          "canonical": "S-Class",
+          "aliases": [
+            "GLS-Class",
+            "S 350 D 4MATIC",
+            "S 450 4MATIC",
+            "S 500 4MATIC",
+            "S Class",
+            "S-350",
+            "S-Класс",
+            "S320",
+            "S350",
+            "S500",
+            "S500 4Matic",
+            "S560 4MATIC MAYBACH",
+            "S63 AMG 4MATIC",
+            "SLC 300",
+            "W221",
+            "W222"
+          ]
+        },
+        {
+          "canonical": "Sprinter",
+          "aliases": []
+        },
+        {
+          "canonical": "Viano",
+          "aliases": [
+            "V 220 D 4MATIC",
+            "V-Class",
+            "V200 D",
+            "V220",
+            "V220d",
+            "Vaneo",
+            "Viano 3.5"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "MG",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Mini",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Mitsubishi",
+      "aliases": [
+        "Мitsubishi",
+        "Мitsubishi",
+        "МИЦУБИСИ",
+        "Мицубиси"
+      ],
+      "models": [
+        {
+          "canonical": "1.200",
+          "aliases": []
+        },
+        {
+          "canonical": "Airtrek",
+          "aliases": []
+        },
+        {
+          "canonical": "ASX",
+          "aliases": [
+            "ASX 1.6",
+            "ASX 1.8",
+            "ASX 2.0"
+          ]
+        },
+        {
+          "canonical": "Carisma",
+          "aliases": [
+            "Carisma 1.3",
+            "Carisma HB 1.6"
+          ]
+        },
+        {
+          "canonical": "Chariot Grandis",
+          "aliases": [
+            "Grandis"
+          ]
+        },
+        {
+          "canonical": "Colt",
+          "aliases": [
+            "Colt Plus"
+          ]
+        },
+        {
+          "canonical": "Delica",
+          "aliases": [
+            "Delica D:5"
+          ]
+        },
+        {
+          "canonical": "Diamant",
+          "aliases": []
+        },
+        {
+          "canonical": "Dion",
+          "aliases": []
+        },
+        {
+          "canonical": "Eclipse Cross",
+          "aliases": []
+        },
+        {
+          "canonical": "EK WAGON",
+          "aliases": []
+        },
+        {
+          "canonical": "Galant",
+          "aliases": [
+            "Galant ES"
+          ]
+        },
+        {
+          "canonical": "L200",
+          "aliases": [
+            "L200 2.5"
+          ]
+        },
+        {
+          "canonical": "Lancer",
+          "aliases": [
+            "Lancer 1.5",
+            "LANCER 1.6",
+            "Lancer 1.6 SIM",
+            "Lancer 1.8",
+            "Lancer 1/6",
+            "Lancer 2.0",
+            "Lancer Cedia",
+            "Lancer10"
+          ]
+        },
+        {
+          "canonical": "Legnum",
+          "aliases": [
+            "Легнум"
+          ]
+        },
+        {
+          "canonical": "LIBERO",
+          "aliases": []
+        },
+        {
+          "canonical": "Mirage",
+          "aliases": []
+        },
+        {
+          "canonical": "Montero Sport",
+          "aliases": []
+        },
+        {
+          "canonical": "NK200S",
+          "aliases": []
+        },
+        {
+          "canonical": "Outlander",
+          "aliases": [
+            "OUTLANDER 2.0",
+            "Outlander 2.0 CVT",
+            "Outlander 2.4",
+            "Outlander 20",
+            "Outlander 3.0"
+          ]
+        },
+        {
+          "canonical": "Pajero",
+          "aliases": [
+            "Pajero 3.0",
+            "Pajero 3.0 LWB",
+            "PAJERO 3.2 LWB",
+            "Pajero IO",
+            "PAJERO MINI",
+            "PAJERO SPORT",
+            "Pajero Sport 2.5",
+            "PAJERO SPORT 3.0"
+          ]
+        },
+        {
+          "canonical": "Space Runner",
+          "aliases": []
+        },
+        {
+          "canonical": "Space Star",
+          "aliases": []
+        },
+        {
+          "canonical": "ГАЛАНТ GLI",
+          "aliases": []
+        },
+        {
+          "canonical": "КАРИЗМА",
+          "aliases": []
+        },
+        {
+          "canonical": "Паджеро IO",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Nissan",
+      "aliases": [
+        "Нissan",
+        "Ниссан",
+        "НИССАН"
+      ],
+      "models": [
+        {
+          "canonical": "Almera",
+          "aliases": [
+            "Almera 1.5 Luxury",
+            "Almera 1.8",
+            "Almera 1.8 Comfort",
+            "Almera Tino"
+          ]
+        },
+        {
+          "canonical": "Almera Classic",
+          "aliases": [
+            "Almera Classic 1.6",
+            "AlmeraClassic",
+            "Nissan Almera Classic"
+          ]
+        },
+        {
+          "canonical": "Altima",
+          "aliases": []
+        },
+        {
+          "canonical": "Armada",
+          "aliases": []
+        },
+        {
+          "canonical": "Avenir Salut X",
+          "aliases": []
+        },
+        {
+          "canonical": "Avensis",
+          "aliases": []
+        },
+        {
+          "canonical": "Bassara",
+          "aliases": []
+        },
+        {
+          "canonical": "Bluebird Sylphy",
+          "aliases": [
+            "Bluebird",
+            "Sylphy"
+          ]
+        },
+        {
+          "canonical": "Caravan",
+          "aliases": []
+        },
+        {
+          "canonical": "Cefiro",
+          "aliases": []
+        },
+        {
+          "canonical": "Cube",
+          "aliases": []
+        },
+        {
+          "canonical": "DAYZ",
+          "aliases": []
+        },
+        {
+          "canonical": "Dualis",
+          "aliases": []
+        },
+        {
+          "canonical": "DYALIS",
+          "aliases": []
+        },
+        {
+          "canonical": "Elgrand",
+          "aliases": []
+        },
+        {
+          "canonical": "Juke",
+          "aliases": []
+        },
+        {
+          "canonical": "Lafesta",
+          "aliases": []
+        },
+        {
+          "canonical": "Largo",
+          "aliases": []
+        },
+        {
+          "canonical": "LEAF",
+          "aliases": []
+        },
+        {
+          "canonical": "Liberty",
+          "aliases": []
+        },
+        {
+          "canonical": "March",
+          "aliases": []
+        },
+        {
+          "canonical": "MAXIMA",
+          "aliases": []
+        },
+        {
+          "canonical": "Micra",
+          "aliases": [
+            "Micra 1.2 Comfort"
+          ]
+        },
+        {
+          "canonical": "Murano",
+          "aliases": [
+            "Murano 3.5 SE",
+            "Murano SE 3.5"
+          ]
+        },
+        {
+          "canonical": "Navara",
+          "aliases": []
+        },
+        {
+          "canonical": "Note",
+          "aliases": [
+            "Nissan Note",
+            "Note 1.4 Elegance",
+            "Note 1.6",
+            "Note 1.6 Comfort",
+            "Note Hybrid"
+          ]
+        },
+        {
+          "canonical": "Pathfinder",
+          "aliases": [
+            "Pathfinder 2.5D",
+            "Pathfinder 4.0 LE"
+          ]
+        },
+        {
+          "canonical": "Patrol",
+          "aliases": [
+            "PATROL 5.6",
+            "Patrol GR (Y61) 3.0"
+          ]
+        },
+        {
+          "canonical": "Premiera",
+          "aliases": []
+        },
+        {
+          "canonical": "Presage",
+          "aliases": []
+        },
+        {
+          "canonical": "Presea",
+          "aliases": []
+        },
+        {
+          "canonical": "Primera",
+          "aliases": [
+            "Nissan Primera",
+            "Primera 1.6 Elegance",
+            "Primera 1.6 SLX",
+            "Primera 2.0 SLX",
+            "PRIMERA 2.0 TEKNA",
+            "Primera Comfort"
+          ]
+        },
+        {
+          "canonical": "Pulsar",
+          "aliases": []
+        },
+        {
+          "canonical": "Qashqai",
+          "aliases": [
+            "Qashqai 1.6 Tekna",
+            "QASHQAI 2.0",
+            "QASHQAI 2.0 LE+",
+            "Qashqai 2.0 TEKNA PACK",
+            "Qashqai+2",
+            "Кashqai"
+          ]
+        },
+        {
+          "canonical": "QUEST",
+          "aliases": []
+        },
+        {
+          "canonical": "Safari",
+          "aliases": []
+        },
+        {
+          "canonical": "Sanni",
+          "aliases": []
+        },
+        {
+          "canonical": "Sentra",
+          "aliases": []
+        },
+        {
+          "canonical": "Serena",
+          "aliases": [
+            "Serena Hybrid"
+          ]
+        },
+        {
+          "canonical": "Skyline",
+          "aliases": []
+        },
+        {
+          "canonical": "Sunny",
+          "aliases": [
+            "Nissan Sunny"
+          ]
+        },
+        {
+          "canonical": "Teana",
+          "aliases": [
+            "Teana 2.3 Luxury",
+            "Teana 2.5 Luxury",
+            "Teana 2.5 PREMIUM",
+            "Teana 3.5 Premium"
+          ]
+        },
+        {
+          "canonical": "Terrano",
+          "aliases": [
+            "Nissan Terrano",
+            "Террано"
+          ]
+        },
+        {
+          "canonical": "Tiida",
+          "aliases": [
+            "Nissan Tiida",
+            "Tiida 1.6 Elegance",
+            "Tiida Latio"
+          ]
+        },
+        {
+          "canonical": "Tilda",
+          "aliases": []
+        },
+        {
+          "canonical": "Tino",
+          "aliases": []
+        },
+        {
+          "canonical": "Vanette",
+          "aliases": []
+        },
+        {
+          "canonical": "WINGGOAD",
+          "aliases": []
+        },
+        {
+          "canonical": "Wingroad",
+          "aliases": [
+            "AD",
+            "Nissan AD",
+            "Nissan Wingroad"
+          ]
+        },
+        {
+          "canonical": "X-Trail",
+          "aliases": [
+            "X TRAIL",
+            "X-Trail 2.0 Columbia Pack",
+            "X-Trail 2.0 SE",
+            "X-TRAIL 2.5",
+            "Xtrail",
+            "XTrail"
+          ]
+        },
+        {
+          "canonical": "АЛМЕРА",
+          "aliases": []
+        },
+        {
+          "canonical": "АЛЬМЕРА 1.5",
+          "aliases": []
+        },
+        {
+          "canonical": "АЛЬМЕРА КЛАССИК",
+          "aliases": []
+        },
+        {
+          "canonical": "Блюберд Сильфи",
+          "aliases": []
+        },
+        {
+          "canonical": "Вингроад",
+          "aliases": []
+        },
+        {
+          "canonical": "Жук",
+          "aliases": []
+        },
+        {
+          "canonical": "Марч",
+          "aliases": []
+        },
+        {
+          "canonical": "Мурано",
+          "aliases": []
+        },
+        {
+          "canonical": "ПАТФАЙНДЕР",
+          "aliases": []
+        },
+        {
+          "canonical": "ПУЛСАР",
+          "aliases": []
+        },
+        {
+          "canonical": "Сирена",
+          "aliases": []
+        },
+        {
+          "canonical": "ТИНО",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Omoda",
+      "aliases": [
+        "Оmoda",
+        "Омода",
+        "ОМОДА"
+      ],
+      "models": [
+        {
+          "canonical": "55",
+          "aliases": []
+        },
+        {
+          "canonical": "C5",
+          "aliases": [
+            "Omoda C5",
+            "OMODA C5"
+          ]
+        },
+        {
+          "canonical": "S5",
+          "aliases": [
+            "OMODA S5",
+            "Omoda S5",
+            "S5 GT"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Opel",
+      "aliases": [
+        "Оpel",
+        "Опель",
+        "ОПЕЛЬ",
+        "General Motors Opel"
+      ],
+      "models": [
+        {
+          "canonical": "0G-A",
+          "aliases": []
+        },
+        {
+          "canonical": "Antara",
+          "aliases": [
+            "Antara I",
+            "Opel Antara"
+          ]
+        },
+        {
+          "canonical": "Astra",
+          "aliases": [
+            "Astra (A-H)",
+            "Astra 1.4 CDX",
+            "Astra Caravan",
+            "Astra GTC",
+            "Astra GTC P-J/SX",
+            "Astra J",
+            "Astra P-j",
+            "Astra P-J (XUF)",
+            "Astra Sport Tourer",
+            "Astra Sports Tourer",
+            "ASTRA STATION WAGON",
+            "Opel Astra",
+            "P-J ASTRA",
+            "Астра"
+          ]
+        },
+        {
+          "canonical": "Calibra",
+          "aliases": []
+        },
+        {
+          "canonical": "Combo",
+          "aliases": [
+            "Combo Life",
+            "Opel Combo"
+          ]
+        },
+        {
+          "canonical": "Corsa",
+          "aliases": [
+            "Opel Corsa",
+            "Корса"
+          ]
+        },
+        {
+          "canonical": "Crossland",
+          "aliases": [
+            "Crossland X",
+            "Opel Crossland"
+          ]
+        },
+        {
+          "canonical": "Frontera",
+          "aliases": [
+            "Opel Frontera"
+          ]
+        },
+        {
+          "canonical": "Grandland",
+          "aliases": [
+            "Grandland X",
+            "Opel Grandland"
+          ]
+        },
+        {
+          "canonical": "Insignia",
+          "aliases": [
+            "Insignia HB",
+            "Opel Insignia",
+            "Иnsignia"
+          ]
+        },
+        {
+          "canonical": "Meriva",
+          "aliases": [
+            "Opel Meriva"
+          ]
+        },
+        {
+          "canonical": "Mokka",
+          "aliases": [
+            "Mokka X",
+            "Mokka-e",
+            "Opel Mokka"
+          ]
+        },
+        {
+          "canonical": "Omega",
+          "aliases": [
+            "Opel Omega"
+          ]
+        },
+        {
+          "canonical": "P4",
+          "aliases": []
+        },
+        {
+          "canonical": "Vectra",
+          "aliases": [
+            "Opel Vectra"
+          ]
+        },
+        {
+          "canonical": "Vivaro",
+          "aliases": [
+            "Opel Vivaro"
+          ]
+        },
+        {
+          "canonical": "Zafira",
+          "aliases": [
+            "Opel Zafira",
+            "Zafira Life"
+          ]
+        },
+        {
+          "canonical": "ЗАФИРА",
+          "aliases": []
+        },
+        {
+          "canonical": "МЕРИВА",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Peugeot",
+      "aliases": [
+        "Пeugeot",
+        "Пежо",
+        "ПЕЖО"
+      ],
+      "models": [
+        {
+          "canonical": "1007",
+          "aliases": []
+        },
+        {
+          "canonical": "107",
+          "aliases": []
+        },
+        {
+          "canonical": "2008",
+          "aliases": []
+        },
+        {
+          "canonical": "206",
+          "aliases": [
+            "Peugeot 206",
+            "Пежо 206"
+          ]
+        },
+        {
+          "canonical": "207",
+          "aliases": [
+            "Peugeot 207",
+            "Пежо 207"
+          ]
+        },
+        {
+          "canonical": "208",
+          "aliases": [
+            "Peugeot 208",
+            "Пежо 208"
+          ]
+        },
+        {
+          "canonical": "3008",
+          "aliases": [
+            "Peugeot 3008",
+            "Пежо 3008"
+          ]
+        },
+        {
+          "canonical": "301",
+          "aliases": [
+            "Peugeot 301",
+            "Пежо 301"
+          ]
+        },
+        {
+          "canonical": "307",
+          "aliases": [
+            "Peugeot 307",
+            "Пежо 307"
+          ]
+        },
+        {
+          "canonical": "308",
+          "aliases": [
+            "Peugeot 308",
+            "Пежо 308"
+          ]
+        },
+        {
+          "canonical": "4007",
+          "aliases": [
+            "Peugeot 4007",
+            "Пежо 4007"
+          ]
+        },
+        {
+          "canonical": "4008",
+          "aliases": [
+            "Peugeot 4008",
+            "Пежо 4008"
+          ]
+        },
+        {
+          "canonical": "406",
+          "aliases": [
+            "Peugeot 406",
+            "Пежо 406"
+          ]
+        },
+        {
+          "canonical": "407",
+          "aliases": [
+            "407 SW",
+            "Peugeot 407",
+            "Пежо 407"
+          ]
+        },
+        {
+          "canonical": "408",
+          "aliases": [
+            "Peugeot 408",
+            "Пежо 408"
+          ]
+        },
+        {
+          "canonical": "5008",
+          "aliases": [
+            "Peugeot 5008",
+            "Пежо 5008"
+          ]
+        },
+        {
+          "canonical": "508",
+          "aliases": [
+            "Peugeot 508",
+            "Пежо 508"
+          ]
+        },
+        {
+          "canonical": "605",
+          "aliases": []
+        },
+        {
+          "canonical": "Boxer",
+          "aliases": [
+            "Peugeot Boxer"
+          ]
+        },
+        {
+          "canonical": "Expert",
+          "aliases": [
+            "Peugeot Expert"
+          ]
+        },
+        {
+          "canonical": "Partner",
+          "aliases": [
+            "Partner Tepee",
+            "Peugeot Partner"
+          ]
+        },
+        {
+          "canonical": "Traveller",
+          "aliases": [
+            "Peugeot Traveller"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Porsche",
+      "aliases": [
+        "Пorsche",
+        "Порше",
+        "ПОРШЕ"
+      ],
+      "models": [
+        {
+          "canonical": "911",
+          "aliases": [
+            "911 Carrera",
+            "991",
+            "992",
+            "Carrera",
+            "Porsche 911"
+          ]
+        },
+        {
+          "canonical": "Boxster",
+          "aliases": [
+            "718 Boxster",
+            "Porsche Boxster"
+          ]
+        },
+        {
+          "canonical": "Cayenne",
+          "aliases": [
+            "Cayenne GTS",
+            "Cayenne S",
+            "Cayenne Turbo",
+            "Porsche Cayenne"
+          ]
+        },
+        {
+          "canonical": "Cayman",
+          "aliases": [
+            "718 Cayman",
+            "Porsche Cayman"
+          ]
+        },
+        {
+          "canonical": "Macan",
+          "aliases": [
+            "Macan S",
+            "Macan T",
+            "Porsche Macan"
+          ]
+        },
+        {
+          "canonical": "Panamera",
+          "aliases": [
+            "Panamera 4",
+            "Panamera 4S",
+            "Panamera GTS",
+            "Porsche Panamera"
+          ]
+        },
+        {
+          "canonical": "Taycan",
+          "aliases": [
+            "Porsche Taycan"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Ravon",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Renault",
+      "aliases": [
+        "Рenault",
+        "Рено",
+        "РЕНО"
+      ],
+      "models": [
+        {
+          "canonical": "19 1.8 SRT",
+          "aliases": []
+        },
+        {
+          "canonical": "Arkana",
+          "aliases": []
+        },
+        {
+          "canonical": "DOKKER",
+          "aliases": []
+        },
+        {
+          "canonical": "Duster",
+          "aliases": [
+            "Дuster"
+          ]
+        },
+        {
+          "canonical": "Fluence",
+          "aliases": []
+        },
+        {
+          "canonical": "Kaptur",
+          "aliases": []
+        },
+        {
+          "canonical": "Kaptur ASREA7",
+          "aliases": []
+        },
+        {
+          "canonical": "Laguna",
+          "aliases": []
+        },
+        {
+          "canonical": "Logan",
+          "aliases": [
+            "Logan (SR)",
+            "Logan 1.4",
+            "LOGAN SR",
+            "SR",
+            "SR (Logan)",
+            "Лogan",
+            "Логан"
+          ]
+        },
+        {
+          "canonical": "MEGAN II",
+          "aliases": []
+        },
+        {
+          "canonical": "Megane",
+          "aliases": [
+            "Megane Break",
+            "Megane Classic",
+            "Megane Classic E",
+            "Megane DCL",
+            "MEGANE GRANDTOUR 1.5 DCI",
+            "Megane II",
+            "Megane III",
+            "Megane Scenic",
+            "Scenic",
+            "Scenic LA25E110 3C"
+          ]
+        },
+        {
+          "canonical": "SAMSUNG QM3",
+          "aliases": []
+        },
+        {
+          "canonical": "Sandero",
+          "aliases": []
+        },
+        {
+          "canonical": "Sandero Stepway",
+          "aliases": [
+            "LOGAN STEPWAY"
+          ]
+        },
+        {
+          "canonical": "Symbol",
+          "aliases": [
+            "Renault Symbol",
+            "Thalia"
+          ]
+        },
+        {
+          "canonical": "Аркана",
+          "aliases": []
+        },
+        {
+          "canonical": "Дастер",
+          "aliases": []
+        },
+        {
+          "canonical": "Клио",
+          "aliases": []
+        },
+        {
+          "canonical": "МЕГАН",
+          "aliases": []
+        },
+        {
+          "canonical": "Сандеро",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Saab",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Saturn",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "SEAT",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Skoda",
+      "aliases": [
+        "Škoda",
+        "Шkoda",
+        "Шкода",
+        "ШКОДА"
+      ],
+      "models": [
+        {
+          "canonical": "Fabia",
+          "aliases": [
+            "Skoda Fabia"
+          ]
+        },
+        {
+          "canonical": "Felicia",
+          "aliases": []
+        },
+        {
+          "canonical": "Karoq",
+          "aliases": []
+        },
+        {
+          "canonical": "Kodiaq",
+          "aliases": [
+            "Kodiaq I"
+          ]
+        },
+        {
+          "canonical": "Octavia",
+          "aliases": [
+            "Octavia 1.4 TSI",
+            "Octavia Tour"
+          ]
+        },
+        {
+          "canonical": "Oktavia",
+          "aliases": []
+        },
+        {
+          "canonical": "Rapid",
+          "aliases": []
+        },
+        {
+          "canonical": "Roomster",
+          "aliases": []
+        },
+        {
+          "canonical": "Superb",
+          "aliases": []
+        },
+        {
+          "canonical": "Yeti",
+          "aliases": [
+            "Skoda Yeti"
+          ]
+        },
+        {
+          "canonical": "ЕТИ",
+          "aliases": []
+        },
+        {
+          "canonical": "Октавиа Тур",
+          "aliases": []
+        },
+        {
+          "canonical": "Октавия",
+          "aliases": [
+            "ОКТАВИЯ ТОУР",
+            "Октавия Тур"
+          ]
+        },
+        {
+          "canonical": "Рапид",
+          "aliases": []
+        },
+        {
+          "canonical": "Фабия",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Smart",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "SsangYong",
+      "aliases": [
+        "Ssang Yong",
+        "СangYong",
+        "СангYong",
+        "ССАНГЙОНГ",
+        "KGM"
+      ],
+      "models": [
+        {
+          "canonical": "Actyon",
+          "aliases": [
+            "Actyon Sports",
+            "CJ Actyon",
+            "SsangYong Actyon"
+          ]
+        },
+        {
+          "canonical": "Chairman",
+          "aliases": [
+            "SsangYong Chairman"
+          ]
+        },
+        {
+          "canonical": "Istana",
+          "aliases": []
+        },
+        {
+          "canonical": "Korando",
+          "aliases": [
+            "Korando Sports",
+            "New Korando",
+            "SsangYong Korando"
+          ]
+        },
+        {
+          "canonical": "Kyron",
+          "aliases": [
+            "Kyron DJ",
+            "Kyron II",
+            "SsangYong Kyron"
+          ]
+        },
+        {
+          "canonical": "Musso",
+          "aliases": [
+            "Musso Sports",
+            "SsangYong Musso"
+          ]
+        },
+        {
+          "canonical": "Rexton",
+          "aliases": [
+            "Rexton II",
+            "Rexton RJ4",
+            "Rexton RX230",
+            "Rexton RX270",
+            "Rexton RX320",
+            "Rexton Sports",
+            "SsangYong Rexton"
+          ]
+        },
+        {
+          "canonical": "Rodius",
+          "aliases": []
+        },
+        {
+          "canonical": "Torres",
+          "aliases": [
+            "SsangYong Torres"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Subaru",
+      "aliases": [
+        "Субaru",
+        "Субару",
+        "СУБАРУ"
+      ],
+      "models": [
+        {
+          "canonical": "BRZ",
+          "aliases": [
+            "Subaru BRZ"
+          ]
+        },
+        {
+          "canonical": "Forester",
+          "aliases": [
+            "Subaru Forester"
+          ]
+        },
+        {
+          "canonical": "Impreza",
+          "aliases": [
+            "Impreza XV",
+            "Subaru Impreza",
+            "WRX",
+            "WRX STI"
+          ]
+        },
+        {
+          "canonical": "Legacy",
+          "aliases": [
+            "Legacy B4",
+            "Legacy Lancaster",
+            "Subaru Legacy"
+          ]
+        },
+        {
+          "canonical": "Levorg",
+          "aliases": [
+            "Subaru Levorg"
+          ]
+        },
+        {
+          "canonical": "Outback",
+          "aliases": [
+            "Legacy Outback",
+            "Subaru Outback"
+          ]
+        },
+        {
+          "canonical": "Pleo",
+          "aliases": []
+        },
+        {
+          "canonical": "R2",
+          "aliases": []
+        },
+        {
+          "canonical": "Sambar",
+          "aliases": [
+            "Sambar Transporter"
+          ]
+        },
+        {
+          "canonical": "Stella",
+          "aliases": []
+        },
+        {
+          "canonical": "TRAVIQ",
+          "aliases": []
+        },
+        {
+          "canonical": "Tribeca",
+          "aliases": [
+            "B9 Tribeca",
+            "Subaru Tribeca",
+            "Tribeca B9"
+          ]
+        },
+        {
+          "canonical": "XV",
+          "aliases": [
+            "Crosstrek",
+            "Subaru XV",
+            "XV Hybrid"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Suzuki",
+      "aliases": [
+        "Сuzuki",
+        "Сузуки",
+        "СУЗУКИ"
+      ],
+      "models": [
+        {
+          "canonical": "Aerio",
+          "aliases": []
+        },
+        {
+          "canonical": "Alto",
+          "aliases": []
+        },
+        {
+          "canonical": "Baleno",
+          "aliases": [
+            "Suzuki Baleno"
+          ]
+        },
+        {
+          "canonical": "Escudo",
+          "aliases": [
+            "Grand Escudo"
+          ]
+        },
+        {
+          "canonical": "Grand Vitara",
+          "aliases": [
+            "GrandVitara",
+            "Vitara Grand"
+          ]
+        },
+        {
+          "canonical": "Ignis",
+          "aliases": [
+            "Suzuki Ignis"
+          ]
+        },
+        {
+          "canonical": "Jimny",
+          "aliases": [
+            "Suzuki Jimny"
+          ]
+        },
+        {
+          "canonical": "Kei",
+          "aliases": []
+        },
+        {
+          "canonical": "Kizashi",
+          "aliases": [
+            "Suzuki Kizashi"
+          ]
+        },
+        {
+          "canonical": "Liana",
+          "aliases": [
+            "Suzuki Liana"
+          ]
+        },
+        {
+          "canonical": "Splash",
+          "aliases": [
+            "Suzuki Splash"
+          ]
+        },
+        {
+          "canonical": "Swift",
+          "aliases": [
+            "Suzuki Swift"
+          ]
+        },
+        {
+          "canonical": "SX-4",
+          "aliases": []
+        },
+        {
+          "canonical": "SX4",
+          "aliases": [
+            "S Cross",
+            "S-Cross",
+            "SX 4",
+            "SX4 Hatchback",
+            "SX4 Sedan"
+          ]
+        },
+        {
+          "canonical": "Vitara",
+          "aliases": [
+            "New Vitara",
+            "Suzuki Vitara"
+          ]
+        },
+        {
+          "canonical": "Wagon R",
+          "aliases": [
+            "Wagon R Solio"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "SWM",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Tesla",
+      "aliases": [
+        "Тesla",
+        "Тесла",
+        "ТЕСЛА"
+      ],
+      "models": [
+        {
+          "canonical": "Model 3",
+          "aliases": [
+            "Model3"
+          ]
+        },
+        {
+          "canonical": "Model S",
+          "aliases": [
+            "ModelS"
+          ]
+        },
+        {
+          "canonical": "Model X",
+          "aliases": [
+            "ModelX"
+          ]
+        },
+        {
+          "canonical": "Model Y",
+          "aliases": [
+            "ModelY"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Toyota",
+      "aliases": [
+        "Тoyota",
+        "Тойота",
+        "ТОЙОТА"
+      ],
+      "models": [
+        {
+          "canonical": "4Runner",
+          "aliases": []
+        },
+        {
+          "canonical": "Allex",
+          "aliases": []
+        },
+        {
+          "canonical": "Allion",
+          "aliases": []
+        },
+        {
+          "canonical": "Alphard",
+          "aliases": []
+        },
+        {
+          "canonical": "AQUA",
+          "aliases": []
+        },
+        {
+          "canonical": "Auris",
+          "aliases": [
+            "Аурис"
+          ]
+        },
+        {
+          "canonical": "Avalon",
+          "aliases": []
+        },
+        {
+          "canonical": "Avensis",
+          "aliases": [
+            "Avensis 2.0 D4D",
+            "Toyota Avensis"
+          ]
+        },
+        {
+          "canonical": "BB",
+          "aliases": []
+        },
+        {
+          "canonical": "Belta",
+          "aliases": []
+        },
+        {
+          "canonical": "C-HR",
+          "aliases": [
+            "C HR",
+            "CHR"
+          ]
+        },
+        {
+          "canonical": "Caldina",
+          "aliases": [
+            "Caldina Van"
+          ]
+        },
+        {
+          "canonical": "Cami",
+          "aliases": []
+        },
+        {
+          "canonical": "Camry",
+          "aliases": [
+            "Camry Hybrid",
+            "Camry Premium",
+            "Кamry",
+            "Камry"
+          ]
+        },
+        {
+          "canonical": "Carina",
+          "aliases": [
+            "Carina E",
+            "Carina ED",
+            "Toyota Carina"
+          ]
+        },
+        {
+          "canonical": "Celica",
+          "aliases": [
+            "Celica GT-S"
+          ]
+        },
+        {
+          "canonical": "Celsior",
+          "aliases": []
+        },
+        {
+          "canonical": "Chaser",
+          "aliases": []
+        },
+        {
+          "canonical": "Corolla",
+          "aliases": [
+            "COROLLA AXIO",
+            "Corolla Fielder",
+            "Corolla Levin",
+            "Corolla MID 4 А/Т",
+            "Corolla Runx",
+            "Corolla Spacio",
+            "Corolla Spasio",
+            "Corolla Verso",
+            "Кorolla"
+          ]
+        },
+        {
+          "canonical": "Corona",
+          "aliases": [
+            "Corona Premio",
+            "Corona SF"
+          ]
+        },
+        {
+          "canonical": "Corsa",
+          "aliases": []
+        },
+        {
+          "canonical": "Cresta",
+          "aliases": []
+        },
+        {
+          "canonical": "Crown",
+          "aliases": [
+            "Crown Hybrid"
+          ]
+        },
+        {
+          "canonical": "Duet",
+          "aliases": []
+        },
+        {
+          "canonical": "Echo",
+          "aliases": []
+        },
+        {
+          "canonical": "Estima",
+          "aliases": [
+            "Estima Lucida"
+          ]
+        },
+        {
+          "canonical": "Fun Cargo",
+          "aliases": []
+        },
+        {
+          "canonical": "FunCargo",
+          "aliases": []
+        },
+        {
+          "canonical": "Gaia",
+          "aliases": []
+        },
+        {
+          "canonical": "Harrier",
+          "aliases": []
+        },
+        {
+          "canonical": "HIACE REGIUS",
+          "aliases": []
+        },
+        {
+          "canonical": "Highlander",
+          "aliases": []
+        },
+        {
+          "canonical": "Hilux",
+          "aliases": [
+            "HILUX SURF"
+          ]
+        },
+        {
+          "canonical": "Ipsum",
+          "aliases": []
+        },
+        {
+          "canonical": "ISis",
+          "aliases": []
+        },
+        {
+          "canonical": "Kluger",
+          "aliases": []
+        },
+        {
+          "canonical": "Land Cruiser",
+          "aliases": [
+            "Land Cruiser 100",
+            "Land Cruiser 150",
+            "Land Cruiser 150 (Prado)",
+            "Land Cruiser 200",
+            "Land Cruiser 300",
+            "Land Cruiser Prado 120",
+            "Land Cruiser Prado 150",
+            "LandCruiser",
+            "LC 200",
+            "LC200"
+          ]
+        },
+        {
+          "canonical": "Lite Ace Noah",
+          "aliases": [
+            "Lite Ace"
+          ]
+        },
+        {
+          "canonical": "Mark II",
+          "aliases": []
+        },
+        {
+          "canonical": "Mark X",
+          "aliases": []
+        },
+        {
+          "canonical": "NADIA",
+          "aliases": []
+        },
+        {
+          "canonical": "Noah Hybrid",
+          "aliases": []
+        },
+        {
+          "canonical": "Oaktis",
+          "aliases": []
+        },
+        {
+          "canonical": "Opa",
+          "aliases": []
+        },
+        {
+          "canonical": "Passo",
+          "aliases": [
+            "Passo Sette"
+          ]
+        },
+        {
+          "canonical": "Pixis Joy",
+          "aliases": []
+        },
+        {
+          "canonical": "Platz",
+          "aliases": []
+        },
+        {
+          "canonical": "Porte",
+          "aliases": []
+        },
+        {
+          "canonical": "Prado",
+          "aliases": [
+            "Land Cruiser Prado"
+          ]
+        },
+        {
+          "canonical": "Premio",
+          "aliases": []
+        },
+        {
+          "canonical": "Prius",
+          "aliases": [
+            "Prius Alpha Hybrid",
+            "PRIUS HYBRID",
+            "Toyota Prius"
+          ]
+        },
+        {
+          "canonical": "Probox",
+          "aliases": []
+        },
+        {
+          "canonical": "RACTIS",
+          "aliases": []
+        },
+        {
+          "canonical": "Raize",
+          "aliases": []
+        },
+        {
+          "canonical": "Raum",
+          "aliases": []
+        },
+        {
+          "canonical": "RAV4",
+          "aliases": [
+            "RAV 4",
+            "РAV4"
+          ]
+        },
+        {
+          "canonical": "Roomy",
+          "aliases": []
+        },
+        {
+          "canonical": "Rummy",
+          "aliases": []
+        },
+        {
+          "canonical": "Saksid",
+          "aliases": []
+        },
+        {
+          "canonical": "Sequoia",
+          "aliases": []
+        },
+        {
+          "canonical": "Sienna",
+          "aliases": [
+            "Sienna LE"
+          ]
+        },
+        {
+          "canonical": "SIENTA",
+          "aliases": []
+        },
+        {
+          "canonical": "Solara",
+          "aliases": []
+        },
+        {
+          "canonical": "Sprinter",
+          "aliases": [
+            "Sprinter Carib",
+            "Sprinter Marino"
+          ]
+        },
+        {
+          "canonical": "Starlet",
+          "aliases": []
+        },
+        {
+          "canonical": "Succeed",
+          "aliases": []
+        },
+        {
+          "canonical": "Sukceed",
+          "aliases": []
+        },
+        {
+          "canonical": "Surf",
+          "aliases": []
+        },
+        {
+          "canonical": "Tercel",
+          "aliases": []
+        },
+        {
+          "canonical": "Town Ace Noah",
+          "aliases": [
+            "Ace",
+            "Noah",
+            "Town",
+            "Town Ace"
+          ]
+        },
+        {
+          "canonical": "Toyoace",
+          "aliases": []
+        },
+        {
+          "canonical": "Tundra",
+          "aliases": []
+        },
+        {
+          "canonical": "Urban Cruiser",
+          "aliases": []
+        },
+        {
+          "canonical": "Vanguard",
+          "aliases": []
+        },
+        {
+          "canonical": "Verossa",
+          "aliases": []
+        },
+        {
+          "canonical": "Verso",
+          "aliases": []
+        },
+        {
+          "canonical": "Vista",
+          "aliases": [
+            "IST",
+            "Vista Ardeo"
+          ]
+        },
+        {
+          "canonical": "Vitz",
+          "aliases": [
+            "Toyota Vitz"
+          ]
+        },
+        {
+          "canonical": "Voltz",
+          "aliases": []
+        },
+        {
+          "canonical": "Voxy",
+          "aliases": [
+            "Voxy Hybrid"
+          ]
+        },
+        {
+          "canonical": "Will Cypha",
+          "aliases": []
+        },
+        {
+          "canonical": "Will VS",
+          "aliases": []
+        },
+        {
+          "canonical": "Windom",
+          "aliases": []
+        },
+        {
+          "canonical": "Wish",
+          "aliases": []
+        },
+        {
+          "canonical": "Yaris",
+          "aliases": []
+        },
+        {
+          "canonical": "Айсис",
+          "aliases": []
+        },
+        {
+          "canonical": "Аллион",
+          "aliases": []
+        },
+        {
+          "canonical": "Витц",
+          "aliases": []
+        },
+        {
+          "canonical": "Гайя",
+          "aliases": []
+        },
+        {
+          "canonical": "Ист",
+          "aliases": []
+        },
+        {
+          "canonical": "Калдина",
+          "aliases": []
+        },
+        {
+          "canonical": "Камри",
+          "aliases": []
+        },
+        {
+          "canonical": "Карина",
+          "aliases": []
+        },
+        {
+          "canonical": "Королла",
+          "aliases": [
+            "Королла Филдер"
+          ]
+        },
+        {
+          "canonical": "Креста",
+          "aliases": []
+        },
+        {
+          "canonical": "ПЛАТЦ",
+          "aliases": []
+        },
+        {
+          "canonical": "Приус Гибрид",
+          "aliases": []
+        },
+        {
+          "canonical": "Спринтер",
+          "aliases": []
+        },
+        {
+          "canonical": "Таун Айс Ноах",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Volkswagen",
+      "aliases": [
+        "VW",
+        "Фольксваген",
+        "ФОЛЬКСВАГЕН",
+        "Volkswagen AG"
+      ],
+      "models": [
+        {
+          "canonical": "7НС Multivan",
+          "aliases": []
+        },
+        {
+          "canonical": "Amarok",
+          "aliases": [
+            "Amarok 4WD"
+          ]
+        },
+        {
+          "canonical": "Bora",
+          "aliases": []
+        },
+        {
+          "canonical": "Caddy",
+          "aliases": [
+            "Caddy Kombi",
+            "Caddy Maxi"
+          ]
+        },
+        {
+          "canonical": "Caravelle 2.5 TDI GL",
+          "aliases": []
+        },
+        {
+          "canonical": "Golf",
+          "aliases": [
+            "Golf (GETTA)",
+            "Golf 1.4",
+            "Golf Plus"
+          ]
+        },
+        {
+          "canonical": "Jetta",
+          "aliases": [
+            "Jetta VS7"
+          ]
+        },
+        {
+          "canonical": "New Beetle",
+          "aliases": []
+        },
+        {
+          "canonical": "Passat",
+          "aliases": [
+            "PASSAT 1.6",
+            "Passat CC",
+            "Passat CL",
+            "Passat Variant 2.0",
+            "Passat Variant CL"
+          ]
+        },
+        {
+          "canonical": "Phaeton",
+          "aliases": []
+        },
+        {
+          "canonical": "Polo",
+          "aliases": [
+            "Пolo"
+          ]
+        },
+        {
+          "canonical": "Sharan",
+          "aliases": [
+            "Sharan GL"
+          ]
+        },
+        {
+          "canonical": "Taos",
+          "aliases": []
+        },
+        {
+          "canonical": "Teramont",
+          "aliases": []
+        },
+        {
+          "canonical": "Tiguan",
+          "aliases": [
+            "Tiguan II"
+          ]
+        },
+        {
+          "canonical": "Touareg",
+          "aliases": []
+        },
+        {
+          "canonical": "Touran",
+          "aliases": [
+            "Touran 1.4 TSI"
+          ]
+        },
+        {
+          "canonical": "Transporter",
+          "aliases": [
+            "Caravelle",
+            "Multivan"
+          ]
+        },
+        {
+          "canonical": "Vento",
+          "aliases": []
+        },
+        {
+          "canonical": "Гольф",
+          "aliases": []
+        },
+        {
+          "canonical": "ПАССАТ",
+          "aliases": []
+        },
+        {
+          "canonical": "ПОЛО",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Volvo",
+      "aliases": [
+        "Вolvo",
+        "Вольво",
+        "ВОЛЬВО"
+      ],
+      "models": [
+        {
+          "canonical": "740",
+          "aliases": []
+        },
+        {
+          "canonical": "745 GL",
+          "aliases": []
+        },
+        {
+          "canonical": "850",
+          "aliases": [
+            "Volvo 850"
+          ]
+        },
+        {
+          "canonical": "940",
+          "aliases": [
+            "Volvo 940"
+          ]
+        },
+        {
+          "canonical": "C30",
+          "aliases": [
+            "C 30"
+          ]
+        },
+        {
+          "canonical": "S40",
+          "aliases": [
+            "S 40"
+          ]
+        },
+        {
+          "canonical": "S60",
+          "aliases": [
+            "S 60"
+          ]
+        },
+        {
+          "canonical": "S80",
+          "aliases": [
+            "S 80"
+          ]
+        },
+        {
+          "canonical": "V40",
+          "aliases": [
+            "V 40"
+          ]
+        },
+        {
+          "canonical": "V60",
+          "aliases": [
+            "V 60"
+          ]
+        },
+        {
+          "canonical": "V70",
+          "aliases": [
+            "V 70"
+          ]
+        },
+        {
+          "canonical": "V90 Cross Country",
+          "aliases": []
+        },
+        {
+          "canonical": "XC-60",
+          "aliases": []
+        },
+        {
+          "canonical": "XC40",
+          "aliases": [
+            "XC 40"
+          ]
+        },
+        {
+          "canonical": "XC60",
+          "aliases": [
+            "XC 60"
+          ]
+        },
+        {
+          "canonical": "XC70",
+          "aliases": []
+        },
+        {
+          "canonical": "XC90",
+          "aliases": [
+            "XC 90"
+          ]
+        },
+        {
+          "canonical": "ХС90",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "Vortex",
+      "aliases": [
+        "Вortex",
+        "Вортекс",
+        "ВОРТЕКС",
+        "TagAZ",
+        "ТагАЗ",
+        "TAGAZ"
+      ],
+      "models": [
+        {
+          "canonical": "Accent",
+          "aliases": []
+        },
+        {
+          "canonical": "Corda",
+          "aliases": [
+            "Vortex Corda"
+          ]
+        },
+        {
+          "canonical": "Estina",
+          "aliases": [
+            "Chery Estina",
+            "Vortex Estina"
+          ]
+        },
+        {
+          "canonical": "JAC S10",
+          "aliases": []
+        },
+        {
+          "canonical": "Tager",
+          "aliases": [
+            "Vortex Tager"
+          ]
+        },
+        {
+          "canonical": "Tingo",
+          "aliases": [
+            "Tingo FL",
+            "Vortex Tingo"
+          ]
+        },
+        {
+          "canonical": "Vega (C100)",
+          "aliases": []
+        },
+        {
+          "canonical": "Vega C10",
+          "aliases": []
+        },
+        {
+          "canonical": "ЕСТИНА А21",
+          "aliases": []
+        },
+        {
+          "canonical": "КОРДА",
+          "aliases": []
+        },
+        {
+          "canonical": "С190 JAC",
+          "aliases": []
+        },
+        {
+          "canonical": "Тинго",
+          "aliases": [
+            "SUV T11 ТИНГО",
+            "Тинго (SUV Т11)"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "WEY",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Zotye",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Багем",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "ГАЗ",
+      "aliases": [
+        "GAZ",
+        "Gaz",
+        "gaz",
+        "Гaz"
+      ],
+      "models": [
+        {
+          "canonical": "24-03",
+          "aliases": []
+        },
+        {
+          "canonical": "2410",
+          "aliases": [
+            "24"
+          ]
+        },
+        {
+          "canonical": "3102 Волга",
+          "aliases": []
+        },
+        {
+          "canonical": "31029",
+          "aliases": [
+            "3102"
+          ]
+        },
+        {
+          "canonical": "3110-411",
+          "aliases": []
+        },
+        {
+          "canonical": "311000",
+          "aliases": []
+        },
+        {
+          "canonical": "31105 (Волга)",
+          "aliases": []
+        },
+        {
+          "canonical": "31105-120",
+          "aliases": []
+        },
+        {
+          "canonical": "330210",
+          "aliases": []
+        },
+        {
+          "canonical": "Волga",
+          "aliases": [
+            "3110",
+            "31105",
+            "Volga",
+            "VOLGA"
+          ]
+        },
+        {
+          "canonical": "Газель",
+          "aliases": [
+            "Gazel",
+            "GAZEL",
+            "Gazelle",
+            "ГAZEL"
+          ]
+        },
+        {
+          "canonical": "Соболь",
+          "aliases": [
+            "Sobol",
+            "SOBOL"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "ЗАЗ",
+      "aliases": [
+        "ZAZ",
+        "Zaz",
+        "zaz",
+        "ЗAZ",
+        "Zaporozhets",
+        "Zaporizhzhia Auto"
+      ],
+      "models": [
+        {
+          "canonical": "1102",
+          "aliases": [
+            "110247 Таврия",
+            "Tavria",
+            "ZAZ 1102",
+            "ЗАЗ 1102",
+            "Тavria",
+            "Таврия"
+          ]
+        },
+        {
+          "canonical": "1103",
+          "aliases": [
+            "Slavuta",
+            "ZAZ 1103",
+            "ЗАЗ 1103",
+            "Славута"
+          ]
+        },
+        {
+          "canonical": "1105",
+          "aliases": [
+            "Dana",
+            "ZAZ 1105",
+            "Дана",
+            "ЗАЗ 1105"
+          ]
+        },
+        {
+          "canonical": "965",
+          "aliases": [
+            "Zaporozhets",
+            "ZAZ 965",
+            "ЗАЗ 965"
+          ]
+        },
+        {
+          "canonical": "968",
+          "aliases": [
+            "ZAZ 968",
+            "ЗАЗ 968"
+          ]
+        },
+        {
+          "canonical": "Chance",
+          "aliases": [
+            "CHANCE TF698K",
+            "ZAZ Chance",
+            "ЗАЗ Chance",
+            "ЧЕНС",
+            "Шанс",
+            "Шанс TF69Y0"
+          ]
+        },
+        {
+          "canonical": "Lanos",
+          "aliases": [
+            "ZAZ Lanos",
+            "ЗАЗ Lanos"
+          ]
+        },
+        {
+          "canonical": "Sens",
+          "aliases": [
+            "SENS TF 698P",
+            "ZAZ Sens",
+            "ЗАЗ Sens",
+            "TF698P",
+            "СНАNСЕ ТF488Р"
+          ]
+        },
+        {
+          "canonical": "Vida",
+          "aliases": [
+            "ZAZ Vida",
+            "ЗАЗ Vida",
+            "ВИДА SF6950"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Москвич",
+      "aliases": [
+        "MOSKVICH",
+        "Moskvich",
+        "Москvich",
+        "Moscvich",
+        "AZLK",
+        "АЗЛК"
+      ],
+      "models": [
+        {
+          "canonical": "2140",
+          "aliases": [
+            "Moskvich 2140",
+            "Москвич 2140"
+          ]
+        },
+        {
+          "canonical": "2141",
+          "aliases": [
+            "Moskvich 2141",
+            "Москвич 2141",
+            "Святогор"
+          ]
+        },
+        {
+          "canonical": "2335",
+          "aliases": [
+            "Москвich 2335"
+          ]
+        },
+        {
+          "canonical": "3",
+          "aliases": [
+            "Moskvich 3",
+            "Moskvich-3",
+            "Москвич 3"
+          ]
+        },
+        {
+          "canonical": "3е",
+          "aliases": [
+            "3E",
+            "3e",
+            "Moskvich 3e",
+            "Moskvich-3e",
+            "Москвич 3е"
+          ]
+        },
+        {
+          "canonical": "400",
+          "aliases": [
+            "Moskvich 400",
+            "Москвич 400"
+          ]
+        },
+        {
+          "canonical": "412",
+          "aliases": [
+            "AZLK 412",
+            "ИЖ 412",
+            "Москвич-412"
+          ]
+        },
+        {
+          "canonical": "6",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "canonical": "УАЗ",
+      "aliases": [
+        "UAZ",
+        "Uaz",
+        "uaz",
+        "Уaz"
+      ],
+      "models": [
+        {
+          "canonical": "2206",
+          "aliases": []
+        },
+        {
+          "canonical": "23632",
+          "aliases": []
+        },
+        {
+          "canonical": "31512",
+          "aliases": [
+            "3151210",
+            "331512"
+          ]
+        },
+        {
+          "canonical": "31514",
+          "aliases": [
+            "315142"
+          ]
+        },
+        {
+          "canonical": "315195",
+          "aliases": [
+            "3151",
+            "31519"
+          ]
+        },
+        {
+          "canonical": "31601",
+          "aliases": []
+        },
+        {
+          "canonical": "3962",
+          "aliases": [
+            "39621",
+            "396259"
+          ]
+        },
+        {
+          "canonical": "452",
+          "aliases": [
+            "UAZ 452",
+            "Буханка",
+            "УАЗ 452"
+          ]
+        },
+        {
+          "canonical": "469",
+          "aliases": [
+            "469Б",
+            "UAZ 469",
+            "УАЗ 469"
+          ]
+        },
+        {
+          "canonical": "Hunter",
+          "aliases": []
+        },
+        {
+          "canonical": "Patriot",
+          "aliases": [
+            "Пatriot",
+            "Патриот"
+          ]
+        },
+        {
+          "canonical": "Pickup",
+          "aliases": []
+        },
+        {
+          "canonical": "Piskup",
+          "aliases": []
+        },
+        {
+          "canonical": "Пикап",
+          "aliases": []
+        },
+        {
+          "canonical": "Хантер",
+          "aliases": []
+        }
       ]
     }
   ]
