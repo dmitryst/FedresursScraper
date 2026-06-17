@@ -6,6 +6,11 @@
       "models": []
     },
     {
+      "canonical": "Aito",
+      "aliases": [],
+      "models": []
+    },
+    {
       "canonical": "Alfa Romeo",
       "aliases": [],
       "models": []
@@ -739,6 +744,14 @@
           ]
         },
         {
+          "canonical": "Dongfeng",
+          "aliases": [
+            "DFSK",
+            "DFM"
+          ],
+          "models": []
+        },
+        {
           "canonical": "Fora",
           "aliases": [
             "Fora (A21)",
@@ -1294,7 +1307,8 @@
             "Daewoo Matiz",
             "Matiz MX",
             "Мatiz",
-            "Матиз"
+            "Матиз",
+            "МАТИЗ БЕСТ"
           ]
         },
         {
@@ -1305,7 +1319,8 @@
             "Nexia 1.6L GLE",
             "NEXIA GLE",
             "Нexia",
-            "Нексия"
+            "Нексия",
+            "Нексиа"
           ]
         },
         {
@@ -1329,14 +1344,6 @@
           "aliases": [
             "Daewoo Tico"
           ]
-        },
-        {
-          "canonical": "МАТИЗ БЕСТ",
-          "aliases": []
-        },
-        {
-          "canonical": "НЕКСИА",
-          "aliases": []
         }
       ]
     },
@@ -1444,6 +1451,13 @@
       ]
     },
     {
+      "canonical": "Derways",
+      "aliases": [
+        "Дервейс"
+      ],
+      "models": []
+    },
+    {
       "canonical": "Dodge",
       "aliases": [
         "Дodge",
@@ -1530,7 +1544,8 @@
       "aliases": [
         "Икsid",
         "Экsid",
-        "ЭКСИД"
+        "ЭКСИД",
+        "EXCEED"
       ],
       "models": [
         {
@@ -2121,6 +2136,11 @@
       ]
     },
     {
+      "canonical": "Haima",
+      "aliases": ["Хайма"],
+      "models": []
+    },
+    {
       "canonical": "Haval",
       "aliases": [
         "Хaval",
@@ -2131,7 +2151,8 @@
         {
           "canonical": "Dargo",
           "aliases": [
-            "Дargo"
+            "Дargo",
+            "Dargo CC6460"
           ]
         },
         {
@@ -3257,7 +3278,8 @@
         "Вaz",
         "Ваз",
         "Lada VAZ",
-        "Lada (VAZ)"
+        "Lada (VAZ)",
+        "ВАЗ (LADA)"
       ],
       "models": [
         {
@@ -3998,7 +4020,9 @@
     {
       "canonical": "Livan",
       "aliases": [],
-      "models": []
+      "models": [
+        "Maple X3 Pro"
+      ]
     },
     {
       "canonical": "Maserati",
@@ -5325,7 +5349,9 @@
         },
         {
           "canonical": "Arkana",
-          "aliases": []
+          "aliases": [
+            "Аркана"
+          ]
         },
         {
           "canonical": "DOKKER",
@@ -5334,7 +5360,8 @@
         {
           "canonical": "Duster",
           "aliases": [
-            "Дuster"
+            "Дuster",
+            "Дастер"
           ]
         },
         {
@@ -5343,11 +5370,10 @@
         },
         {
           "canonical": "Kaptur",
-          "aliases": []
-        },
-        {
-          "canonical": "Kaptur ASREA7",
-          "aliases": []
+          "aliases": [
+            "Каптюр",
+            "Kaptur ASREA7"
+          ]
         },
         {
           "canonical": "Laguna",
@@ -5366,10 +5392,6 @@
           ]
         },
         {
-          "canonical": "MEGAN II",
-          "aliases": []
-        },
-        {
           "canonical": "Megane",
           "aliases": [
             "Megane Break",
@@ -5381,7 +5403,9 @@
             "Megane III",
             "Megane Scenic",
             "Scenic",
-            "Scenic LA25E110 3C"
+            "Scenic LA25E110 3C",
+            "MEGAN II",
+            "МЕГАН"
           ]
         },
         {
@@ -5390,11 +5414,9 @@
         },
         {
           "canonical": "Sandero",
-          "aliases": []
-        },
-        {
-          "canonical": "Sandero Stepway",
           "aliases": [
+            "Сандеро",
+            "Sandero Stepway",
             "LOGAN STEPWAY"
           ]
         },
@@ -5406,24 +5428,16 @@
           ]
         },
         {
-          "canonical": "Аркана",
-          "aliases": []
+          "canonical": "Clio",
+          "aliases": [
+            "Клио"
+          ]
         },
         {
-          "canonical": "Дастер",
-          "aliases": []
-        },
-        {
-          "canonical": "Клио",
-          "aliases": []
-        },
-        {
-          "canonical": "МЕГАН",
-          "aliases": []
-        },
-        {
-          "canonical": "Сандеро",
-          "aliases": []
+          "canonical": "Kangoo",
+          "aliases": [
+            "Кангу"
+          ]
         }
       ]
     },
@@ -5527,6 +5541,11 @@
     },
     {
       "canonical": "Smart",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Soueast",
       "aliases": [],
       "models": []
     },
@@ -5802,7 +5821,11 @@
     {
       "canonical": "SWM",
       "aliases": [],
-      "models": []
+      "models": [
+        {
+          "canonical": "G01F"
+        }
+      ]
     },
     {
       "canonical": "Tesla",
@@ -6641,6 +6664,18 @@
     },
     {
       "canonical": "Zotye",
+      "aliases": [],
+      "models": []
+    },
+    {
+      "canonical": "Xcite",
+      "aliases": [
+        "Эксайт"
+      ],
+      "models": []
+    },
+    {
+      "canonical": "ZX",
       "aliases": [],
       "models": []
     },
