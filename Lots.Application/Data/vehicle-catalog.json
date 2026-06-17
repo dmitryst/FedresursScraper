@@ -744,14 +744,6 @@
           ]
         },
         {
-          "canonical": "Dongfeng",
-          "aliases": [
-            "DFSK",
-            "DFM"
-          ],
-          "models": []
-        },
-        {
           "canonical": "Fora",
           "aliases": [
             "Fora (A21)",
@@ -793,33 +785,12 @@
           ]
         },
         {
-          "canonical": "SUV Tii",
-          "aliases": []
-        },
-        {
-          "canonical": "T21",
+          "canonical": "Tiggo (T11)",
           "aliases": [
-            "T21 FL",
-            "T21FL"
-          ]
-        },
-        {
-          "canonical": "Tiggo",
-          "aliases": [
-            "N11 Tiggo",
-            "SUB-T11",
-            "SUV T11",
-            "T11 T11FL3",
-            "T11 Tiggo",
-            "T19 Tiggo",
-            "T21 (Tiggo 5)",
-            "Tiggo (T11)",
-            "Tiggo 9",
-            "TIGGO PRO4",
             "Tiggo T11",
+            "T11 Tiggo",
             "Tiggo T11FL",
-            "TIGGO7 PRO MAX T32",
-            "TIGGO7 PRO T32DPL4"
+            "T11 T11FL3"
           ]
         },
         {
@@ -846,7 +817,20 @@
         {
           "canonical": "Tiggo 4 Pro",
           "aliases": [
-            "Tiggo4 PRO"
+            "Tiggo4 PRO",
+            "T19 Tiggo",
+            "TIGGO PRO4"
+          ]
+        },
+        {
+          "canonical": "Tiggo 5",
+          "aliases": [
+            "Tiggo5",
+            "Тигго 5",
+            "T21",
+            "T21 FL",
+            "T21FL",
+            "T21 (Tiggo 5)"
           ]
         },
         {
@@ -865,7 +849,8 @@
           "canonical": "Tiggo 7 Pro",
           "aliases": [
             "Tiggo 7 Pro Plug-in Hybrid",
-            "Tiggo7 Pro"
+            "Tiggo7 Pro",
+            "TIGGO7 PRO T32DPL4"
           ]
         },
         {
@@ -873,7 +858,8 @@
           "aliases": [
             "Tiggo 7 Pro MAX T32",
             "Tiggo 7 ProMax",
-            "Tiggo7 Pro Max"
+            "Tiggo7 Pro Max",
+            "TIGGO7 PRO MAX T32"
           ]
         },
         {
@@ -893,6 +879,13 @@
           "canonical": "Tiggo 8 Pro Max",
           "aliases": [
             "Tiggo8 Pro Max"
+          ]
+        },
+        {
+          "canonical": "Tiggo 9",
+          "aliases": [
+            "Tiggo9",
+            "Тигго 9"
           ]
         }
       ]
@@ -3203,10 +3196,6 @@
         },
         {
           "canonical": "SHUMA II",
-          "aliases": []
-        },
-        {
-          "canonical": "SID ED",
           "aliases": []
         },
         {
@@ -5767,6 +5756,12 @@
           "canonical": "Baleno",
           "aliases": [
             "Suzuki Baleno"
+          ]
+        },
+        {
+          "canonical": "Cultus",
+          "aliases": [
+            "Култус"
           ]
         },
         {
