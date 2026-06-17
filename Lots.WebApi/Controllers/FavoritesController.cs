@@ -100,6 +100,10 @@ public class FavoritesController : ControllerBase
                 Id = c.Id,
                 Name = c.Name
             }).ToList(),
+            Images = l.Images
+                .OrderBy(i => i.Order)
+                .Select(i => i.Url)
+                .ToList(),
             PriceSchedules = l.PriceSchedules.Select(pc => new PriceScheduleDto
             {
                 StartDate = pc.StartDate,
