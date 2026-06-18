@@ -9,31 +9,149 @@
         "АКУРА"
       ],
       "models": [
-        { "canonical": "MDX", "aliases": ["Acura MDX", "MDX Type S"] },
-        { "canonical": "RDX", "aliases": ["Acura RDX", "RD", "Acura RD", "ACURA RD"] },
-        { "canonical": "ZDX", "aliases": ["Acura ZDX"] },
-        { "canonical": "CDX", "aliases": ["Acura CDX"] },
-        { "canonical": "TLX", "aliases": ["Acura TLX", "TLX Type S"] },
-        { "canonical": "TL", "aliases": ["Acura TL", "TL Type S"] },
-        { "canonical": "TSX", "aliases": ["Acura TSX"] },
-        { "canonical": "RLX", "aliases": ["Acura RLX"] },
-        { "canonical": "RL", "aliases": ["Acura RL"] },
-        { "canonical": "ILX", "aliases": ["Acura ILX"] },
-        { "canonical": "Integra", "aliases": ["Acura Integra", "Integra Type S"] },
-        { "canonical": "NSX", "aliases": ["Acura NSX"] },
-        { "canonical": "Legend", "aliases": ["Acura Legend"] },
-        { "canonical": "CL", "aliases": ["Acura CL"] },
-        { "canonical": "RSX", "aliases": ["Acura RSX"] },
-        { "canonical": "CSX", "aliases": ["Acura CSX"] },
-        { "canonical": "EL", "aliases": ["Acura EL"] },
-        { "canonical": "SLX", "aliases": ["Acura SLX"] },
-        { "canonical": "Vigor", "aliases": ["Acura Vigor"] }
+        {
+          "canonical": "MDX",
+          "aliases": [
+            "Acura MDX",
+            "MDX Type S"
+          ]
+        },
+        {
+          "canonical": "RDX",
+          "aliases": [
+            "Acura RDX",
+            "RD",
+            "Acura RD",
+            "ACURA RD"
+          ]
+        },
+        {
+          "canonical": "ZDX",
+          "aliases": [
+            "Acura ZDX"
+          ]
+        },
+        {
+          "canonical": "CDX",
+          "aliases": [
+            "Acura CDX"
+          ]
+        },
+        {
+          "canonical": "TLX",
+          "aliases": [
+            "Acura TLX",
+            "TLX Type S"
+          ]
+        },
+        {
+          "canonical": "TL",
+          "aliases": [
+            "Acura TL",
+            "TL Type S"
+          ]
+        },
+        {
+          "canonical": "TSX",
+          "aliases": [
+            "Acura TSX"
+          ]
+        },
+        {
+          "canonical": "RLX",
+          "aliases": [
+            "Acura RLX"
+          ]
+        },
+        {
+          "canonical": "RL",
+          "aliases": [
+            "Acura RL"
+          ]
+        },
+        {
+          "canonical": "ILX",
+          "aliases": [
+            "Acura ILX"
+          ]
+        },
+        {
+          "canonical": "Integra",
+          "aliases": [
+            "Acura Integra",
+            "Integra Type S"
+          ]
+        },
+        {
+          "canonical": "NSX",
+          "aliases": [
+            "Acura NSX"
+          ]
+        },
+        {
+          "canonical": "Legend",
+          "aliases": [
+            "Acura Legend"
+          ]
+        },
+        {
+          "canonical": "CL",
+          "aliases": [
+            "Acura CL"
+          ]
+        },
+        {
+          "canonical": "RSX",
+          "aliases": [
+            "Acura RSX"
+          ]
+        },
+        {
+          "canonical": "CSX",
+          "aliases": [
+            "Acura CSX"
+          ]
+        },
+        {
+          "canonical": "EL",
+          "aliases": [
+            "Acura EL"
+          ]
+        },
+        {
+          "canonical": "SLX",
+          "aliases": [
+            "Acura SLX"
+          ]
+        },
+        {
+          "canonical": "Vigor",
+          "aliases": [
+            "Acura Vigor"
+          ]
+        }
       ]
     },
     {
       "canonical": "Aito",
-      "aliases": [],
-      "models": []
+      "aliases": [
+        "AITO",
+        "Huawei AITO",
+        "SERES AITO",
+        "Wenjie",
+        "问界"
+      ],
+      "models": [
+        {
+          "canonical": "M5",
+          "aliases": [
+            "AITO M5",
+            "Aito M5",
+            "Wenjie M5",
+            "M 5"
+          ]
+        }
+      ]
     },
     {
       "canonical": "Alfa Romeo",
@@ -253,8 +371,20 @@
     },
     {
       "canonical": "Bentley",
-      "aliases": [],
-      "models": []
+      "aliases": [
+        "BENTLEY",
+        "Бентли"
+      ],
+      "models": [
+        {
+          "canonical": "Continental GT",
+          "aliases": [
+            "CONTINENTAL GT",
+            "Continental",
+            "Continental GT Coupe"
+          ]
+        }
+      ]
     },
     {
       "canonical": "BMW",
@@ -515,16 +645,99 @@
         "Бogdan"
       ],
       "models": [
-        { "canonical": "2110", "aliases": ["Bogdan 2110", "Богдан 2110", "Богдан-2110", "Bogdan-2110", "211010", "211010-81", "Bogdan 211010-81", "Богдан 211010-81"] },
-        { "canonical": "2111", "aliases": ["Bogdan 2111", "Богдан 2111", "Богдан-2111", "Bogdan-2111"] },
-        { "canonical": "21104", "aliases": ["Bogdan 21104", "Богдан 21104", "Богдан-21104", "211040", "211040-81", "Bogdan 211040-81", "Богдан 211040-81"] },
-        { "canonical": "21114", "aliases": ["Bogdan 21114", "Богдан 21114", "Богдан-21114"] },
-        { "canonical": "2310", "aliases": ["Bogdan 2310", "Богдан 2310", "Богдан-2310", "Bogdan-2310"] },
-        { "canonical": "2311", "aliases": ["Bogdan 2311", "Богдан 2311", "Богдан-2311", "Bogdan-2311"] },
-        { "canonical": "2312", "aliases": ["Bogdan 2312", "Богдан 2312", "Богдан-2312", "Bogdan-2312"] },
-        { "canonical": "2340", "aliases": ["Bogdan 2340", "Богдан 2340", "Богдан-2340"] },
-        { "canonical": "2345", "aliases": ["Bogdan 2345", "Богдан 2345", "Богдан-2345"] },
-        { "canonical": "2351", "aliases": ["Bogdan 2351", "Богдан 2351", "Богдан-2351"] }
+        {
+          "canonical": "2110",
+          "aliases": [
+            "Bogdan 2110",
+            "Богдан 2110",
+            "Богдан-2110",
+            "Bogdan-2110",
+            "211010",
+            "211010-81",
+            "Bogdan 211010-81",
+            "Богдан 211010-81"
+          ]
+        },
+        {
+          "canonical": "2111",
+          "aliases": [
+            "Bogdan 2111",
+            "Богдан 2111",
+            "Богдан-2111",
+            "Bogdan-2111"
+          ]
+        },
+        {
+          "canonical": "21104",
+          "aliases": [
+            "Bogdan 21104",
+            "Богдан 21104",
+            "Богдан-21104",
+            "211040",
+            "211040-81",
+            "Bogdan 211040-81",
+            "Богдан 211040-81"
+          ]
+        },
+        {
+          "canonical": "21114",
+          "aliases": [
+            "Bogdan 21114",
+            "Богдан 21114",
+            "Богдан-21114"
+          ]
+        },
+        {
+          "canonical": "2310",
+          "aliases": [
+            "Bogdan 2310",
+            "Богдан 2310",
+            "Богдан-2310",
+            "Bogdan-2310"
+          ]
+        },
+        {
+          "canonical": "2311",
+          "aliases": [
+            "Bogdan 2311",
+            "Богдан 2311",
+            "Богдан-2311",
+            "Bogdan-2311"
+          ]
+        },
+        {
+          "canonical": "2312",
+          "aliases": [
+            "Bogdan 2312",
+            "Богдан 2312",
+            "Богдан-2312",
+            "Bogdan-2312"
+          ]
+        },
+        {
+          "canonical": "2340",
+          "aliases": [
+            "Bogdan 2340",
+            "Богдан 2340",
+            "Богдан-2340"
+          ]
+        },
+        {
+          "canonical": "2345",
+          "aliases": [
+            "Bogdan 2345",
+            "Богдан 2345",
+            "Богдан-2345"
+          ]
+        },
+        {
+          "canonical": "2351",
+          "aliases": [
+            "Bogdan 2351",
+            "Богдан 2351",
+            "Богдан-2351"
+          ]
+        }
       ]
     },
     {
@@ -538,21 +751,108 @@
         "华晨"
       ],
       "models": [
-        { "canonical": "Zhonghua", "aliases": ["Brilliance Zhonghua", "中华", "BS6", "BC3"] },
-        { "canonical": "Junjie", "aliases": ["Brilliance Junjie", "骏捷", "Zhonghua Junjie"] },
-        { "canonical": "Zunchi", "aliases": ["Brilliance Zunchi", "尊驰", "Zhonghua Zunchi"] },
-        { "canonical": "FRV", "aliases": ["Brilliance FRV"] },
-        { "canonical": "FSV", "aliases": ["Brilliance FSV"] },
-        { "canonical": "H220", "aliases": ["Brilliance H220"] },
-        { "canonical": "H230", "aliases": ["Brilliance H230"] },
-        { "canonical": "H320", "aliases": ["Brilliance H320"] },
-        { "canonical": "H330", "aliases": ["Brilliance H330"] },
-        { "canonical": "H530", "aliases": ["Brilliance H530", "H530 REEV"] },
-        { "canonical": "H3", "aliases": ["Brilliance H3"] },
-        { "canonical": "V3", "aliases": ["Brilliance V3"] },
-        { "canonical": "V5", "aliases": ["Brilliance V5", "V5 City", "Brilliance V5 City"] },
-        { "canonical": "V6", "aliases": ["Brilliance V6", "Zhonghua V6"] },
-        { "canonical": "V7", "aliases": ["Brilliance V7", "Zhonghua V7"] }
+        {
+          "canonical": "Zhonghua",
+          "aliases": [
+            "Brilliance Zhonghua",
+            "中华",
+            "BS6",
+            "BC3"
+          ]
+        },
+        {
+          "canonical": "Junjie",
+          "aliases": [
+            "Brilliance Junjie",
+            "骏捷",
+            "Zhonghua Junjie"
+          ]
+        },
+        {
+          "canonical": "Zunchi",
+          "aliases": [
+            "Brilliance Zunchi",
+            "尊驰",
+            "Zhonghua Zunchi"
+          ]
+        },
+        {
+          "canonical": "FRV",
+          "aliases": [
+            "Brilliance FRV"
+          ]
+        },
+        {
+          "canonical": "FSV",
+          "aliases": [
+            "Brilliance FSV"
+          ]
+        },
+        {
+          "canonical": "H220",
+          "aliases": [
+            "Brilliance H220"
+          ]
+        },
+        {
+          "canonical": "H230",
+          "aliases": [
+            "Brilliance H230"
+          ]
+        },
+        {
+          "canonical": "H320",
+          "aliases": [
+            "Brilliance H320"
+          ]
+        },
+        {
+          "canonical": "H330",
+          "aliases": [
+            "Brilliance H330"
+          ]
+        },
+        {
+          "canonical": "H530",
+          "aliases": [
+            "Brilliance H530",
+            "H530 REEV"
+          ]
+        },
+        {
+          "canonical": "H3",
+          "aliases": [
+            "Brilliance H3"
+          ]
+        },
+        {
+          "canonical": "V3",
+          "aliases": [
+            "Brilliance V3"
+          ]
+        },
+        {
+          "canonical": "V5",
+          "aliases": [
+            "Brilliance V5",
+            "V5 City",
+            "Brilliance V5 City"
+          ]
+        },
+        {
+          "canonical": "V6",
+          "aliases": [
+            "Brilliance V6",
+            "Zhonghua V6"
+          ]
+        },
+        {
+          "canonical": "V7",
+          "aliases": [
+            "Brilliance V7",
+            "Zhonghua V7"
+          ]
+        }
       ]
     },
     {
@@ -567,33 +867,214 @@
         "БYD Auto"
       ],
       "models": [
-        { "canonical": "Atto 3", "aliases": ["Atto3", "ATTO 3", "BYD Atto 3", "Yuan Plus"] },
-        { "canonical": "Atto 2", "aliases": ["Atto2", "ATTO 2", "BYD Atto 2"] },
-        { "canonical": "Han", "aliases": ["BYD Han", "Han EV", "Han DM", "Han DM-i", "Han DM-p"] },
-        { "canonical": "Tang", "aliases": ["BYD Tang", "Tang EV", "Tang DM", "Tang DM-i", "Tang DM-p", "Tang L"] },
-        { "canonical": "Song Plus", "aliases": ["SongPlus", "Song+", "BYD Song Plus", "Song Plus DM-i", "Song Plus EV"] },
-        { "canonical": "Song Pro", "aliases": ["SongPro", "BYD Song Pro", "Song Pro DM-i"] },
-        { "canonical": "Song L", "aliases": ["SongL", "BYD Song L", "Song L DM-i"] },
-        { "canonical": "Song Max", "aliases": ["SongMax", "BYD Song Max", "Song Max DM"] },
-        { "canonical": "Yuan Plus", "aliases": ["YuanPlus", "BYD Yuan Plus", "Yuan Plus EV"] },
-        { "canonical": "Yuan Pro", "aliases": ["YuanPro", "BYD Yuan Pro"] },
-        { "canonical": "Yuan Up", "aliases": ["YuanUp", "BYD Yuan Up"] },
-        { "canonical": "Qin Plus", "aliases": ["QinPlus", "BYD Qin Plus", "Qin Plus DM-i", "Qin Plus EV"] },
-        { "canonical": "Qin Pro", "aliases": ["QinPro", "BYD Qin Pro"] },
-        { "canonical": "Seal", "aliases": ["BYD Seal", "Seal EV", "Seal DM-i"] },
-        { "canonical": "Seal U", "aliases": ["SealU", "BYD Seal U", "Seal U DM-i"] },
-        { "canonical": "Dolphin", "aliases": ["BYD Dolphin", "Dolphin EV"] },
-        { "canonical": "Seagull", "aliases": ["BYD Seagull", "Dolphin Mini"] },
-        { "canonical": "Destroyer 05", "aliases": ["Destroyer05", "BYD Destroyer 05"] },
-        { "canonical": "Chazor", "aliases": ["BYD Chazor"] },
-        { "canonical": "F3", "aliases": ["BYD F3", "F-3", "QCJ7160A2", "QCJ7160A2(F-3)", "QCJ7160A2 (F-3)"] },
-        { "canonical": "F6", "aliases": ["BYD F6"] },
-        { "canonical": "G6", "aliases": ["BYD G6"] },
-        { "canonical": "S6", "aliases": ["BYD S6"] },
-        { "canonical": "S7", "aliases": ["BYD S7"] },
-        { "canonical": "e2", "aliases": ["BYD e2", "E2"] },
-        { "canonical": "e5", "aliases": ["BYD e5", "E5"] },
-        { "canonical": "e6", "aliases": ["BYD e6", "E6"] }
+        {
+          "canonical": "Atto 3",
+          "aliases": [
+            "Atto3",
+            "ATTO 3",
+            "BYD Atto 3",
+            "Yuan Plus"
+          ]
+        },
+        {
+          "canonical": "Atto 2",
+          "aliases": [
+            "Atto2",
+            "ATTO 2",
+            "BYD Atto 2"
+          ]
+        },
+        {
+          "canonical": "Han",
+          "aliases": [
+            "BYD Han",
+            "Han EV",
+            "Han DM",
+            "Han DM-i",
+            "Han DM-p"
+          ]
+        },
+        {
+          "canonical": "Tang",
+          "aliases": [
+            "BYD Tang",
+            "Tang EV",
+            "Tang DM",
+            "Tang DM-i",
+            "Tang DM-p",
+            "Tang L"
+          ]
+        },
+        {
+          "canonical": "Song Plus",
+          "aliases": [
+            "SongPlus",
+            "Song+",
+            "BYD Song Plus",
+            "Song Plus DM-i",
+            "Song Plus EV"
+          ]
+        },
+        {
+          "canonical": "Song Pro",
+          "aliases": [
+            "SongPro",
+            "BYD Song Pro",
+            "Song Pro DM-i"
+          ]
+        },
+        {
+          "canonical": "Song L",
+          "aliases": [
+            "SongL",
+            "BYD Song L",
+            "Song L DM-i"
+          ]
+        },
+        {
+          "canonical": "Song Max",
+          "aliases": [
+            "SongMax",
+            "BYD Song Max",
+            "Song Max DM"
+          ]
+        },
+        {
+          "canonical": "Yuan Plus",
+          "aliases": [
+            "YuanPlus",
+            "BYD Yuan Plus",
+            "Yuan Plus EV"
+          ]
+        },
+        {
+          "canonical": "Yuan Pro",
+          "aliases": [
+            "YuanPro",
+            "BYD Yuan Pro"
+          ]
+        },
+        {
+          "canonical": "Yuan Up",
+          "aliases": [
+            "YuanUp",
+            "BYD Yuan Up"
+          ]
+        },
+        {
+          "canonical": "Qin Plus",
+          "aliases": [
+            "QinPlus",
+            "BYD Qin Plus",
+            "Qin Plus DM-i",
+            "Qin Plus EV"
+          ]
+        },
+        {
+          "canonical": "Qin Pro",
+          "aliases": [
+            "QinPro",
+            "BYD Qin Pro"
+          ]
+        },
+        {
+          "canonical": "Seal",
+          "aliases": [
+            "BYD Seal",
+            "Seal EV",
+            "Seal DM-i"
+          ]
+        },
+        {
+          "canonical": "Seal U",
+          "aliases": [
+            "SealU",
+            "BYD Seal U",
+            "Seal U DM-i"
+          ]
+        },
+        {
+          "canonical": "Dolphin",
+          "aliases": [
+            "BYD Dolphin",
+            "Dolphin EV"
+          ]
+        },
+        {
+          "canonical": "Seagull",
+          "aliases": [
+            "BYD Seagull",
+            "Dolphin Mini"
+          ]
+        },
+        {
+          "canonical": "Destroyer 05",
+          "aliases": [
+            "Destroyer05",
+            "BYD Destroyer 05"
+          ]
+        },
+        {
+          "canonical": "Chazor",
+          "aliases": [
+            "BYD Chazor"
+          ]
+        },
+        {
+          "canonical": "F3",
+          "aliases": [
+            "BYD F3",
+            "F-3",
+            "QCJ7160A2",
+            "QCJ7160A2(F-3)",
+            "QCJ7160A2 (F-3)"
+          ]
+        },
+        {
+          "canonical": "F6",
+          "aliases": [
+            "BYD F6"
+          ]
+        },
+        {
+          "canonical": "G6",
+          "aliases": [
+            "BYD G6"
+          ]
+        },
+        {
+          "canonical": "S6",
+          "aliases": [
+            "BYD S6"
+          ]
+        },
+        {
+          "canonical": "S7",
+          "aliases": [
+            "BYD S7"
+          ]
+        },
+        {
+          "canonical": "e2",
+          "aliases": [
+            "BYD e2",
+            "E2"
+          ]
+        },
+        {
+          "canonical": "e5",
+          "aliases": [
+            "BYD e5",
+            "E5"
+          ]
+        },
+        {
+          "canonical": "e6",
+          "aliases": [
+            "BYD e6",
+            "E6"
+          ]
+        }
       ]
     },
     {
@@ -1137,15 +1618,20 @@
           "canonical": "Niva",
           "aliases": [
             "Chevrolet Niva",
+            "Hiba",
             "Niva 2123",
             "Niva 212300",
             "Niva 212300-55",
             "NIVA 212300L",
             "NIVA-212300-55",
+            "2123",
+            "212300",
             "НИВА",
             "Нива",
             "Нива 212300",
-            "Нива 212300-55"
+            "Нива 212300-55",
+            "Шевроле Нива",
+            "ШЕВРОЛЕ НИВА"
           ]
         },
         {
@@ -1181,6 +1667,14 @@
         {
           "canonical": "Viva",
           "aliases": []
+        },
+        {
+          "canonical": "Camaro",
+          "aliases": [
+            "CAMARO",
+            "Камаро",
+            "FB1R"
+          ]
         }
       ]
     },
@@ -1266,7 +1760,8 @@
           "canonical": "Berlingo",
           "aliases": [
             "Berlingo TREK",
-            "Citroen Berlingo"
+            "Citroen Berlingo",
+            "БЕРЛИНГО"
           ]
         },
         {
@@ -1299,7 +1794,8 @@
             "C 4",
             "C4 Grand Picasso",
             "C4 Picasso",
-            "Citroen C4"
+            "Citroen C4",
+            "С4"
           ]
         },
         {
@@ -1350,14 +1846,6 @@
             "Citroen Xsara",
             "Xsara Picasso"
           ]
-        },
-        {
-          "canonical": "БЕРЛИНГО",
-          "aliases": []
-        },
-        {
-          "canonical": "С4",
-          "aliases": []
         }
       ]
     },
@@ -1553,7 +2041,8 @@
           "aliases": [
             "Datsun on-DO",
             "on DO",
-            "onDO"
+            "onDO",
+            "Он-До"
           ]
         },
         {
@@ -1561,10 +2050,6 @@
           "aliases": [
             "redi GO"
           ]
-        },
-        {
-          "canonical": "Он-До",
-          "aliases": []
         }
       ]
     },
@@ -1676,33 +2161,209 @@
         "ДОНГФЭНГ",
         "ДФМ",
         "ДФСК",
-        "东风"
+        "东风",
+        "DONFENG"
       ],
       "models": [
-        { "canonical": "AX7", "aliases": ["AX 7", "Dongfeng AX7", "Aeolus AX7", "Fengshen AX7"] },
-        { "canonical": "AX4", "aliases": ["AX 4", "Dongfeng AX4", "Aeolus AX4"] },
-        { "canonical": "AX3", "aliases": ["AX 3", "Dongfeng AX3", "Aeolus AX3"] },
-        { "canonical": "Shine GS", "aliases": ["SHINE GS", "ShineGS", "Dongfeng Shine GS"] },
-        { "canonical": "Shine Max", "aliases": ["SHINE MAX", "ShineMax", "Dongfeng Shine Max"] },
-        { "canonical": "Yixuan", "aliases": ["Yi Xuan", "YIXUAN", "Aeolus Yixuan", "奕炫"] },
-        { "canonical": "Yixuan GS", "aliases": ["Yixuan GS", "Yi Xuan GS", "Aeolus Yixuan GS"] },
-        { "canonical": "Haohan", "aliases": ["Hao Han", "HAOHAN", "Aeolus Haohan", "皓瀚"] },
-        { "canonical": "eπ 007", "aliases": ["eπ007", "epi 007", "e pi 007", "Dongfeng eπ 007"] },
-        { "canonical": "eπ 008", "aliases": ["eπ008", "epi 008", "e pi 008", "Dongfeng eπ 008"] },
-        { "canonical": "Rich 6", "aliases": ["Rich6", "RICH 6", "Dongfeng Rich 6"] },
-        { "canonical": "Rich 7", "aliases": ["Rich7", "RICH 7", "Dongfeng Rich 7"] },
-        { "canonical": "H30 Cross", "aliases": ["H30", "Aeolus H30 Cross", "Fengshen H30 Cross"] },
-        { "canonical": "S30", "aliases": ["Aeolus S30", "Fengshen S30"] },
-        { "canonical": "A30", "aliases": ["Aeolus A30", "Fengshen A30"] },
-        { "canonical": "L60", "aliases": ["Aeolus L60", "Fengshen L60"] },
-        { "canonical": "Glory 580", "aliases": ["DFSK Glory 580", "Glory580", "Fengon 580"] },
-        { "canonical": "Glory 560", "aliases": ["DFSK Glory 560", "Glory560", "Fengon 560"] },
-        { "canonical": "Glory 500", "aliases": ["DFSK Glory 500", "Glory500"] },
-        { "canonical": "Glory 330", "aliases": ["DFSK Glory 330", "Glory330"] },
-        { "canonical": "Glory ix5", "aliases": ["IX5", "Glory IX5", "DFSK ix5"] },
-        { "canonical": "Glory ix7", "aliases": ["IX7", "Glory IX7", "DFSK ix7"] },
-        { "canonical": "Fengon 500", "aliases": ["Fengon500", "Fengguang 500"] },
-        { "canonical": "Box", "aliases": ["Dongfeng Box", "Nammi Box", "Nammi 01", "Nammi01", "Nano Box", "NanoBox", "Nano 01", "Dongfeng Nammi Box", "Dongfeng Nammi 01", "Dongfeng Nano Box", "东风纳米01"] }
+        {
+          "canonical": "AX7",
+          "aliases": [
+            "AX 7",
+            "Dongfeng AX7",
+            "Aeolus AX7",
+            "Fengshen AX7"
+          ]
+        },
+        {
+          "canonical": "AX4",
+          "aliases": [
+            "AX 4",
+            "Dongfeng AX4",
+            "Aeolus AX4"
+          ]
+        },
+        {
+          "canonical": "AX3",
+          "aliases": [
+            "AX 3",
+            "Dongfeng AX3",
+            "Aeolus AX3"
+          ]
+        },
+        {
+          "canonical": "Shine GS",
+          "aliases": [
+            "SHINE GS",
+            "ShineGS",
+            "Dongfeng Shine GS"
+          ]
+        },
+        {
+          "canonical": "Shine Max",
+          "aliases": [
+            "SHINE MAX",
+            "ShineMax",
+            "Dongfeng Shine Max"
+          ]
+        },
+        {
+          "canonical": "Yixuan",
+          "aliases": [
+            "Yi Xuan",
+            "YIXUAN",
+            "Aeolus Yixuan",
+            "奕炫"
+          ]
+        },
+        {
+          "canonical": "Yixuan GS",
+          "aliases": [
+            "Yixuan GS",
+            "Yi Xuan GS",
+            "Aeolus Yixuan GS"
+          ]
+        },
+        {
+          "canonical": "Haohan",
+          "aliases": [
+            "Hao Han",
+            "HAOHAN",
+            "Aeolus Haohan",
+            "皓瀚"
+          ]
+        },
+        {
+          "canonical": "eπ 007",
+          "aliases": [
+            "eπ007",
+            "epi 007",
+            "e pi 007",
+            "Dongfeng eπ 007"
+          ]
+        },
+        {
+          "canonical": "eπ 008",
+          "aliases": [
+            "eπ008",
+            "epi 008",
+            "e pi 008",
+            "Dongfeng eπ 008"
+          ]
+        },
+        {
+          "canonical": "Rich 6",
+          "aliases": [
+            "Rich6",
+            "RICH 6",
+            "Dongfeng Rich 6"
+          ]
+        },
+        {
+          "canonical": "Rich 7",
+          "aliases": [
+            "Rich7",
+            "RICH 7",
+            "Dongfeng Rich 7"
+          ]
+        },
+        {
+          "canonical": "H30 Cross",
+          "aliases": [
+            "H30",
+            "Aeolus H30 Cross",
+            "Fengshen H30 Cross"
+          ]
+        },
+        {
+          "canonical": "S30",
+          "aliases": [
+            "Aeolus S30",
+            "Fengshen S30"
+          ]
+        },
+        {
+          "canonical": "A30",
+          "aliases": [
+            "Aeolus A30",
+            "Fengshen A30"
+          ]
+        },
+        {
+          "canonical": "L60",
+          "aliases": [
+            "Aeolus L60",
+            "Fengshen L60"
+          ]
+        },
+        {
+          "canonical": "Glory 580",
+          "aliases": [
+            "DFSK Glory 580",
+            "Glory580",
+            "Fengon 580"
+          ]
+        },
+        {
+          "canonical": "Glory 560",
+          "aliases": [
+            "DFSK Glory 560",
+            "Glory560",
+            "Fengon 560"
+          ]
+        },
+        {
+          "canonical": "Glory 500",
+          "aliases": [
+            "DFSK Glory 500",
+            "Glory500"
+          ]
+        },
+        {
+          "canonical": "Glory 330",
+          "aliases": [
+            "DFSK Glory 330",
+            "Glory330"
+          ]
+        },
+        {
+          "canonical": "Glory ix5",
+          "aliases": [
+            "IX5",
+            "Glory IX5",
+            "DFSK ix5"
+          ]
+        },
+        {
+          "canonical": "Glory ix7",
+          "aliases": [
+            "IX7",
+            "Glory IX7",
+            "DFSK ix7"
+          ]
+        },
+        {
+          "canonical": "Fengon 500",
+          "aliases": [
+            "Fengon500",
+            "Fengguang 500"
+          ]
+        },
+        {
+          "canonical": "Box",
+          "aliases": [
+            "Dongfeng Box",
+            "Nammi Box",
+            "Nammi 01",
+            "Nammi01",
+            "Nano Box",
+            "NanoBox",
+            "Nano 01",
+            "Dongfeng Nammi Box",
+            "Dongfeng Nammi 01",
+            "Dongfeng Nano Box",
+            "东风纳米01"
+          ]
+        }
       ]
     },
     {
@@ -1964,13 +2625,15 @@
             "Focus III Рестайлинг",
             "Focus SE",
             "Focus ZTS",
-            "Focus ZX5"
+            "Focus ZX5",
+            "ФОКУС"
           ]
         },
         {
           "canonical": "Fusion",
           "aliases": [
-            "Ford Fusion"
+            "Ford Fusion",
+            "Фьюжн"
           ]
         },
         {
@@ -1993,7 +2656,9 @@
         },
         {
           "canonical": "Mondeo",
-          "aliases": []
+          "aliases": [
+            "Мондео"
+          ]
         },
         {
           "canonical": "Mustang",
@@ -2020,18 +2685,6 @@
         {
           "canonical": "Windstar",
           "aliases": []
-        },
-        {
-          "canonical": "Мондео",
-          "aliases": []
-        },
-        {
-          "canonical": "ФОКУС",
-          "aliases": []
-        },
-        {
-          "canonical": "Фьюжн",
-          "aliases": []
         }
       ]
     },
@@ -2047,33 +2700,214 @@
         "东风风行"
       ],
       "models": [
-        { "canonical": "T5 EVO", "aliases": ["T5EVO", "T5 Evo", "Forthing T5 EVO", "FORTHING T5 EVO"] },
-        { "canonical": "T5 HEV", "aliases": ["T5HEV", "Forthing T5 HEV"] },
-        { "canonical": "T5", "aliases": ["Forthing T5", "FORTHING T5"] },
-        { "canonical": "T5L", "aliases": ["T5 L", "Forthing T5L"] },
-        { "canonical": "Friday", "aliases": ["Friday EV", "Friday REEV", "Forthing Friday", "Forthing Friday EV", "Leiting", "Forthing Leiting", "Xinghai T5", "Xinghai T5 EV"] },
-        { "canonical": "U-Tour", "aliases": ["U Tour", "UTour", "Yacht", "Forthing Yacht", "Forthing U-Tour", "4 U-Tour"] },
-        { "canonical": "V9", "aliases": ["Forthing V9", "Xinghai V9", "V9 HEV", "V9 PHEV", "V9 Guardian", "Forthing V9 Guardian"] },
-        { "canonical": "V6", "aliases": ["Forthing V6", "Xinghai V6", "V6 PHEV"] },
-        { "canonical": "V3", "aliases": ["Forthing V3"] },
-        { "canonical": "S7", "aliases": ["Forthing S7", "Xinghai S7", "S7 EV"] },
-        { "canonical": "S60 EV", "aliases": ["S60", "Forthing S60 EV", "Forthing S60"] },
-        { "canonical": "S500", "aliases": ["Forthing S500"] },
-        { "canonical": "SX6", "aliases": ["Forthing SX6"] },
-        { "canonical": "Lingzhi", "aliases": ["Forthing Lingzhi", "FORTHING Lingzhi"] },
-        { "canonical": "Lingzhi M5", "aliases": ["Lingzhi M5", "Forthing Lingzhi M5"] },
-        { "canonical": "Lingzhi M7", "aliases": ["Lingzhi M7", "Forthing Lingzhi M7"] },
-        { "canonical": "Lingzhi Plus", "aliases": ["Forthing Lingzhi Plus"] },
-        { "canonical": "M7", "aliases": ["Forthing M7"] },
-        { "canonical": "CM7", "aliases": ["Forthing CM7"] },
-        { "canonical": "F600", "aliases": ["Forthing F600"] },
-        { "canonical": "Jingyi", "aliases": ["Joyear", "Forthing Jingyi"] },
-        { "canonical": "Jingyi X3", "aliases": ["Joyear X3", "Forthing Jingyi X3"] },
-        { "canonical": "Jingyi X5", "aliases": ["Joyear X5", "Forthing Jingyi X5"] },
-        { "canonical": "Jingyi X6", "aliases": ["Joyear X6", "Forthing Jingyi X6"] },
-        { "canonical": "Jingyi SUV", "aliases": ["Joyear SUV", "Forthing Jingyi SUV"] },
-        { "canonical": "Jingyi S50", "aliases": ["S50", "Forthing Jingyi S50"] },
-        { "canonical": "Jingyi S50 EV", "aliases": ["S50 EV", "Forthing Jingyi S50 EV"] }
+        {
+          "canonical": "T5 EVO",
+          "aliases": [
+            "T5EVO",
+            "T5 Evo",
+            "Forthing T5 EVO",
+            "FORTHING T5 EVO"
+          ]
+        },
+        {
+          "canonical": "T5 HEV",
+          "aliases": [
+            "T5HEV",
+            "Forthing T5 HEV"
+          ]
+        },
+        {
+          "canonical": "T5",
+          "aliases": [
+            "Forthing T5",
+            "FORTHING T5"
+          ]
+        },
+        {
+          "canonical": "T5L",
+          "aliases": [
+            "T5 L",
+            "Forthing T5L"
+          ]
+        },
+        {
+          "canonical": "Friday",
+          "aliases": [
+            "Friday EV",
+            "Friday REEV",
+            "Forthing Friday",
+            "Forthing Friday EV",
+            "Leiting",
+            "Forthing Leiting",
+            "Xinghai T5",
+            "Xinghai T5 EV"
+          ]
+        },
+        {
+          "canonical": "U-Tour",
+          "aliases": [
+            "U Tour",
+            "UTour",
+            "Yacht",
+            "Forthing Yacht",
+            "Forthing U-Tour",
+            "4 U-Tour",
+            "M4",
+            "M4 Yacht",
+            "M4 YAC",
+            "Forthing M4",
+            "Forthing M4 YAC",
+            "Youting",
+            "U-Tour M4"
+          ]
+        },
+        {
+          "canonical": "V9",
+          "aliases": [
+            "Forthing V9",
+            "Xinghai V9",
+            "V9 HEV",
+            "V9 PHEV",
+            "V9 Guardian",
+            "Forthing V9 Guardian"
+          ]
+        },
+        {
+          "canonical": "V6",
+          "aliases": [
+            "Forthing V6",
+            "Xinghai V6",
+            "V6 PHEV"
+          ]
+        },
+        {
+          "canonical": "V3",
+          "aliases": [
+            "Forthing V3"
+          ]
+        },
+        {
+          "canonical": "S7",
+          "aliases": [
+            "Forthing S7",
+            "Xinghai S7",
+            "S7 EV"
+          ]
+        },
+        {
+          "canonical": "S60 EV",
+          "aliases": [
+            "S60",
+            "Forthing S60 EV",
+            "Forthing S60"
+          ]
+        },
+        {
+          "canonical": "S500",
+          "aliases": [
+            "Forthing S500"
+          ]
+        },
+        {
+          "canonical": "SX6",
+          "aliases": [
+            "Forthing SX6"
+          ]
+        },
+        {
+          "canonical": "Lingzhi",
+          "aliases": [
+            "Forthing Lingzhi",
+            "FORTHING Lingzhi"
+          ]
+        },
+        {
+          "canonical": "Lingzhi M5",
+          "aliases": [
+            "Lingzhi M5",
+            "Forthing Lingzhi M5"
+          ]
+        },
+        {
+          "canonical": "Lingzhi M7",
+          "aliases": [
+            "Lingzhi M7",
+            "Forthing Lingzhi M7"
+          ]
+        },
+        {
+          "canonical": "Lingzhi Plus",
+          "aliases": [
+            "Forthing Lingzhi Plus"
+          ]
+        },
+        {
+          "canonical": "M7",
+          "aliases": [
+            "Forthing M7"
+          ]
+        },
+        {
+          "canonical": "CM7",
+          "aliases": [
+            "Forthing CM7"
+          ]
+        },
+        {
+          "canonical": "F600",
+          "aliases": [
+            "Forthing F600"
+          ]
+        },
+        {
+          "canonical": "Jingyi",
+          "aliases": [
+            "Joyear",
+            "Forthing Jingyi"
+          ]
+        },
+        {
+          "canonical": "Jingyi X3",
+          "aliases": [
+            "Joyear X3",
+            "Forthing Jingyi X3"
+          ]
+        },
+        {
+          "canonical": "Jingyi X5",
+          "aliases": [
+            "Joyear X5",
+            "Forthing Jingyi X5"
+          ]
+        },
+        {
+          "canonical": "Jingyi X6",
+          "aliases": [
+            "Joyear X6",
+            "Forthing Jingyi X6"
+          ]
+        },
+        {
+          "canonical": "Jingyi SUV",
+          "aliases": [
+            "Joyear SUV",
+            "Forthing Jingyi SUV"
+          ]
+        },
+        {
+          "canonical": "Jingyi S50",
+          "aliases": [
+            "S50",
+            "Forthing Jingyi S50"
+          ]
+        },
+        {
+          "canonical": "Jingyi S50 EV",
+          "aliases": [
+            "S50 EV",
+            "Forthing Jingyi S50 EV"
+          ]
+        }
       ]
     },
     {
@@ -2089,9 +2923,42 @@
         "ST Nizhegorodets"
       ],
       "models": [
-        { "canonical": "613", "aliases": ["FST613", "FST 613", "XUS FST613", "XUSFST613", "Нижегородец-FST613", "Нижегородец FST613", "Fiat Ducato FST613"] },
-        { "canonical": "0E4", "aliases": ["FST0E4", "FST 0E4", "XUS FST0E4", "XUSFST0E4", "Нижегородец-FST0E4", "Нижегородец FST0E4", "Fiat Ducato FST0E4", "Fiat Ducato 250 FST0E4"] },
-        { "canonical": "18", "aliases": ["FST18", "FST 18", "XUS FST18", "XUSFST18", "Нижегородец-FST18"] }
+        {
+          "canonical": "613",
+          "aliases": [
+            "FST613",
+            "FST 613",
+            "XUS FST613",
+            "XUSFST613",
+            "Нижегородец-FST613",
+            "Нижегородец FST613",
+            "Fiat Ducato FST613",
+            "Fiat FST613"
+          ]
+        },
+        {
+          "canonical": "0E4",
+          "aliases": [
+            "FST0E4",
+            "FST 0E4",
+            "XUS FST0E4",
+            "XUSFST0E4",
+            "Нижегородец-FST0E4",
+            "Нижегородец FST0E4",
+            "Fiat Ducato FST0E4",
+            "Fiat Ducato 250 FST0E4"
+          ]
+        },
+        {
+          "canonical": "18",
+          "aliases": [
+            "FST18",
+            "FST 18",
+            "XUS FST18",
+            "XUSFST18",
+            "Нижегородец-FST18"
+          ]
+        }
       ]
     },
     {
@@ -2104,32 +2971,202 @@
         "广汽传祺"
       ],
       "models": [
-        { "canonical": "GA3", "aliases": ["Trumpchi GA3", "GAC GA3"] },
-        { "canonical": "GA3S", "aliases": ["GA3 S", "Trumpchi GA3S", "GAC GA3S"] },
-        { "canonical": "GA4", "aliases": ["Trumpchi GA4", "GAC GA4"] },
-        { "canonical": "GA5", "aliases": ["Trumpchi GA5", "GAC GA5"] },
-        { "canonical": "GA6", "aliases": ["Trumpchi GA6", "GAC GA6"] },
-        { "canonical": "GA8", "aliases": ["Trumpchi GA8", "GAC GA8"] },
-        { "canonical": "Empow", "aliases": ["Trumpchi Empow", "GAC Empow", "影豹"] },
-        { "canonical": "GS3", "aliases": ["Trumpchi GS3", "GAC GS3", "GS3 Emzoom", "Emzoom", "GS3 Power"] },
-        { "canonical": "GS4", "aliases": ["Trumpchi GS4", "GAC GS4", "GS4 Plus", "GS4 Coupe", "GS4 PHEV"] },
-        { "canonical": "GS5", "aliases": ["Trumpchi GS5", "GAC GS5", "GS5S"] },
-        { "canonical": "Emkoo", "aliases": ["Trumpchi Emkoo", "GAC Emkoo", "影酷"] },
-        { "canonical": "GE3", "aliases": ["Trumpchi GE3", "GAC GE3", "GE4"] },
-        { "canonical": "GS7", "aliases": ["Trumpchi GS7", "GAC GS7", "GS8S"] },
-        { "canonical": "GS8", "aliases": ["Trumpchi GS8", "GAC GS8"] },
-        { "canonical": "ES9", "aliases": ["Trumpchi ES9", "GAC ES9"] },
-        { "canonical": "S7", "aliases": ["Trumpchi S7", "Xiangwang S7", "传祺向往S7"] },
-        { "canonical": "M6", "aliases": ["Trumpchi M6", "GAC M6", "GM6", "GN6"] },
-        { "canonical": "M8", "aliases": ["Trumpchi M8", "GAC M8", "GM8", "GN8"] },
-        { "canonical": "E8", "aliases": ["Trumpchi E8", "GAC E8", "Xiangwang E8"] },
-        { "canonical": "E9", "aliases": ["Trumpchi E9", "GAC E9"] },
-        { "canonical": "Aion S", "aliases": ["Aion ES", "GAC Aion S", "Trumpchi Aion S"] },
-        { "canonical": "Aion V", "aliases": ["GAC Aion V"] },
-        { "canonical": "Aion Y", "aliases": ["GAC Aion Y"] },
-        { "canonical": "Aion LX", "aliases": ["GAC Aion LX"] },
-        { "canonical": "Aion RT", "aliases": ["GAC Aion RT"] },
-        { "canonical": "Aion UT", "aliases": ["GAC Aion UT"] }
+        {
+          "canonical": "GA3",
+          "aliases": [
+            "Trumpchi GA3",
+            "GAC GA3"
+          ]
+        },
+        {
+          "canonical": "GA3S",
+          "aliases": [
+            "GA3 S",
+            "Trumpchi GA3S",
+            "GAC GA3S"
+          ]
+        },
+        {
+          "canonical": "GA4",
+          "aliases": [
+            "Trumpchi GA4",
+            "GAC GA4"
+          ]
+        },
+        {
+          "canonical": "GA5",
+          "aliases": [
+            "Trumpchi GA5",
+            "GAC GA5"
+          ]
+        },
+        {
+          "canonical": "GA6",
+          "aliases": [
+            "Trumpchi GA6",
+            "GAC GA6"
+          ]
+        },
+        {
+          "canonical": "GA8",
+          "aliases": [
+            "Trumpchi GA8",
+            "GAC GA8"
+          ]
+        },
+        {
+          "canonical": "Empow",
+          "aliases": [
+            "Trumpchi Empow",
+            "GAC Empow",
+            "影豹"
+          ]
+        },
+        {
+          "canonical": "GS3",
+          "aliases": [
+            "Trumpchi GS3",
+            "GAC GS3",
+            "GS3 Emzoom",
+            "Emzoom",
+            "GS3 Power"
+          ]
+        },
+        {
+          "canonical": "GS4",
+          "aliases": [
+            "Trumpchi GS4",
+            "GAC GS4",
+            "GS4 Plus",
+            "GS4 Coupe",
+            "GS4 PHEV"
+          ]
+        },
+        {
+          "canonical": "GS5",
+          "aliases": [
+            "Trumpchi GS5",
+            "GAC GS5",
+            "GS5S"
+          ]
+        },
+        {
+          "canonical": "Emkoo",
+          "aliases": [
+            "Trumpchi Emkoo",
+            "GAC Emkoo",
+            "影酷"
+          ]
+        },
+        {
+          "canonical": "GE3",
+          "aliases": [
+            "Trumpchi GE3",
+            "GAC GE3",
+            "GE4"
+          ]
+        },
+        {
+          "canonical": "GS7",
+          "aliases": [
+            "Trumpchi GS7",
+            "GAC GS7",
+            "GS8S"
+          ]
+        },
+        {
+          "canonical": "GS8",
+          "aliases": [
+            "Trumpchi GS8",
+            "GAC GS8"
+          ]
+        },
+        {
+          "canonical": "ES9",
+          "aliases": [
+            "Trumpchi ES9",
+            "GAC ES9"
+          ]
+        },
+        {
+          "canonical": "S7",
+          "aliases": [
+            "Trumpchi S7",
+            "Xiangwang S7",
+            "传祺向往S7"
+          ]
+        },
+        {
+          "canonical": "M6",
+          "aliases": [
+            "Trumpchi M6",
+            "GAC M6",
+            "GM6",
+            "GN6"
+          ]
+        },
+        {
+          "canonical": "M8",
+          "aliases": [
+            "Trumpchi M8",
+            "GAC M8",
+            "GM8",
+            "GN8"
+          ]
+        },
+        {
+          "canonical": "E8",
+          "aliases": [
+            "Trumpchi E8",
+            "GAC E8",
+            "Xiangwang E8"
+          ]
+        },
+        {
+          "canonical": "E9",
+          "aliases": [
+            "Trumpchi E9",
+            "GAC E9"
+          ]
+        },
+        {
+          "canonical": "Aion S",
+          "aliases": [
+            "Aion ES",
+            "GAC Aion S",
+            "Trumpchi Aion S"
+          ]
+        },
+        {
+          "canonical": "Aion V",
+          "aliases": [
+            "GAC Aion V"
+          ]
+        },
+        {
+          "canonical": "Aion Y",
+          "aliases": [
+            "GAC Aion Y"
+          ]
+        },
+        {
+          "canonical": "Aion LX",
+          "aliases": [
+            "GAC Aion LX"
+          ]
+        },
+        {
+          "canonical": "Aion RT",
+          "aliases": [
+            "GAC Aion RT"
+          ]
+        },
+        {
+          "canonical": "Aion UT",
+          "aliases": [
+            "GAC Aion UT"
+          ]
+        }
       ]
     },
     {
@@ -2200,17 +3237,16 @@
           "aliases": []
         },
         {
-          "canonical": "JL 7152U1 МК",
-          "aliases": []
-        },
-        {
           "canonical": "MK",
           "aliases": [
             "Geely MK",
             "MK Cross",
             "MK-2",
             "MK-Cross",
-            "MK-GROSS"
+            "MK-GROSS",
+            "JL 7152U1 МК",
+            "JL 7152U1",
+            "JL7152U1"
           ]
         },
         {
@@ -2248,14 +3284,70 @@
         "Genesis Luxury"
       ],
       "models": [
-        { "canonical": "G70", "aliases": ["Genesis G70", "GENESIS G70", "G70 Shooting Brake"] },
-        { "canonical": "G80", "aliases": ["Genesis G80", "GENESIS G80", "Electrified G80", "Genesis Electrified G80"] },
-        { "canonical": "G90", "aliases": ["Genesis G90", "GENESIS G90"] },
-        { "canonical": "GV60", "aliases": ["Genesis GV60", "GENESIS GV60"] },
-        { "canonical": "GV70", "aliases": ["Genesis GV70", "GENESIS GV70", "Electrified GV70", "GV70 Coupe"] },
-        { "canonical": "GV80", "aliases": ["Genesis GV80", "GENESIS GV80", "GV80 Coupe"] },
-        { "canonical": "Coupe", "aliases": ["Genesis Coupe", "Hyundai Genesis Coupe", "GENESIS Coupe"] },
-        { "canonical": "Sedan", "aliases": ["Genesis Sedan", "Hyundai Genesis", "Hyundai Genesis Sedan"] }
+        {
+          "canonical": "G70",
+          "aliases": [
+            "Genesis G70",
+            "GENESIS G70",
+            "G70 Shooting Brake"
+          ]
+        },
+        {
+          "canonical": "G80",
+          "aliases": [
+            "Genesis G80",
+            "GENESIS G80",
+            "Electrified G80",
+            "Genesis Electrified G80"
+          ]
+        },
+        {
+          "canonical": "G90",
+          "aliases": [
+            "Genesis G90",
+            "GENESIS G90"
+          ]
+        },
+        {
+          "canonical": "GV60",
+          "aliases": [
+            "Genesis GV60",
+            "GENESIS GV60"
+          ]
+        },
+        {
+          "canonical": "GV70",
+          "aliases": [
+            "Genesis GV70",
+            "GENESIS GV70",
+            "Electrified GV70",
+            "GV70 Coupe"
+          ]
+        },
+        {
+          "canonical": "GV80",
+          "aliases": [
+            "Genesis GV80",
+            "GENESIS GV80",
+            "GV80 Coupe"
+          ]
+        },
+        {
+          "canonical": "Coupe",
+          "aliases": [
+            "Genesis Coupe",
+            "Hyundai Genesis Coupe",
+            "GENESIS Coupe"
+          ]
+        },
+        {
+          "canonical": "Sedan",
+          "aliases": [
+            "Genesis Sedan",
+            "Hyundai Genesis",
+            "Hyundai Genesis Sedan"
+          ]
+        }
       ]
     },
     {
@@ -2266,7 +3358,8 @@
         "Гreat Wall",
         "Грейт Уолл",
         "ГРЕЙТ УОЛЛ",
-        "Great Wall Motor"
+        "Great Wall Motor",
+        "GREAT WALL"
       ],
       "models": [
         {
@@ -2406,12 +3499,16 @@
           ]
         },
         {
-          "canonical": "Иная",
-          "aliases": []
-        },
-        {
-          "canonical": "СС",
-          "aliases": []
+          "canonical": "CC",
+          "aliases": [
+            "CC",
+            "СС",
+            "Great Wall CC",
+            "GREAT WALL CC",
+            "GREAT WALL СС",
+            "Great Wall СС",
+            "Z8PFF3"
+          ]
         }
       ]
     },
@@ -2426,16 +3523,92 @@
         "ХАФЕЙ"
       ],
       "models": [
-        { "canonical": "Lobo", "aliases": ["Hafei Lobo", "HAFEI Lobo", "Simbo", "HFJ7100", "HFJ7110"] },
-        { "canonical": "Saima", "aliases": ["Hafei Saima", "HAFEI Saima", "Lobo Saima"] },
-        { "canonical": "Saibao", "aliases": ["Hafei Saibao", "HAFEI Saibao", "Lobo Saibao", "Saibao I", "Saibao II", "Saibao III", "Saibao V", "HFJ7161"] },
-        { "canonical": "Minyi", "aliases": ["Hafei Minyi", "Xin Minyi", "Xin-Minyi", "Minyi M408", "HFJ6390"] },
-        { "canonical": "Zhongyi", "aliases": ["Hafei Zhongyi", "Zhongyi V5", "HFJ6370"] },
-        { "canonical": "Junyi", "aliases": ["Hafei Junyi", "HAFEI Junyi"] },
-        { "canonical": "Baili", "aliases": ["Hafei Baili", "HAFEI Baili"] },
-        { "canonical": "Ruiyi", "aliases": ["Hafei Ruiyi", "HAFEI Ruiyi"] },
-        { "canonical": "Huaxiang", "aliases": ["Hafei Huaxiang", "Splendid Voyage", "HFJ6350"] },
-        { "canonical": "Songhuajiang", "aliases": ["Songhuajiang", "HFJ7080", "HFJ7130"] }
+        {
+          "canonical": "Lobo",
+          "aliases": [
+            "Hafei Lobo",
+            "HAFEI Lobo",
+            "Simbo",
+            "HFJ7100",
+            "HFJ7110"
+          ]
+        },
+        {
+          "canonical": "Saima",
+          "aliases": [
+            "Hafei Saima",
+            "HAFEI Saima",
+            "Lobo Saima"
+          ]
+        },
+        {
+          "canonical": "Saibao",
+          "aliases": [
+            "Hafei Saibao",
+            "HAFEI Saibao",
+            "Lobo Saibao",
+            "Saibao I",
+            "Saibao II",
+            "Saibao III",
+            "Saibao V",
+            "HFJ7161"
+          ]
+        },
+        {
+          "canonical": "Minyi",
+          "aliases": [
+            "Hafei Minyi",
+            "Xin Minyi",
+            "Xin-Minyi",
+            "Minyi M408",
+            "HFJ6390"
+          ]
+        },
+        {
+          "canonical": "Zhongyi",
+          "aliases": [
+            "Hafei Zhongyi",
+            "Zhongyi V5",
+            "HFJ6370"
+          ]
+        },
+        {
+          "canonical": "Junyi",
+          "aliases": [
+            "Hafei Junyi",
+            "HAFEI Junyi"
+          ]
+        },
+        {
+          "canonical": "Baili",
+          "aliases": [
+            "Hafei Baili",
+            "HAFEI Baili"
+          ]
+        },
+        {
+          "canonical": "Ruiyi",
+          "aliases": [
+            "Hafei Ruiyi",
+            "HAFEI Ruiyi"
+          ]
+        },
+        {
+          "canonical": "Huaxiang",
+          "aliases": [
+            "Hafei Huaxiang",
+            "Splendid Voyage",
+            "HFJ6350"
+          ]
+        },
+        {
+          "canonical": "Songhuajiang",
+          "aliases": [
+            "Songhuajiang",
+            "HFJ7080",
+            "HFJ7130"
+          ]
+        }
       ]
     },
     {
@@ -2449,28 +3622,182 @@
         "海马"
       ],
       "models": [
-        { "canonical": "S5", "aliases": ["Haima S5", "HAIMA S5", "S5 Young", "Haima S5 Young"] },
-        { "canonical": "S7", "aliases": ["Haima S7", "HAIMA S7"] },
-        { "canonical": "7X", "aliases": ["Haima 7X", "HAIMA 7X", "7X-E", "Haima 7X-E"] },
-        { "canonical": "8S", "aliases": ["Haima 8S", "HAIMA 8S"] },
-        { "canonical": "6P", "aliases": ["Haima 6P", "HAIMA 6P"] },
-        { "canonical": "M3", "aliases": ["Haima M3", "HAIMA M3"] },
-        { "canonical": "M5", "aliases": ["Haima M5", "HAIMA M5"] },
-        { "canonical": "M6", "aliases": ["Haima M6", "HAIMA M6"] },
-        { "canonical": "M8", "aliases": ["Haima M8", "HAIMA M8"] },
-        { "canonical": "3", "aliases": ["Haima 3", "HAIMA 3", "Haima 3 Huandong", "219301", "HAIMA 219301", "Haima 219301", "ХАЙМА 219301"] },
-        { "canonical": "2", "aliases": ["Haima 2", "HAIMA 2", "Haima 2 C-Sport"] },
-        { "canonical": "1", "aliases": ["Haima 1", "HAIMA 1", "Aishang", "Haima Aishang", "Prince"] },
-        { "canonical": "7", "aliases": ["Haima 7", "HAIMA 7"] },
-        { "canonical": "Family", "aliases": ["Haima Family", "Family Classic", "Family VS", "Happin"] },
-        { "canonical": "Family F5", "aliases": ["Haima Family F5", "Family F5"] },
-        { "canonical": "Family F7", "aliases": ["Haima Family F7", "Family F7"] },
-        { "canonical": "F5", "aliases": ["Haima F5", "HAIMA F5"] },
-        { "canonical": "F7", "aliases": ["Haima F7", "HAIMA F7", "V70", "Haima V70"] },
-        { "canonical": "Freema", "aliases": ["Haima Freema", "Premacy", "Haima Premacy"] },
-        { "canonical": "323", "aliases": ["Haima 323", "HAIMA 323"] },
-        { "canonical": "Injoy L", "aliases": ["Haima Injoy L", "InjoyL"] },
-        { "canonical": "E3", "aliases": ["Haima E3", "HAIMA E3"] }
+        {
+          "canonical": "S5",
+          "aliases": [
+            "Haima S5",
+            "HAIMA S5",
+            "S5 Young",
+            "Haima S5 Young"
+          ]
+        },
+        {
+          "canonical": "S7",
+          "aliases": [
+            "Haima S7",
+            "HAIMA S7"
+          ]
+        },
+        {
+          "canonical": "7X",
+          "aliases": [
+            "Haima 7X",
+            "HAIMA 7X",
+            "7X-E",
+            "Haima 7X-E"
+          ]
+        },
+        {
+          "canonical": "8S",
+          "aliases": [
+            "Haima 8S",
+            "HAIMA 8S"
+          ]
+        },
+        {
+          "canonical": "6P",
+          "aliases": [
+            "Haima 6P",
+            "HAIMA 6P"
+          ]
+        },
+        {
+          "canonical": "M3",
+          "aliases": [
+            "Haima M3",
+            "HAIMA M3"
+          ]
+        },
+        {
+          "canonical": "M5",
+          "aliases": [
+            "Haima M5",
+            "HAIMA M5"
+          ]
+        },
+        {
+          "canonical": "M6",
+          "aliases": [
+            "Haima M6",
+            "HAIMA M6"
+          ]
+        },
+        {
+          "canonical": "M8",
+          "aliases": [
+            "Haima M8",
+            "HAIMA M8"
+          ]
+        },
+        {
+          "canonical": "3",
+          "aliases": [
+            "Haima 3",
+            "HAIMA 3",
+            "Haima 3 Huandong",
+            "219300",
+            "219301",
+            "HAIMA 219300",
+            "Haima 219300",
+            "HAIMA 219301",
+            "Haima 219301",
+            "ХАЙМА 219301",
+            "ХАЙМА 219300"
+          ]
+        },
+        {
+          "canonical": "2",
+          "aliases": [
+            "Haima 2",
+            "HAIMA 2",
+            "Haima 2 C-Sport"
+          ]
+        },
+        {
+          "canonical": "1",
+          "aliases": [
+            "Haima 1",
+            "HAIMA 1",
+            "Aishang",
+            "Haima Aishang",
+            "Prince"
+          ]
+        },
+        {
+          "canonical": "7",
+          "aliases": [
+            "Haima 7",
+            "HAIMA 7"
+          ]
+        },
+        {
+          "canonical": "Family",
+          "aliases": [
+            "Haima Family",
+            "Family Classic",
+            "Family VS",
+            "Happin"
+          ]
+        },
+        {
+          "canonical": "Family F5",
+          "aliases": [
+            "Haima Family F5",
+            "Family F5"
+          ]
+        },
+        {
+          "canonical": "Family F7",
+          "aliases": [
+            "Haima Family F7",
+            "Family F7"
+          ]
+        },
+        {
+          "canonical": "F5",
+          "aliases": [
+            "Haima F5",
+            "HAIMA F5"
+          ]
+        },
+        {
+          "canonical": "F7",
+          "aliases": [
+            "Haima F7",
+            "HAIMA F7",
+            "V70",
+            "Haima V70"
+          ]
+        },
+        {
+          "canonical": "Freema",
+          "aliases": [
+            "Haima Freema",
+            "Premacy",
+            "Haima Premacy"
+          ]
+        },
+        {
+          "canonical": "323",
+          "aliases": [
+            "Haima 323",
+            "HAIMA 323"
+          ]
+        },
+        {
+          "canonical": "Injoy L",
+          "aliases": [
+            "Haima Injoy L",
+            "InjoyL"
+          ]
+        },
+        {
+          "canonical": "E3",
+          "aliases": [
+            "Haima E3",
+            "HAIMA E3"
+          ]
+        }
       ]
     },
     {
@@ -2549,12 +3876,61 @@
         "ХАВТАЙ"
       ],
       "models": [
-        { "canonical": "Laville", "aliases": ["LaVille", "LAVILLE", "Hawtai Laville", "HAWTAI Laville", "A25", "Hawtai A25", "New Santa Fe"] },
-        { "canonical": "Shengdafei", "aliases": ["Shendafei", "Shendafei II", "Hawtai Shengdafei", "Santa Fe", "Hawtai Santa Fe", "C9", "Hawtai C9"] },
-        { "canonical": "Bolgheri", "aliases": ["Baolige", "B35", "Hawtai Bolgheri", "Hawtai B35"] },
-        { "canonical": "Terracan", "aliases": ["Hawtai Terracan"] },
-        { "canonical": "B11", "aliases": ["Hawtai B11"] },
-        { "canonical": "E70", "aliases": ["B21", "Hawtai E70", "Hawtai B21", "Lusheng E70", "Lusheng"] }
+        {
+          "canonical": "Laville",
+          "aliases": [
+            "LaVille",
+            "LAVILLE",
+            "Hawtai Laville",
+            "HAWTAI Laville",
+            "A25",
+            "Hawtai A25",
+            "New Santa Fe"
+          ]
+        },
+        {
+          "canonical": "Shengdafei",
+          "aliases": [
+            "Shendafei",
+            "Shendafei II",
+            "Hawtai Shengdafei",
+            "Santa Fe",
+            "Hawtai Santa Fe",
+            "C9",
+            "Hawtai C9"
+          ]
+        },
+        {
+          "canonical": "Bolgheri",
+          "aliases": [
+            "Baolige",
+            "B35",
+            "Hawtai Bolgheri",
+            "Hawtai B35"
+          ]
+        },
+        {
+          "canonical": "Terracan",
+          "aliases": [
+            "Hawtai Terracan"
+          ]
+        },
+        {
+          "canonical": "B11",
+          "aliases": [
+            "Hawtai B11"
+          ]
+        },
+        {
+          "canonical": "E70",
+          "aliases": [
+            "B21",
+            "Hawtai E70",
+            "Hawtai B21",
+            "Lusheng E70",
+            "Lusheng"
+          ]
+        }
       ]
     },
     {
@@ -2738,26 +4114,115 @@
         "ХАММЕР"
       ],
       "models": [
-        { "canonical": "H2", "aliases": ["Hummer H2", "HUMMER H2", "Хаммер H2", "ХАММЕР H2"] }
+        {
+          "canonical": "H2",
+          "aliases": [
+            "Hummer H2",
+            "HUMMER H2",
+            "Хаммер H2",
+            "ХАММЕР H2"
+          ]
+        }
       ]
     },
     {
       "canonical": "Hongqi",
-      "aliases": ["HONGQI", "Hong Qi", "FAW Hongqi", "Хongqi", "Хонqi", "Хонги", "ХОНГИ", "红旗"],
+      "aliases": [
+        "HONGQI",
+        "Hong Qi",
+        "FAW Hongqi",
+        "Хongqi",
+        "Хонqi",
+        "Хонги",
+        "ХОНГИ",
+        "红旗"
+      ],
       "models": [
-        { "canonical": "H5", "aliases": ["Hongqi H5", "H5 2.0T"] },
-        { "canonical": "H6", "aliases": ["Hongqi H6"] },
-        { "canonical": "H7", "aliases": ["Hongqi H7"] },
-        { "canonical": "H9", "aliases": ["Hongqi H9", "H9 2.0T", "H9 3.0T"] },
-        { "canonical": "HS3", "aliases": ["Hongqi HS3"] },
-        { "canonical": "HS5", "aliases": ["Hongqi HS5"] },
-        { "canonical": "HS6", "aliases": ["Hongqi HS6"] },
-        { "canonical": "HS7", "aliases": ["Hongqi HS7"] },
-        { "canonical": "HS9", "aliases": ["Hongqi HS9"] },
-        { "canonical": "E-QM5", "aliases": ["EQM5", "Hongqi E-QM5", "E QM5"] },
-        { "canonical": "E-HS9", "aliases": ["EHS9", "Hongqi E-HS9", "E HS9"] },
-        { "canonical": "EH7", "aliases": ["Hongqi EH7"] },
-        { "canonical": "EHS7", "aliases": ["Hongqi EHS7"] }
+        {
+          "canonical": "H5",
+          "aliases": [
+            "Hongqi H5",
+            "H5 2.0T"
+          ]
+        },
+        {
+          "canonical": "H6",
+          "aliases": [
+            "Hongqi H6"
+          ]
+        },
+        {
+          "canonical": "H7",
+          "aliases": [
+            "Hongqi H7"
+          ]
+        },
+        {
+          "canonical": "H9",
+          "aliases": [
+            "Hongqi H9",
+            "H9 2.0T",
+            "H9 3.0T"
+          ]
+        },
+        {
+          "canonical": "HS3",
+          "aliases": [
+            "Hongqi HS3"
+          ]
+        },
+        {
+          "canonical": "HS5",
+          "aliases": [
+            "Hongqi HS5"
+          ]
+        },
+        {
+          "canonical": "HS6",
+          "aliases": [
+            "Hongqi HS6"
+          ]
+        },
+        {
+          "canonical": "HS7",
+          "aliases": [
+            "Hongqi HS7"
+          ]
+        },
+        {
+          "canonical": "HS9",
+          "aliases": [
+            "Hongqi HS9"
+          ]
+        },
+        {
+          "canonical": "E-QM5",
+          "aliases": [
+            "EQM5",
+            "Hongqi E-QM5",
+            "E QM5"
+          ]
+        },
+        {
+          "canonical": "E-HS9",
+          "aliases": [
+            "EHS9",
+            "Hongqi E-HS9",
+            "E HS9"
+          ]
+        },
+        {
+          "canonical": "EH7",
+          "aliases": [
+            "Hongqi EH7"
+          ]
+        },
+        {
+          "canonical": "EHS7",
+          "aliases": [
+            "Hongqi EHS7"
+          ]
+        }
       ]
     },
     {
@@ -2789,7 +4254,9 @@
             "Elantra 1.6 GLS",
             "Elantra 1.6 GLS AT",
             "Elantra 1.6 GLS MT",
-            "Elantra XD"
+            "Elantra XD",
+            "Элантра 1.6 GLS",
+            "Элантра"
           ]
         },
         {
@@ -2955,10 +4422,6 @@
         {
           "canonical": "VF",
           "aliases": []
-        },
-        {
-          "canonical": "Элантра 1.6 GLS",
-          "aliases": []
         }
       ]
     },
@@ -3077,24 +4540,152 @@
         "Иран Ходро"
       ],
       "models": [
-        { "canonical": "Paykan", "aliases": ["IKCO Paykan", "Hillman Hunter"] },
-        { "canonical": "Bardo", "aliases": ["IKCO Bardo"] },
-        { "canonical": "Samand", "aliases": ["IKCO Samand", "Samand LX", "Samand EF7", "SenIran Samand", "Khazar LX"] },
-        { "canonical": "Soren", "aliases": ["IKCO Soren", "Soren+", "Soren Plus", "Samand Soren"] },
-        { "canonical": "Sarir", "aliases": ["IKCO Sarir", "Samand Sarir"] },
-        { "canonical": "Runna", "aliases": ["IKCO Runna", "Runna+"] },
-        { "canonical": "Dena", "aliases": ["IKCO Dena", "Dena+", "Dena Plus", "Dena Plus Turbo", "Khazar SD", "Khazar LD"] },
-        { "canonical": "Tara", "aliases": ["IKCO Tara"] },
-        { "canonical": "Reera", "aliases": ["IKCO Reera"] },
-        { "canonical": "Arisun", "aliases": ["IKCO Arisun", "Arisun 2"] },
-        { "canonical": "Peugeot 405", "aliases": ["405", "IKCO 405", "Peugeot405"] },
-        { "canonical": "Peugeot 206", "aliases": ["206", "IKCO 206", "Peugeot 206 SD", "206 SD"] },
-        { "canonical": "Peugeot 207i", "aliases": ["207i", "207 i", "IKCO 207i", "Peugeot 207 i"] },
-        { "canonical": "Peugeot Pars", "aliases": ["Pars", "Persia", "Peugeot Persia", "IKCO Pars"] },
-        { "canonical": "Peugeot ROA", "aliases": ["ROA", "Peugeot RD", "RD"] },
-        { "canonical": "Tondar 90", "aliases": ["Tondar90", "Renault Tondar 90", "Logan", "Dacia Logan"] },
-        { "canonical": "Grand Vitara", "aliases": ["Suzuki Grand Vitara", "IKCO Grand Vitara"] },
-        { "canonical": "E-Class", "aliases": ["Mercedes-Benz E-Class", "Mercedes E-Class", "E200", "E280", "E350", "W211"] }
+        {
+          "canonical": "Paykan",
+          "aliases": [
+            "IKCO Paykan",
+            "Hillman Hunter"
+          ]
+        },
+        {
+          "canonical": "Bardo",
+          "aliases": [
+            "IKCO Bardo"
+          ]
+        },
+        {
+          "canonical": "Samand",
+          "aliases": [
+            "IKCO Samand",
+            "Samand LX",
+            "Samand EF7",
+            "SenIran Samand",
+            "Khazar LX"
+          ]
+        },
+        {
+          "canonical": "Soren",
+          "aliases": [
+            "IKCO Soren",
+            "Soren+",
+            "Soren Plus",
+            "Samand Soren"
+          ]
+        },
+        {
+          "canonical": "Sarir",
+          "aliases": [
+            "IKCO Sarir",
+            "Samand Sarir"
+          ]
+        },
+        {
+          "canonical": "Runna",
+          "aliases": [
+            "IKCO Runna",
+            "Runna+"
+          ]
+        },
+        {
+          "canonical": "Dena",
+          "aliases": [
+            "IKCO Dena",
+            "Dena+",
+            "Dena Plus",
+            "Dena Plus Turbo",
+            "Khazar SD",
+            "Khazar LD"
+          ]
+        },
+        {
+          "canonical": "Tara",
+          "aliases": [
+            "IKCO Tara"
+          ]
+        },
+        {
+          "canonical": "Reera",
+          "aliases": [
+            "IKCO Reera"
+          ]
+        },
+        {
+          "canonical": "Arisun",
+          "aliases": [
+            "IKCO Arisun",
+            "Arisun 2"
+          ]
+        },
+        {
+          "canonical": "Peugeot 405",
+          "aliases": [
+            "405",
+            "IKCO 405",
+            "Peugeot405"
+          ]
+        },
+        {
+          "canonical": "Peugeot 206",
+          "aliases": [
+            "206",
+            "IKCO 206",
+            "Peugeot 206 SD",
+            "206 SD"
+          ]
+        },
+        {
+          "canonical": "Peugeot 207i",
+          "aliases": [
+            "207i",
+            "207 i",
+            "IKCO 207i",
+            "Peugeot 207 i"
+          ]
+        },
+        {
+          "canonical": "Peugeot Pars",
+          "aliases": [
+            "Pars",
+            "Persia",
+            "Peugeot Persia",
+            "IKCO Pars"
+          ]
+        },
+        {
+          "canonical": "Peugeot ROA",
+          "aliases": [
+            "ROA",
+            "Peugeot RD",
+            "RD"
+          ]
+        },
+        {
+          "canonical": "Tondar 90",
+          "aliases": [
+            "Tondar90",
+            "Renault Tondar 90",
+            "Logan",
+            "Dacia Logan"
+          ]
+        },
+        {
+          "canonical": "Grand Vitara",
+          "aliases": [
+            "Suzuki Grand Vitara",
+            "IKCO Grand Vitara"
+          ]
+        },
+        {
+          "canonical": "E-Class",
+          "aliases": [
+            "Mercedes-Benz E-Class",
+            "Mercedes E-Class",
+            "E200",
+            "E280",
+            "E350",
+            "W211"
+          ]
+        }
       ]
     },
     {
@@ -3362,7 +4953,8 @@
         {
           "canonical": "Dashing",
           "aliases": [
-            "Jetour Dashing"
+            "Jetour Dashing",
+            "Дашинг"
           ]
         },
         {
@@ -3415,10 +5007,6 @@
             "Jetour X95",
             "X 95"
           ]
-        },
-        {
-          "canonical": "Дашинг",
-          "aliases": []
         }
       ]
     },
@@ -3500,7 +5088,15 @@
             "ED Ceed",
             "JD (CEE'D)",
             "JD (CEED)",
-            "JD CEED"
+            "JD CEED",
+            "СИД ED",
+            "Sid ED",
+            "SID ED",
+            "KIA Sid ED",
+            "KIA SID ED",
+            "Ceed ED",
+            "CEED ED",
+            "XWEHC512"
           ]
         },
         {
@@ -3552,7 +5148,8 @@
         {
           "canonical": "Magentis",
           "aliases": [
-            "MAGENTIS OPTIMA"
+            "MAGENTIS OPTIMA",
+            "Маджентис"
           ]
         },
         {
@@ -3566,7 +5163,8 @@
         {
           "canonical": "Picanto",
           "aliases": [
-            "Picanto TA"
+            "Picanto TA",
+            "Пиканто"
           ]
         },
         {
@@ -3639,7 +5237,9 @@
             "SLS Sportage SL SLS",
             "Sportage (SL)",
             "Sportage (SLS)",
-            "Спортage"
+            "Спортage",
+            "СПОРТЕИДЖ",
+            "Спортейдж"
           ]
         },
         {
@@ -3652,22 +5252,6 @@
         },
         {
           "canonical": "YD",
-          "aliases": []
-        },
-        {
-          "canonical": "Маджентис",
-          "aliases": []
-        },
-        {
-          "canonical": "Пиканто",
-          "aliases": []
-        },
-        {
-          "canonical": "СИД ED",
-          "aliases": []
-        },
-        {
-          "canonical": "СПОРТЕИДЖ",
           "aliases": []
         }
       ]
@@ -4244,6 +5828,31 @@
       ]
     },
     {
+      "canonical": "Landmark",
+      "aliases": [
+        "LANDMARK",
+        "ZX Landmark",
+        "ZX Auto",
+        "ZX Auto Landmark",
+        "Tianye",
+        "TIANYE",
+        "田野"
+      ],
+      "models": [
+        {
+          "canonical": "Landmark",
+          "aliases": [
+            "LANDMARK SUV",
+            "BQ6473SG",
+            "SUV4WD BQ6473SG",
+            "LANDMARK SUV4WD BQ6473SG",
+            "SUV 4WD BQ6473SG",
+            "LTA6GJ3P"
+          ]
+        }
+      ]
+    },
+    {
       "canonical": "Lexus",
       "aliases": [
         "Лexus",
@@ -4342,14 +5951,61 @@
     },
     {
       "canonical": "Li Auto",
-      "aliases": ["LI AUTO", "LiAuto", "Lixiang", "LIXIANG", "Li Xiang", "Li Auto (Lixiang)", "理想", "Li Ideal"],
+      "aliases": [
+        "LI AUTO",
+        "LiAuto",
+        "Lixiang",
+        "LIXIANG",
+        "Li Xiang",
+        "Li Auto (Lixiang)",
+        "理想",
+        "Li Ideal"
+      ],
       "models": [
-        { "canonical": "L6", "aliases": ["Li L6", "L 6"] },
-        { "canonical": "L7", "aliases": ["Li L7", "L 7"] },
-        { "canonical": "L8", "aliases": ["Li L8", "L 8"] },
-        { "canonical": "L9", "aliases": ["Li L9", "L 9"] },
-        { "canonical": "MEGA", "aliases": ["Li MEGA", "Mega", "Li Mega"] },
-        { "canonical": "One", "aliases": ["Li ONE", "Li One", "ONE"] }
+        {
+          "canonical": "L6",
+          "aliases": [
+            "Li L6",
+            "L 6"
+          ]
+        },
+        {
+          "canonical": "L7",
+          "aliases": [
+            "Li L7",
+            "L 7"
+          ]
+        },
+        {
+          "canonical": "L8",
+          "aliases": [
+            "Li L8",
+            "L 8"
+          ]
+        },
+        {
+          "canonical": "L9",
+          "aliases": [
+            "Li L9",
+            "L 9"
+          ]
+        },
+        {
+          "canonical": "MEGA",
+          "aliases": [
+            "Li MEGA",
+            "Mega",
+            "Li Mega"
+          ]
+        },
+        {
+          "canonical": "One",
+          "aliases": [
+            "Li ONE",
+            "Li One",
+            "ONE"
+          ]
+        }
       ]
     },
     {
@@ -4424,7 +6080,9 @@
           "canonical": "Myway",
           "aliases": [
             "Lifan Myway",
-            "My Way"
+            "My Way",
+            "МУWАУ",
+            "МУWAY"
           ]
         },
         {
@@ -4438,7 +6096,9 @@
           "canonical": "Solano",
           "aliases": [
             "Lifan Solano",
-            "Solano II"
+            "Solano II",
+            "Соланд",
+            "Солано"
           ]
         },
         {
@@ -4469,24 +6129,43 @@
             "Lifan X70",
             "X 70"
           ]
-        },
-        {
-          "canonical": "МУWАУ",
-          "aliases": []
-        },
-        {
-          "canonical": "Соланд",
-          "aliases": []
         }
       ]
     },
     {
       "canonical": "Livan",
-      "aliases": ["LIVAN", "Li Van", "Лivan", "Ливан", "ЛИВАН"],
+      "aliases": [
+        "LIVAN",
+        "Li Van",
+        "Лivan",
+        "Ливан",
+        "ЛИВАН"
+      ],
       "models": [
-        { "canonical": "X3 Pro", "aliases": ["Maple X3 Pro", "Livan X3 Pro"] },
-        { "canonical": "S6 Pro", "aliases": ["Livan S6 Pro"] },
-        { "canonical": "Maple 60S", "aliases": ["Livan Maple 60S"] }
+        {
+          "canonical": "X3 Pro",
+          "aliases": [
+            "Maple X3 Pro",
+            "Livan X3 Pro",
+            "X3PRO",
+            "X3 PRO",
+            "LIVAN X3PRO",
+            "LIVAN X3 Pro",
+            "LLV2C3B2"
+          ]
+        },
+        {
+          "canonical": "S6 Pro",
+          "aliases": [
+            "Livan S6 Pro"
+          ]
+        },
+        {
+          "canonical": "Maple 60S",
+          "aliases": [
+            "Livan Maple 60S"
+          ]
+        }
       ]
     },
     {
@@ -4497,6 +6176,14 @@
           "canonical": "Quattroporte",
           "aliases": [
             "QUATTROPORTE"
+          ]
+        },
+        {
+          "canonical": "Ghibli",
+          "aliases": [
+            "GHIBLI",
+            "Ghibli III",
+            "M157"
           ]
         }
       ]
@@ -4611,10 +6298,6 @@
           "aliases": []
         },
         {
-          "canonical": "NEО",
-          "aliases": []
-        },
-        {
           "canonical": "Premacy",
           "aliases": []
         },
@@ -4634,6 +6317,13 @@
           "canonical": "Xedos",
           "aliases": [
             "Xedos 9"
+          ]
+        },
+        {
+          "canonical": "Neo",
+          "aliases": [
+            "NEО",
+            "NEO"
           ]
         }
       ]
@@ -4952,27 +6642,159 @@
         "ЭмДжи"
       ],
       "models": [
-        { "canonical": "MG3", "aliases": ["MG 3", "Mg3"] },
-        { "canonical": "MG4", "aliases": ["MG 4", "MG4 EV", "Mg4"] },
-        { "canonical": "MG5", "aliases": ["MG 5", "5", "MG5 SW", "Mg5"] },
-        { "canonical": "MG6", "aliases": ["MG 6", "MG6 Pro", "Mg6"] },
-        { "canonical": "MG7", "aliases": ["MG 7", "Mg7"] },
-        { "canonical": "ZS", "aliases": ["MG ZS", "ZS EV", "MG ZS EV"] },
-        { "canonical": "HS", "aliases": ["MG HS", "HS PHEV", "MG HS PHEV"] },
-        { "canonical": "One", "aliases": ["MG One", "MG ONE"] },
-        { "canonical": "Marvel R", "aliases": ["MG Marvel R", "MarvelR"] },
-        { "canonical": "Cyberster", "aliases": ["MG Cyberster"] },
-        { "canonical": "GT", "aliases": ["MG GT", "MG-GT"] },
-        { "canonical": "Gloster", "aliases": ["MG Gloster"] },
-        { "canonical": "350", "aliases": ["MG 350", "MG350", "AP1", "AP1 (MG 350)", "AP1(MG 350)", "MG AP1", "MG AP1 (MG 350)"] },
-        { "canonical": "360", "aliases": ["MG 360", "MG360"] },
-        { "canonical": "550", "aliases": ["MG 550", "MG550"] },
-        { "canonical": "ZR", "aliases": ["MG ZR"] },
-        { "canonical": "ZT", "aliases": ["MG ZT", "ZT-T"] },
-        { "canonical": "TF", "aliases": ["MG TF"] },
-        { "canonical": "F", "aliases": ["MGF", "MG F"] },
-        { "canonical": "B", "aliases": ["MGB", "MG B"] },
-        { "canonical": "Midget", "aliases": ["MG Midget"] }
+        {
+          "canonical": "MG3",
+          "aliases": [
+            "MG 3",
+            "Mg3"
+          ]
+        },
+        {
+          "canonical": "MG4",
+          "aliases": [
+            "MG 4",
+            "MG4 EV",
+            "Mg4"
+          ]
+        },
+        {
+          "canonical": "MG5",
+          "aliases": [
+            "MG 5",
+            "5",
+            "MG5 SW",
+            "Mg5"
+          ]
+        },
+        {
+          "canonical": "MG6",
+          "aliases": [
+            "MG 6",
+            "MG6 Pro",
+            "Mg6"
+          ]
+        },
+        {
+          "canonical": "MG7",
+          "aliases": [
+            "MG 7",
+            "Mg7"
+          ]
+        },
+        {
+          "canonical": "ZS",
+          "aliases": [
+            "MG ZS",
+            "ZS EV",
+            "MG ZS EV"
+          ]
+        },
+        {
+          "canonical": "HS",
+          "aliases": [
+            "MG HS",
+            "HS PHEV",
+            "MG HS PHEV"
+          ]
+        },
+        {
+          "canonical": "One",
+          "aliases": [
+            "MG One",
+            "MG ONE"
+          ]
+        },
+        {
+          "canonical": "Marvel R",
+          "aliases": [
+            "MG Marvel R",
+            "MarvelR"
+          ]
+        },
+        {
+          "canonical": "Cyberster",
+          "aliases": [
+            "MG Cyberster"
+          ]
+        },
+        {
+          "canonical": "GT",
+          "aliases": [
+            "MG GT",
+            "MG-GT"
+          ]
+        },
+        {
+          "canonical": "Gloster",
+          "aliases": [
+            "MG Gloster"
+          ]
+        },
+        {
+          "canonical": "350",
+          "aliases": [
+            "MG 350",
+            "MG350",
+            "AP1",
+            "AP1 (MG 350)",
+            "AP1(MG 350)",
+            "MG AP1",
+            "MG AP1 (MG 350)"
+          ]
+        },
+        {
+          "canonical": "360",
+          "aliases": [
+            "MG 360",
+            "MG360"
+          ]
+        },
+        {
+          "canonical": "550",
+          "aliases": [
+            "MG 550",
+            "MG550"
+          ]
+        },
+        {
+          "canonical": "ZR",
+          "aliases": [
+            "MG ZR"
+          ]
+        },
+        {
+          "canonical": "ZT",
+          "aliases": [
+            "MG ZT",
+            "ZT-T"
+          ]
+        },
+        {
+          "canonical": "TF",
+          "aliases": [
+            "MG TF"
+          ]
+        },
+        {
+          "canonical": "F",
+          "aliases": [
+            "MGF",
+            "MG F"
+          ]
+        },
+        {
+          "canonical": "B",
+          "aliases": [
+            "MGB",
+            "MG B"
+          ]
+        },
+        {
+          "canonical": "Midget",
+          "aliases": [
+            "MG Midget"
+          ]
+        }
       ]
     },
     {
@@ -4986,18 +6808,134 @@
         "Мини Cooper"
       ],
       "models": [
-        { "canonical": "Cooper", "aliases": ["Mini Cooper", "MINI Cooper", "Cooper D", "Cooper SD", "Купер", "КУПЕР", "Мини Купер", "МИНИ КУПЕР"] },
-        { "canonical": "Cooper S", "aliases": ["Mini Cooper S", "MINI Cooper S", "Cooper S JCW"] },
-        { "canonical": "Cooper SE", "aliases": ["Mini Cooper SE", "MINI Cooper SE", "Cooper SE Electric"] },
-        { "canonical": "One", "aliases": ["Mini One", "MINI One", "One D", "One First"] },
-        { "canonical": "Hatch", "aliases": ["Mini Hatch", "MINI Hatch", "3 Door Hatch", "5 Door Hatch"] },
-        { "canonical": "Clubman", "aliases": ["Mini Clubman", "MINI Clubman", "Clubman Cooper", "Clubman Cooper S"] },
-        { "canonical": "Countryman", "aliases": ["Mini Countryman", "MINI Countryman", "Countryman Cooper", "Countryman Cooper S", "Countryman Cooper S ALL4", "Countryman SE", "Cooper S Countryman", "Cooper S Countryman ALL4", "MINI Cooper S Countryman ALL4"] },
-        { "canonical": "Paceman", "aliases": ["Mini Paceman", "MINI Paceman"] },
-        { "canonical": "Cabrio", "aliases": ["Mini Cabrio", "MINI Cabrio", "Convertible", "Mini Convertible", "Cooper Cabrio", "Cooper S Cabrio"] },
-        { "canonical": "Coupe", "aliases": ["Mini Coupe", "MINI Coupe", "Cooper Coupe", "Cooper S Coupe"] },
-        { "canonical": "Roadster", "aliases": ["Mini Roadster", "MINI Roadster", "Cooper Roadster", "Cooper S Roadster"] },
-        { "canonical": "Aceman", "aliases": ["Mini Aceman", "MINI Aceman"] }
+        {
+          "canonical": "Cooper",
+          "aliases": [
+            "Mini Cooper",
+            "MINI Cooper",
+            "Cooper D",
+            "Cooper SD",
+            "Купер",
+            "КУПЕР",
+            "Мини Купер",
+            "МИНИ КУПЕР"
+          ]
+        },
+        {
+          "canonical": "Cooper S",
+          "aliases": [
+            "Mini Cooper S",
+            "MINI Cooper S",
+            "Cooper S JCW"
+          ]
+        },
+        {
+          "canonical": "Cooper SE",
+          "aliases": [
+            "Mini Cooper SE",
+            "MINI Cooper SE",
+            "Cooper SE Electric"
+          ]
+        },
+        {
+          "canonical": "One",
+          "aliases": [
+            "Mini One",
+            "MINI One",
+            "One D",
+            "One First"
+          ]
+        },
+        {
+          "canonical": "Hatch",
+          "aliases": [
+            "Mini Hatch",
+            "MINI Hatch",
+            "3 Door Hatch",
+            "5 Door Hatch"
+          ]
+        },
+        {
+          "canonical": "Clubman",
+          "aliases": [
+            "Mini Clubman",
+            "MINI Clubman",
+            "Clubman Cooper",
+            "Clubman Cooper S"
+          ]
+        },
+        {
+          "canonical": "Countryman",
+          "aliases": [
+            "Mini Countryman",
+            "MINI Countryman",
+            "Countryman Cooper",
+            "Countryman Cooper S",
+            "Countryman Cooper S ALL4",
+            "Countryman SE",
+            "Cooper S Countryman",
+            "Cooper S Countryman ALL4",
+            "MINI Cooper S Countryman ALL4"
+          ]
+        },
+        {
+          "canonical": "John Cooper Works",
+          "aliases": [
+            "JCW",
+            "MINI JCW",
+            "Mini JCW",
+            "John Cooper Works",
+            "MINI John Cooper Works",
+            "Mini John Cooper Works",
+            "MINI JOHN COOPER WORKS",
+            "Cooper JCW",
+            "Cooper S JCW",
+            "WMWXR910"
+          ]
+        },
+        {
+          "canonical": "Paceman",
+          "aliases": [
+            "Mini Paceman",
+            "MINI Paceman"
+          ]
+        },
+        {
+          "canonical": "Cabrio",
+          "aliases": [
+            "Mini Cabrio",
+            "MINI Cabrio",
+            "Convertible",
+            "Mini Convertible",
+            "Cooper Cabrio",
+            "Cooper S Cabrio"
+          ]
+        },
+        {
+          "canonical": "Coupe",
+          "aliases": [
+            "Mini Coupe",
+            "MINI Coupe",
+            "Cooper Coupe",
+            "Cooper S Coupe"
+          ]
+        },
+        {
+          "canonical": "Roadster",
+          "aliases": [
+            "Mini Roadster",
+            "MINI Roadster",
+            "Cooper Roadster",
+            "Cooper S Roadster"
+          ]
+        },
+        {
+          "canonical": "Aceman",
+          "aliases": [
+            "Mini Aceman",
+            "MINI Aceman"
+          ]
+        }
       ]
     },
     {
@@ -5029,7 +6967,8 @@
           "canonical": "Carisma",
           "aliases": [
             "Carisma 1.3",
-            "Carisma HB 1.6"
+            "Carisma HB 1.6",
+            "КАРИЗМА"
           ]
         },
         {
@@ -5069,7 +7008,9 @@
         {
           "canonical": "Galant",
           "aliases": [
-            "Galant ES"
+            "Galant ES",
+            "ГАЛАНТ GLI",
+            "ГАЛАНТ"
           ]
         },
         {
@@ -5133,7 +7074,8 @@
             "PAJERO MINI",
             "PAJERO SPORT",
             "Pajero Sport 2.5",
-            "PAJERO SPORT 3.0"
+            "PAJERO SPORT 3.0",
+            "Паджеро IO"
           ]
         },
         {
@@ -5142,18 +7084,6 @@
         },
         {
           "canonical": "Space Star",
-          "aliases": []
-        },
-        {
-          "canonical": "ГАЛАНТ GLI",
-          "aliases": []
-        },
-        {
-          "canonical": "КАРИЗМА",
-          "aliases": []
-        },
-        {
-          "canonical": "Паджеро IO",
           "aliases": []
         }
       ]
@@ -5579,7 +7509,8 @@
         {
           "canonical": "Meriva",
           "aliases": [
-            "Opel Meriva"
+            "Opel Meriva",
+            "МЕРИВА"
           ]
         },
         {
@@ -5616,16 +7547,9 @@
           "canonical": "Zafira",
           "aliases": [
             "Opel Zafira",
-            "Zafira Life"
+            "Zafira Life",
+            "ЗАФИРА"
           ]
-        },
-        {
-          "canonical": "ЗАФИРА",
-          "aliases": []
-        },
-        {
-          "canonical": "МЕРИВА",
-          "aliases": []
         }
       ]
     },
@@ -5855,11 +7779,72 @@
         "РАВON"
       ],
       "models": [
-        { "canonical": "Matiz", "aliases": ["Matiz R1", "Ravon Matiz", "R1"] },
-        { "canonical": "R2", "aliases": ["Ravon R2", "Spark", "Chevrolet Spark"] },
-        { "canonical": "Nexia R3", "aliases": ["Nexia", "R3", "Ravon Nexia", "Ravon Nexia R3"] },
-        { "canonical": "R4", "aliases": ["Ravon R4", "Cobalt", "Cobalt R4", "Chevrolet Cobalt"] },
-        { "canonical": "Gentra", "aliases": ["Ravon Gentra", "R5", "Lacetti", "Chevrolet Lacetti"] }
+        {
+          "canonical": "Matiz",
+          "aliases": [
+            "Matiz R1",
+            "Ravon Matiz",
+            "R1"
+          ]
+        },
+        {
+          "canonical": "R2",
+          "aliases": [
+            "Ravon R2",
+            "Spark",
+            "Chevrolet Spark"
+          ]
+        },
+        {
+          "canonical": "Nexia R3",
+          "aliases": [
+            "Nexia",
+            "R3",
+            "Ravon Nexia",
+            "Ravon Nexia R3"
+          ]
+        },
+        {
+          "canonical": "R4",
+          "aliases": [
+            "Ravon R4",
+            "Cobalt",
+            "Cobalt R4",
+            "Chevrolet Cobalt"
+          ]
+        },
+        {
+          "canonical": "Gentra",
+          "aliases": [
+            "Ravon Gentra",
+            "R5",
+            "Lacetti",
+            "Chevrolet Lacetti"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Rover",
+      "aliases": [
+        "ROVER",
+        "РОВЕР",
+        "Ровер",
+        "MG Rover",
+        "Austin Rover"
+      ],
+      "models": [
+        {
+          "canonical": "25",
+          "aliases": [
+            "ROVER 25",
+            "Rover 25",
+            "РОВЕР 25",
+            "200",
+            "Rover 200",
+            "SARRF"
+          ]
+        }
       ]
     },
     {
@@ -5994,6 +7979,14 @@
             "SAAB 9-5",
             "СААБ 9-5"
           ]
+        },
+        {
+          "canonical": "9-3",
+          "aliases": [
+            "9 3",
+            "SAAB 9-3",
+            "СААБ 9-3"
+          ]
         }
       ]
     },
@@ -6017,6 +8010,15 @@
             "ALTEA FREETRACK",
             "Freetrack"
           ]
+        },
+        {
+          "canonical": "Leon",
+          "aliases": [
+            "LEON",
+            "SEAT Leon",
+            "Leon 1P",
+            "Leon 5F"
+          ]
         }
       ]
     },
@@ -6032,7 +8034,8 @@
         {
           "canonical": "Fabia",
           "aliases": [
-            "Skoda Fabia"
+            "Skoda Fabia",
+            "Фабия"
           ]
         },
         {
@@ -6053,7 +8056,11 @@
           "canonical": "Octavia",
           "aliases": [
             "Octavia 1.4 TSI",
-            "Octavia Tour"
+            "Octavia Tour",
+            "Октавиа Тур",
+            "Октавия",
+            "ОКТАВИЯ ТОУР",
+            "Октавия Тур"
           ]
         },
         {
@@ -6062,7 +8069,9 @@
         },
         {
           "canonical": "Rapid",
-          "aliases": []
+          "aliases": [
+            "Рапид"
+          ]
         },
         {
           "canonical": "Roomster",
@@ -6075,31 +8084,9 @@
         {
           "canonical": "Yeti",
           "aliases": [
-            "Skoda Yeti"
+            "Skoda Yeti",
+            "ЕТИ"
           ]
-        },
-        {
-          "canonical": "ЕТИ",
-          "aliases": []
-        },
-        {
-          "canonical": "Октавиа Тур",
-          "aliases": []
-        },
-        {
-          "canonical": "Октавия",
-          "aliases": [
-            "ОКТАВИЯ ТОУР",
-            "Октавия Тур"
-          ]
-        },
-        {
-          "canonical": "Рапид",
-          "aliases": []
-        },
-        {
-          "canonical": "Фабия",
-          "aliases": []
         }
       ]
     },
@@ -6116,19 +8103,93 @@
         "СМАРТ"
       ],
       "models": [
-        { "canonical": "Fortwo", "aliases": ["ForTwo", "For Two", "Smart Fortwo", "SMART Fortwo", "City Coupe", "City-Coupe", "Fortwo Cabrio", "Fortwo Coupe", "EQ Fortwo", "Smart EQ Fortwo"] },
-        { "canonical": "Forfour", "aliases": ["ForFour", "For Four", "Smart Forfour", "SMART Forfour", "EQ Forfour", "Smart EQ Forfour"] },
-        { "canonical": "#1", "aliases": ["Smart #1", "Smart 1", "Hashtag 1", "Smart Hashtag 1"] },
-        { "canonical": "#3", "aliases": ["Smart #3", "Smart 3", "Hashtag 3", "Smart Hashtag 3"] },
-        { "canonical": "#5", "aliases": ["Smart #5", "Smart 5", "Hashtag 5", "Smart Hashtag 5"] },
-        { "canonical": "Roadster", "aliases": ["Smart Roadster", "Roadster Coupe", "Smart Roadster Coupe"] },
-        { "canonical": "Crossblade", "aliases": ["Smart Crossblade"] }
+        {
+          "canonical": "Fortwo",
+          "aliases": [
+            "ForTwo",
+            "For Two",
+            "Smart Fortwo",
+            "SMART Fortwo",
+            "City Coupe",
+            "City-Coupe",
+            "Fortwo Cabrio",
+            "Fortwo Coupe",
+            "EQ Fortwo",
+            "Smart EQ Fortwo"
+          ]
+        },
+        {
+          "canonical": "Forfour",
+          "aliases": [
+            "ForFour",
+            "For Four",
+            "Smart Forfour",
+            "SMART Forfour",
+            "EQ Forfour",
+            "Smart EQ Forfour"
+          ]
+        },
+        {
+          "canonical": "#1",
+          "aliases": [
+            "Smart #1",
+            "Smart 1",
+            "Hashtag 1",
+            "Smart Hashtag 1"
+          ]
+        },
+        {
+          "canonical": "#3",
+          "aliases": [
+            "Smart #3",
+            "Smart 3",
+            "Hashtag 3",
+            "Smart Hashtag 3"
+          ]
+        },
+        {
+          "canonical": "#5",
+          "aliases": [
+            "Smart #5",
+            "Smart 5",
+            "Hashtag 5",
+            "Smart Hashtag 5"
+          ]
+        },
+        {
+          "canonical": "Roadster",
+          "aliases": [
+            "Smart Roadster",
+            "Roadster Coupe",
+            "Smart Roadster Coupe"
+          ]
+        },
+        {
+          "canonical": "Crossblade",
+          "aliases": [
+            "Smart Crossblade"
+          ]
+        }
       ]
     },
     {
       "canonical": "Soueast",
-      "aliases": [],
-      "models": []
+      "aliases": [
+        "SOUEAST",
+        "Sou East",
+        "东南汽车",
+        "东南"
+      ],
+      "models": [
+        {
+          "canonical": "S09",
+          "aliases": [
+            "SOUEAST S09",
+            "Soueast S09",
+            "S 09"
+          ]
+        }
+      ]
     },
     {
       "canonical": "Sollers",
@@ -6428,10 +8489,25 @@
     },
     {
       "canonical": "SWM",
-      "aliases": [],
+      "aliases": [
+        "SWM Motors",
+        "Brilliance SWM",
+        "斯威"
+      ],
       "models": [
         {
-          "canonical": "G01F"
+          "canonical": "G01",
+          "aliases": [
+            "SWM G01",
+            "G 01"
+          ]
+        },
+        {
+          "canonical": "G01F",
+          "aliases": [
+            "G01 F",
+            "SWM G01F"
+          ]
         },
         {
           "canonical": "G05 Pro",
@@ -6460,11 +8536,55 @@
         "坦克"
       ],
       "models": [
-        { "canonical": "300", "aliases": ["Tank 300", "TANK 300", "TANK300", "Tank300", "GWM Tank 300", "Wey Tank 300", "330", "Tank 330"] },
-        { "canonical": "400", "aliases": ["Tank 400", "TANK 400", "GWM Tank 400", "400 Hi4-T"] },
-        { "canonical": "500", "aliases": ["Tank 500", "TANK 500", "GWM Tank 500", "500 Hi4-T", "Tank 500 Black Warrior"] },
-        { "canonical": "700", "aliases": ["Tank 700", "TANK 700", "GWM Tank 700", "700 Hi4-T"] },
-        { "canonical": "800", "aliases": ["Tank 800", "TANK 800", "GWM Tank 800"] }
+        {
+          "canonical": "300",
+          "aliases": [
+            "Tank 300",
+            "TANK 300",
+            "TANK300",
+            "Tank300",
+            "GWM Tank 300",
+            "Wey Tank 300",
+            "330",
+            "Tank 330"
+          ]
+        },
+        {
+          "canonical": "400",
+          "aliases": [
+            "Tank 400",
+            "TANK 400",
+            "GWM Tank 400",
+            "400 Hi4-T"
+          ]
+        },
+        {
+          "canonical": "500",
+          "aliases": [
+            "Tank 500",
+            "TANK 500",
+            "GWM Tank 500",
+            "500 Hi4-T",
+            "Tank 500 Black Warrior"
+          ]
+        },
+        {
+          "canonical": "700",
+          "aliases": [
+            "Tank 700",
+            "TANK 700",
+            "GWM Tank 700",
+            "700 Hi4-T"
+          ]
+        },
+        {
+          "canonical": "800",
+          "aliases": [
+            "Tank 800",
+            "TANK 800",
+            "GWM Tank 800"
+          ]
+        }
       ]
     },
     {
@@ -6476,11 +8596,42 @@
         "ТЕНЕТ"
       ],
       "models": [
-        { "canonical": "T4", "aliases": ["Tenet T4", "TENET T4"] },
-        { "canonical": "T4L", "aliases": ["T4 L", "Tenet T4L", "TENET T4L"] },
-        { "canonical": "T7", "aliases": ["Tenet T7", "TENET T7"] },
-        { "canonical": "T8", "aliases": ["Tenet T8", "TENET T8"] },
-        { "canonical": "T9", "aliases": ["Tenet T9", "TENET T9"] }
+        {
+          "canonical": "T4",
+          "aliases": [
+            "Tenet T4",
+            "TENET T4"
+          ]
+        },
+        {
+          "canonical": "T4L",
+          "aliases": [
+            "T4 L",
+            "Tenet T4L",
+            "TENET T4L"
+          ]
+        },
+        {
+          "canonical": "T7",
+          "aliases": [
+            "Tenet T7",
+            "TENET T7"
+          ]
+        },
+        {
+          "canonical": "T8",
+          "aliases": [
+            "Tenet T8",
+            "TENET T8"
+          ]
+        },
+        {
+          "canonical": "T9",
+          "aliases": [
+            "Tenet T9",
+            "TENET T9"
+          ]
+        }
       ]
     },
     {
@@ -6535,7 +8686,9 @@
         },
         {
           "canonical": "Allion",
-          "aliases": []
+          "aliases": [
+            "Аллион"
+          ]
         },
         {
           "canonical": "Alphard",
@@ -6580,7 +8733,8 @@
         {
           "canonical": "Caldina",
           "aliases": [
-            "Caldina Van"
+            "Caldina Van",
+            "Калдина"
           ]
         },
         {
@@ -6593,7 +8747,8 @@
             "Camry Hybrid",
             "Camry Premium",
             "Кamry",
-            "Камry"
+            "Камry",
+            "Камри"
           ]
         },
         {
@@ -6601,7 +8756,8 @@
           "aliases": [
             "Carina E",
             "Carina ED",
-            "Toyota Carina"
+            "Toyota Carina",
+            "Карина"
           ]
         },
         {
@@ -6629,7 +8785,9 @@
             "Corolla Spacio",
             "Corolla Spasio",
             "Corolla Verso",
-            "Кorolla"
+            "Кorolla",
+            "Королла",
+            "Королла Филдер"
           ]
         },
         {
@@ -6645,7 +8803,9 @@
         },
         {
           "canonical": "Cresta",
-          "aliases": []
+          "aliases": [
+            "Креста"
+          ]
         },
         {
           "canonical": "Crown",
@@ -6677,7 +8837,9 @@
         },
         {
           "canonical": "Gaia",
-          "aliases": []
+          "aliases": [
+            "Гайя"
+          ]
         },
         {
           "canonical": "Harrier",
@@ -6703,7 +8865,9 @@
         },
         {
           "canonical": "ISis",
-          "aliases": []
+          "aliases": [
+            "Айсис"
+          ]
         },
         {
           "canonical": "Kluger",
@@ -6774,7 +8938,9 @@
         },
         {
           "canonical": "Platz",
-          "aliases": []
+          "aliases": [
+            "ПЛАТЦ"
+          ]
         },
         {
           "canonical": "Porte",
@@ -6795,7 +8961,9 @@
           "aliases": [
             "Prius Alpha Hybrid",
             "PRIUS HYBRID",
-            "Toyota Prius"
+            "Toyota Prius",
+            "Приус Гибрид",
+            "Приус"
           ]
         },
         {
@@ -6855,7 +9023,8 @@
           "canonical": "Sprinter",
           "aliases": [
             "Sprinter Carib",
-            "Sprinter Marino"
+            "Sprinter Marino",
+            "Спринтер"
           ]
         },
         {
@@ -6884,7 +9053,8 @@
             "Ace",
             "Noah",
             "Town",
-            "Town Ace"
+            "Town Ace",
+            "Таун Айс Ноах"
           ]
         },
         {
@@ -6921,7 +9091,8 @@
         {
           "canonical": "Vitz",
           "aliases": [
-            "Toyota Vitz"
+            "Toyota Vitz",
+            "Витц"
           ]
         },
         {
@@ -6955,62 +9126,11 @@
           "aliases": []
         },
         {
-          "canonical": "Айсис",
-          "aliases": []
-        },
-        {
-          "canonical": "Аллион",
-          "aliases": []
-        },
-        {
-          "canonical": "Витц",
-          "aliases": []
-        },
-        {
-          "canonical": "Гайя",
-          "aliases": []
-        },
-        {
-          "canonical": "Ист",
-          "aliases": []
-        },
-        {
-          "canonical": "Калдина",
-          "aliases": []
-        },
-        {
-          "canonical": "Камри",
-          "aliases": []
-        },
-        {
-          "canonical": "Карина",
-          "aliases": []
-        },
-        {
-          "canonical": "Королла",
+          "canonical": "ist",
           "aliases": [
-            "Королла Филдер"
+            "Ист",
+            "IST"
           ]
-        },
-        {
-          "canonical": "Креста",
-          "aliases": []
-        },
-        {
-          "canonical": "ПЛАТЦ",
-          "aliases": []
-        },
-        {
-          "canonical": "Приус Гибрид",
-          "aliases": []
-        },
-        {
-          "canonical": "Спринтер",
-          "aliases": []
-        },
-        {
-          "canonical": "Таун Айс Ноах",
-          "aliases": []
         }
       ]
     },
@@ -7023,10 +9143,6 @@
         "Volkswagen AG"
       ],
       "models": [
-        {
-          "canonical": "7НС Multivan",
-          "aliases": []
-        },
         {
           "canonical": "Amarok",
           "aliases": [
@@ -7127,7 +9243,9 @@
           "canonical": "Transporter",
           "aliases": [
             "Caravelle",
-            "Multivan"
+            "Multivan",
+            "7НС Multivan",
+            "7HC Multivan"
           ]
         },
         {
@@ -7233,12 +9351,10 @@
         {
           "canonical": "XC90",
           "aliases": [
-            "XC 90"
+            "XC 90",
+            "ХС90",
+            "ХС 90"
           ]
-        },
-        {
-          "canonical": "ХС90",
-          "aliases": []
         }
       ]
     },
@@ -7252,13 +9368,73 @@
         "ГАЗ Волга"
       ],
       "models": [
-        { "canonical": "Siber", "aliases": ["Volga Siber", "Волга Siber", "Волга Сайбер", "Волга Сибер", "Сайбер", "Сибер", "GAZ Volga Siber", "GAZ Siber"] },
-        { "canonical": "21", "aliases": ["GAZ-21", "Gaz 21", "Volga 21", "ГАЗ-21"] },
-        { "canonical": "24", "aliases": ["GAZ-24", "Gaz 24", "Volga 24", "24-03", "2410", "ГАЗ-24"] },
-        { "canonical": "3102", "aliases": ["3102 Волга", "31029", "GAZ 3102", "Volga 3102"] },
-        { "canonical": "3110", "aliases": ["3110-411", "311000", "GAZ 3110", "Volga 3110"] },
-        { "canonical": "31105", "aliases": ["31105 (Волга)", "31105-120", "GAZ 31105", "Volga 31105"] },
-        { "canonical": "3111", "aliases": ["GAZ 3111", "Volga 3111"] }
+        {
+          "canonical": "Siber",
+          "aliases": [
+            "Volga Siber",
+            "Волга Siber",
+            "Волга Сайбер",
+            "Волга Сибер",
+            "Сайбер",
+            "Сибер",
+            "GAZ Volga Siber",
+            "GAZ Siber"
+          ]
+        },
+        {
+          "canonical": "21",
+          "aliases": [
+            "GAZ-21",
+            "Gaz 21",
+            "Volga 21",
+            "ГАЗ-21"
+          ]
+        },
+        {
+          "canonical": "24",
+          "aliases": [
+            "GAZ-24",
+            "Gaz 24",
+            "Volga 24",
+            "24-03",
+            "2410",
+            "ГАЗ-24"
+          ]
+        },
+        {
+          "canonical": "3102",
+          "aliases": [
+            "3102 Волга",
+            "31029",
+            "GAZ 3102",
+            "Volga 3102"
+          ]
+        },
+        {
+          "canonical": "3110",
+          "aliases": [
+            "3110-411",
+            "311000",
+            "GAZ 3110",
+            "Volga 3110"
+          ]
+        },
+        {
+          "canonical": "31105",
+          "aliases": [
+            "31105 (Волга)",
+            "31105-120",
+            "GAZ 31105",
+            "Volga 31105"
+          ]
+        },
+        {
+          "canonical": "3111",
+          "aliases": [
+            "GAZ 3111",
+            "Volga 3111"
+          ]
+        }
       ]
     },
     {
@@ -7279,19 +9455,35 @@
         {
           "canonical": "Corda",
           "aliases": [
-            "Vortex Corda"
+            "Vortex Corda",
+            "КОРДА",
+            "CORDA"
           ]
         },
         {
           "canonical": "Estina",
           "aliases": [
             "Chery Estina",
-            "Vortex Estina"
+            "Vortex Estina",
+            "ЕСТИНА А21",
+            "ЕСТИНА",
+            "Estina A21"
           ]
         },
         {
-          "canonical": "JAC S10",
-          "aliases": []
+          "canonical": "C190",
+          "aliases": [
+            "C190 JAC",
+            "TAGAZ C190",
+            "TagAZ C190",
+            "Тагаз C190",
+            "JAC Rein",
+            "JAC S10",
+            "С190 JAC",
+            "S190 JAC",
+            "S190",
+            "Z9C6CB4B"
+          ]
         },
         {
           "canonical": "Tager",
@@ -7303,7 +9495,16 @@
           "canonical": "Tingo",
           "aliases": [
             "Tingo FL",
-            "Vortex Tingo"
+            "Vortex Tingo",
+            "Тинго",
+            "ТИНГО",
+            "SUV T11 ТИНГО",
+            "Тинго (SUV Т11)",
+            "Тинго (SUV T11)",
+            "T11",
+            "T11 Tingo",
+            "SUV T11",
+            "SUV T11 TINGO"
           ]
         },
         {
@@ -7313,25 +9514,6 @@
         {
           "canonical": "Vega C10",
           "aliases": []
-        },
-        {
-          "canonical": "ЕСТИНА А21",
-          "aliases": []
-        },
-        {
-          "canonical": "КОРДА",
-          "aliases": []
-        },
-        {
-          "canonical": "С190 JAC",
-          "aliases": []
-        },
-        {
-          "canonical": "Тинго",
-          "aliases": [
-            "SUV T11 ТИНГО",
-            "Тинго (SUV Т11)"
-          ]
         }
       ]
     },
@@ -7345,19 +9527,90 @@
         "Dongfeng Voyah"
       ],
       "models": [
-        { "canonical": "Free", "aliases": ["Voyah Free", "VOYAH Free", "FREE", "Free+", "Voyah Free+"] },
-        { "canonical": "Dreamer", "aliases": ["Dream", "Voyah Dream", "Voyah Dreamer", "VOYAH Dream", "VOYAH Dreamer"] },
-        { "canonical": "Passion", "aliases": ["Zhuiguang", "Voyah Passion", "VOYAH Passion", "追光"] },
-        { "canonical": "Passion L", "aliases": ["PassionL", "Voyah Passion L", "VOYAH Passion L"] },
-        { "canonical": "Courage", "aliases": ["Zhiyin", "Voyah Courage", "VOYAH Courage", "知音"] },
-        { "canonical": "Taishan", "aliases": ["Voyah Taishan", "VOYAH Taishan", "Taishan Ultra", "Voyah Taishan Ultra"] },
-        { "canonical": "Taishan X8", "aliases": ["TaishanX8", "Voyah Taishan X8", "VOYAH Taishan X8"] }
+        {
+          "canonical": "Free",
+          "aliases": [
+            "Voyah Free",
+            "VOYAH Free",
+            "FREE",
+            "Free+",
+            "Voyah Free+"
+          ]
+        },
+        {
+          "canonical": "Dreamer",
+          "aliases": [
+            "Dream",
+            "Voyah Dream",
+            "Voyah Dreamer",
+            "VOYAH Dream",
+            "VOYAH Dreamer"
+          ]
+        },
+        {
+          "canonical": "Passion",
+          "aliases": [
+            "Zhuiguang",
+            "Voyah Passion",
+            "VOYAH Passion",
+            "追光"
+          ]
+        },
+        {
+          "canonical": "Passion L",
+          "aliases": [
+            "PassionL",
+            "Voyah Passion L",
+            "VOYAH Passion L"
+          ]
+        },
+        {
+          "canonical": "Courage",
+          "aliases": [
+            "Zhiyin",
+            "Voyah Courage",
+            "VOYAH Courage",
+            "知音"
+          ]
+        },
+        {
+          "canonical": "Taishan",
+          "aliases": [
+            "Voyah Taishan",
+            "VOYAH Taishan",
+            "Taishan Ultra",
+            "Voyah Taishan Ultra"
+          ]
+        },
+        {
+          "canonical": "Taishan X8",
+          "aliases": [
+            "TaishanX8",
+            "Voyah Taishan X8",
+            "VOYAH Taishan X8"
+          ]
+        }
       ]
     },
     {
       "canonical": "WEY",
-      "aliases": [],
-      "models": []
+      "aliases": [
+        "Wey",
+        "GWM Wey",
+        "GWM WEY",
+        "魏牌"
+      ],
+      "models": [
+        {
+          "canonical": "05",
+          "aliases": [
+            "WEY 05",
+            "Wey 05",
+            "Coffee 05",
+            "LGWFFVA7"
+          ]
+        }
+      ]
     },
     {
       "canonical": "Zeekr",
@@ -7367,17 +9620,86 @@
         "极氪"
       ],
       "models": [
-        { "canonical": "001", "aliases": ["Zeekr 001", "ZEEKR 001", "001 FR", "Zeekr 001 FR"] },
-        { "canonical": "007", "aliases": ["Zeekr 007", "ZEEKR 007"] },
-        { "canonical": "007 GT", "aliases": ["007GT", "Zeekr 007 GT"] },
-        { "canonical": "009", "aliases": ["Zeekr 009", "ZEEKR 009"] },
-        { "canonical": "009 Grand", "aliases": ["009Grand", "Zeekr 009 Grand"] },
-        { "canonical": "7X", "aliases": ["Zeekr 7X", "ZEEKR 7X"] },
-        { "canonical": "7GT", "aliases": ["Zeekr 7GT", "ZEEKR 7GT"] },
-        { "canonical": "8X", "aliases": ["Zeekr 8X", "ZEEKR 8X"] },
-        { "canonical": "9X", "aliases": ["Zeekr 9X", "ZEEKR 9X"] },
-        { "canonical": "X", "aliases": ["Zeekr X", "ZEEKR X"] },
-        { "canonical": "Mix", "aliases": ["MIX", "Zeekr Mix", "Zeekr MIX"] }
+        {
+          "canonical": "001",
+          "aliases": [
+            "Zeekr 001",
+            "ZEEKR 001",
+            "001 FR",
+            "Zeekr 001 FR"
+          ]
+        },
+        {
+          "canonical": "007",
+          "aliases": [
+            "Zeekr 007",
+            "ZEEKR 007"
+          ]
+        },
+        {
+          "canonical": "007 GT",
+          "aliases": [
+            "007GT",
+            "Zeekr 007 GT"
+          ]
+        },
+        {
+          "canonical": "009",
+          "aliases": [
+            "Zeekr 009",
+            "ZEEKR 009"
+          ]
+        },
+        {
+          "canonical": "009 Grand",
+          "aliases": [
+            "009Grand",
+            "Zeekr 009 Grand"
+          ]
+        },
+        {
+          "canonical": "7X",
+          "aliases": [
+            "Zeekr 7X",
+            "ZEEKR 7X"
+          ]
+        },
+        {
+          "canonical": "7GT",
+          "aliases": [
+            "Zeekr 7GT",
+            "ZEEKR 7GT"
+          ]
+        },
+        {
+          "canonical": "8X",
+          "aliases": [
+            "Zeekr 8X",
+            "ZEEKR 8X"
+          ]
+        },
+        {
+          "canonical": "9X",
+          "aliases": [
+            "Zeekr 9X",
+            "ZEEKR 9X"
+          ]
+        },
+        {
+          "canonical": "X",
+          "aliases": [
+            "Zeekr X",
+            "ZEEKR X"
+          ]
+        },
+        {
+          "canonical": "Mix",
+          "aliases": [
+            "MIX",
+            "Zeekr Mix",
+            "Zeekr MIX"
+          ]
+        }
       ]
     },
     {
@@ -7390,8 +9712,20 @@
         "ЗОТИ"
       ],
       "models": [
-        { "canonical": "T600", "aliases": ["Zotye T600", "ZOTYE T600"] },
-        { "canonical": "Z300", "aliases": ["Zotye Z300", "ZOTYE Z300"] }
+        {
+          "canonical": "T600",
+          "aliases": [
+            "Zotye T600",
+            "ZOTYE T600"
+          ]
+        },
+        {
+          "canonical": "Z300",
+          "aliases": [
+            "Zotye Z300",
+            "ZOTYE Z300"
+          ]
+        }
       ]
     },
     {
@@ -7401,8 +9735,30 @@
         "Эксайт"
       ],
       "models": [
-        { "canonical": "X-Cross 7", "aliases": ["X-Cross7", "X Cross 7", "XCross 7", "XCROSS 7", "X-CROSS 7", "Xcite X-Cross 7", "XCITE X-Cross 7"] },
-        { "canonical": "X-Cross 8", "aliases": ["X-Cross8", "X Cross 8", "XCross 8", "XCROSS 8", "X-CROSS 8", "Xcite X-Cross 8", "XCITE X-Cross 8"] }
+        {
+          "canonical": "X-Cross 7",
+          "aliases": [
+            "X-Cross7",
+            "X Cross 7",
+            "XCross 7",
+            "XCROSS 7",
+            "X-CROSS 7",
+            "Xcite X-Cross 7",
+            "XCITE X-Cross 7"
+          ]
+        },
+        {
+          "canonical": "X-Cross 8",
+          "aliases": [
+            "X-Cross8",
+            "X Cross 8",
+            "XCross 8",
+            "XCROSS 8",
+            "X-CROSS 8",
+            "Xcite X-Cross 8",
+            "XCITE X-Cross 8"
+          ]
+        }
       ]
     },
     {
@@ -7440,7 +9796,16 @@
         "Гaz"
       ],
       "models": [
-        { "canonical": "Siber", "aliases": ["Volga Siber", "Волга Siber", "Волга Сайбер", "GAZ Volga Siber", "GAZ Siber"] },
+        {
+          "canonical": "Siber",
+          "aliases": [
+            "Volga Siber",
+            "Волга Siber",
+            "Волга Сайбер",
+            "GAZ Volga Siber",
+            "GAZ Siber"
+          ]
+        },
         {
           "canonical": "24-03",
           "aliases": []
@@ -7613,13 +9978,71 @@
         "Иж-Авто"
       ],
       "models": [
-        { "canonical": "2125", "aliases": ["ИЖ-2125", "IZH-2125", "IZH 2125", "ИЖ 2125"] },
-        { "canonical": "2126", "aliases": ["ИЖ-2126", "IZH-2126", "IZH 2126", "ИЖ 2126", "Oda", "Ода"] },
-        { "canonical": "21251", "aliases": ["ИЖ-21251", "IZH-21251", "IZH 21251", "ИЖ 21251"] },
-        { "canonical": "21261", "aliases": ["ИЖ-21261", "IZH-21261", "IZH 21261", "ИЖ 21261"] },
-        { "canonical": "2715", "aliases": ["ИЖ-2715", "IZH-2715", "IZH 2715", "ИЖ 2715"] },
-        { "canonical": "2717", "aliases": ["ИЖ-2717", "IZH-2717", "IZH 2717", "ИЖ 2717"] },
-        { "canonical": "412", "aliases": ["ИЖ-412", "IZH-412", "IZH 412", "ИЖ 412"] }
+        {
+          "canonical": "2125",
+          "aliases": [
+            "ИЖ-2125",
+            "IZH-2125",
+            "IZH 2125",
+            "ИЖ 2125"
+          ]
+        },
+        {
+          "canonical": "2126",
+          "aliases": [
+            "ИЖ-2126",
+            "IZH-2126",
+            "IZH 2126",
+            "ИЖ 2126",
+            "Oda",
+            "Ода"
+          ]
+        },
+        {
+          "canonical": "21251",
+          "aliases": [
+            "ИЖ-21251",
+            "IZH-21251",
+            "IZH 21251",
+            "ИЖ 21251"
+          ]
+        },
+        {
+          "canonical": "21261",
+          "aliases": [
+            "ИЖ-21261",
+            "IZH-21261",
+            "IZH 21261",
+            "ИЖ 21261"
+          ]
+        },
+        {
+          "canonical": "2715",
+          "aliases": [
+            "ИЖ-2715",
+            "IZH-2715",
+            "IZH 2715",
+            "ИЖ 2715"
+          ]
+        },
+        {
+          "canonical": "2717",
+          "aliases": [
+            "ИЖ-2717",
+            "IZH-2717",
+            "IZH 2717",
+            "ИЖ 2717"
+          ]
+        },
+        {
+          "canonical": "412",
+          "aliases": [
+            "ИЖ-412",
+            "IZH-412",
+            "IZH 412",
+            "ИЖ 412"
+          ]
+        }
       ]
     },
     {

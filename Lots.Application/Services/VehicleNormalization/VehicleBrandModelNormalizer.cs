@@ -79,6 +79,20 @@ public class VehicleBrandModelNormalizer : IVehicleBrandModelNormalizer
             return (normalizedBrandInput, unmatchedModel.Model, false, unmatchedModel.Matched);
         }
 
+        if (string.Equals(canonicalBrand, "Dongfeng", StringComparison.OrdinalIgnoreCase)
+            && TryExtractForthingSubBrandModel(model, out var forthingModel))
+        {
+            var forthingNormalized = NormalizeModel(forthingModel, "Forthing");
+            return ("Forthing", forthingNormalized.Model, true, forthingNormalized.Matched);
+        }
+
+        if (string.Equals(canonicalBrand, "Fiat", StringComparison.OrdinalIgnoreCase)
+            && TryExtractFstModel(model, out var fstModel))
+        {
+            var fstNormalized = NormalizeModel(fstModel, "FST");
+            return ("FST", fstNormalized.Model, true, fstNormalized.Matched);
+        }
+
         var normalizedModel = NormalizeModel(model, canonicalBrand);
 
         return (canonicalBrand, normalizedModel.Model, true, normalizedModel.Matched);
@@ -190,7 +204,7 @@ public class VehicleBrandModelNormalizer : IVehicleBrandModelNormalizer
         string alias,
         string canonical)
     {
-        var key = NormalizeLookupKey(alias);
+        var key = NormalizeModelLookupKey(alias);
         if (string.IsNullOrWhiteSpace(key))
         {
             return;
@@ -229,6 +243,8 @@ public class VehicleBrandModelNormalizer : IVehicleBrandModelNormalizer
                 'в' => 'b',
                 'Е' => 'E',
                 'е' => 'e',
+                'И' => 'I',
+                'и' => 'i',
                 'К' => 'K',
                 'к' => 'k',
                 'М' => 'M',
@@ -272,6 +288,52 @@ public class VehicleBrandModelNormalizer : IVehicleBrandModelNormalizer
         }
 
         return input[prefix.Length] is ' ' or '-' or '(';
+    }
+
+    private static bool TryExtractFstModel(string? model, out string? fstModel)
+    {
+        fstModel = null;
+
+        if (string.IsNullOrWhiteSpace(model))
+        {
+            return false;
+        }
+
+        var normalized = NormalizeModelLookupKey(model);
+        if (!normalized.StartsWith("FST", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        fstModel = normalized;
+        return true;
+    }
+
+    private static bool TryExtractForthingSubBrandModel(string? model, out string? strippedModel)
+    {
+        strippedModel = null;
+
+        if (string.IsNullOrWhiteSpace(model))
+        {
+            return false;
+        }
+
+        var normalized = NormalizeModelLookupKey(model);
+        const string prefix = "Forthing ";
+
+        if (normalized.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            strippedModel = normalized[prefix.Length..].Trim();
+            return true;
+        }
+
+        if (string.Equals(normalized, "Forthing", StringComparison.OrdinalIgnoreCase))
+        {
+            strippedModel = string.Empty;
+            return true;
+        }
+
+        return false;
     }
 
     private static bool TryResolveBmwXSeriesGluedModel(string input, out string model)
