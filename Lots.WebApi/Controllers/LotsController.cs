@@ -550,6 +550,45 @@ public class LotsController : ControllerBase
         return Ok(new { message = "Описание успешно обновлено." });
     }
 
+    public class UpdateViewingProcedureRequest
+    {
+        public string? ViewingProcedure { get; set; }
+    }
+
+    [Authorize]
+    [HttpPut("{id}/viewing-procedure")]
+    public async Task<IActionResult> UpdateViewingProcedure(string id, [FromBody] UpdateViewingProcedureRequest request)
+    {
+        if (!await IsAdminAsync()) return Forbid();
+
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest(new { message = "Некорректный ID лота." });
+
+        Lot? lot = null;
+        if (int.TryParse(id, out int publicId))
+        {
+            lot = await _dbContext.Lots.Include(l => l.Bidding).FirstOrDefaultAsync(l => l.PublicId == publicId);
+        }
+        else if (Guid.TryParse(id, out Guid guidId))
+        {
+            lot = await _dbContext.Lots.Include(l => l.Bidding).FirstOrDefaultAsync(l => l.Id == guidId);
+        }
+
+        if (lot == null)
+            return NotFound(new { message = "Лот не найден." });
+
+        if (lot.Bidding == null)
+            return BadRequest(new { message = "Торги для лота не найдены." });
+
+        lot.Bidding.ViewingProcedure = string.IsNullOrWhiteSpace(request.ViewingProcedure)
+            ? null
+            : request.ViewingProcedure.Trim();
+
+        await _dbContext.SaveChangesAsync();
+
+        return Ok(new { message = "Порядок ознакомления успешно обновлён." });
+    }
+
     [Authorize]
     [HttpPost("{id}/images")]
     public async Task<IActionResult> UploadImages(string id, List<IFormFile> files, [FromServices] ILotsFileStorageService storageService)
