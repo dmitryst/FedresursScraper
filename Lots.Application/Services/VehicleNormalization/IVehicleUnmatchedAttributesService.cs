@@ -18,4 +18,9 @@ public interface IVehicleUnmatchedAttributesService
     /// Сбрасывает флаги нормализации, чтобы worker прогнал лоты заново (после обновления справочника).
     /// </summary>
     Task<int> ResetNormalizationFlagsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Сбрасывает атрибуты DeepSeek у неразобранных лотов, чтобы FedresursScraper прогнал их заново.
+    /// </summary>
+    Task<int> ResetUnmatchedExtractionFlagsAsync(CancellationToken cancellationToken = default);
 }

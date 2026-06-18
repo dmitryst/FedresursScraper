@@ -1,5 +1,6 @@
 using Lots.Application.Services.VehicleFilters;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -10,6 +11,7 @@ public class VehicleBrandModelNormalizer : IVehicleBrandModelNormalizer
 {
     private readonly Dictionary<string, string> _brandAliases;
     private readonly Dictionary<string, Dictionary<string, string>> _modelAliasesByBrand;
+    private readonly Dictionary<string, List<string>> _modelKeysByBrandLongestFirst;
     private readonly List<VehicleBrandEntry> _catalogBrands;
     private readonly ILogger<VehicleBrandModelNormalizer> _logger;
 
@@ -23,6 +25,7 @@ public class VehicleBrandModelNormalizer : IVehicleBrandModelNormalizer
 
         _brandAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         _modelAliasesByBrand = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+        _modelKeysByBrandLongestFirst = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var brand in catalog.Brands)
         {
@@ -46,6 +49,10 @@ public class VehicleBrandModelNormalizer : IVehicleBrandModelNormalizer
             }
 
             _modelAliasesByBrand[brand.Canonical] = modelMap;
+            _modelKeysByBrandLongestFirst[brand.Canonical] = modelMap.Keys
+                .OrderByDescending(key => key.Length)
+                .ThenBy(key => key, StringComparer.OrdinalIgnoreCase)
+                .ToList();
         }
 
         _logger.LogInformation(
@@ -60,7 +67,7 @@ public class VehicleBrandModelNormalizer : IVehicleBrandModelNormalizer
     {
         if (string.IsNullOrWhiteSpace(brand))
         {
-            return (null, NormalizeModel(model, null), false, false);
+            return (null, NormalizeModel(model, null).Model, false, false);
         }
 
         var normalizedBrandInput = NormalizeLookupKey(brand);
@@ -68,15 +75,13 @@ public class VehicleBrandModelNormalizer : IVehicleBrandModelNormalizer
 
         if (!brandMatched)
         {
-            return (normalizedBrandInput, NormalizeModel(model, null), false, false);
+            var unmatchedModel = NormalizeModel(model, null);
+            return (normalizedBrandInput, unmatchedModel.Model, false, unmatchedModel.Matched);
         }
 
         var normalizedModel = NormalizeModel(model, canonicalBrand);
-        var modelMatched = !string.IsNullOrWhiteSpace(model)
-            && _modelAliasesByBrand.TryGetValue(canonicalBrand!, out var modelMap)
-            && modelMap.ContainsKey(NormalizeLookupKey(model));
 
-        return (canonicalBrand, normalizedModel, true, modelMatched);
+        return (canonicalBrand, normalizedModel.Model, true, normalizedModel.Matched);
     }
 
     public VehicleFilterOptions GetCatalogOptions()
@@ -102,23 +107,60 @@ public class VehicleBrandModelNormalizer : IVehicleBrandModelNormalizer
         };
     }
 
-    private string? NormalizeModel(string? model, string? canonicalBrand)
+    private (string? Model, bool Matched) NormalizeModel(string? model, string? canonicalBrand)
     {
         if (string.IsNullOrWhiteSpace(model))
         {
-            return null;
+            return (null, false);
         }
 
-        var normalizedModelInput = NormalizeLookupKey(model);
+        var normalizedModelInput = NormalizeModelLookupKey(model);
 
         if (!string.IsNullOrWhiteSpace(canonicalBrand)
             && _modelAliasesByBrand.TryGetValue(canonicalBrand, out var modelMap)
-            && modelMap.TryGetValue(normalizedModelInput, out var canonicalModel))
+            && TryResolveModel(normalizedModelInput, canonicalBrand, modelMap, out var canonicalModel))
         {
-            return canonicalModel;
+            return (canonicalModel, true);
         }
 
-        return normalizedModelInput;
+        return (normalizedModelInput, false);
+    }
+
+    private bool TryResolveModel(
+        string normalizedModelInput,
+        string canonicalBrand,
+        Dictionary<string, string> modelMap,
+        out string canonicalModel)
+    {
+        if (modelMap.TryGetValue(normalizedModelInput, out canonicalModel!))
+        {
+            return true;
+        }
+
+        if (string.Equals(canonicalBrand, "BMW", StringComparison.OrdinalIgnoreCase)
+            && TryResolveBmwXSeriesGluedModel(normalizedModelInput, out var bmwXModel)
+            && modelMap.TryGetValue(bmwXModel, out canonicalModel!))
+        {
+            return true;
+        }
+
+        if (!_modelKeysByBrandLongestFirst.TryGetValue(canonicalBrand, out var prefixes))
+        {
+            return false;
+        }
+
+        foreach (var prefix in prefixes)
+        {
+            if (!IsModelPrefixMatch(normalizedModelInput, prefix))
+            {
+                continue;
+            }
+
+            canonicalModel = modelMap[prefix];
+            return true;
+        }
+
+        return false;
     }
 
     private void RegisterBrandAlias(string alias, string canonical)
@@ -161,6 +203,106 @@ public class VehicleBrandModelNormalizer : IVehicleBrandModelNormalizer
     {
         var trimmed = value.Trim();
         return string.Join(' ', trimmed.Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    private static string NormalizeModelLookupKey(string value)
+    {
+        return ReplaceCyrillicHomoglyphs(NormalizeLookupKey(value));
+    }
+
+    private static string ReplaceCyrillicHomoglyphs(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return value;
+        }
+
+        var builder = new StringBuilder(value.Length);
+
+        foreach (var ch in value)
+        {
+            builder.Append(ch switch
+            {
+                'А' => 'A',
+                'а' => 'a',
+                'В' => 'B',
+                'в' => 'b',
+                'Е' => 'E',
+                'е' => 'e',
+                'К' => 'K',
+                'к' => 'k',
+                'М' => 'M',
+                'м' => 'm',
+                'Н' => 'H',
+                'н' => 'h',
+                'О' => 'O',
+                'о' => 'o',
+                'Р' => 'P',
+                'р' => 'p',
+                'С' => 'C',
+                'с' => 'c',
+                'Т' => 'T',
+                'т' => 't',
+                'У' => 'Y',
+                'у' => 'y',
+                'Х' => 'X',
+                'х' => 'x',
+                _ => ch
+            });
+        }
+
+        return builder.ToString();
+    }
+
+    private static bool IsModelPrefixMatch(string input, string prefix)
+    {
+        if (prefix.Length == 0 || input.Length < prefix.Length)
+        {
+            return false;
+        }
+
+        if (!input.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (input.Length == prefix.Length)
+        {
+            return true;
+        }
+
+        return input[prefix.Length] is ' ' or '-' or '(';
+    }
+
+    private static bool TryResolveBmwXSeriesGluedModel(string input, out string model)
+    {
+        model = string.Empty;
+
+        if (input.Length < 4 || input[0] != 'X')
+        {
+            return false;
+        }
+
+        var digitEnd = 1;
+        while (digitEnd < input.Length && char.IsDigit(input[digitEnd]))
+        {
+            digitEnd++;
+        }
+
+        if (digitEnd == 1)
+        {
+            return false;
+        }
+
+        var suffix = input[digitEnd..];
+        if (!suffix.StartsWith("SDRIVE", StringComparison.OrdinalIgnoreCase)
+            && !suffix.StartsWith("XDRIVE", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        model = "X" + input[1..digitEnd];
+        return true;
     }
 
     private static VehicleCatalog LoadCatalog(VehicleCatalogSettings settings)

@@ -132,4 +132,76 @@ public class VehicleUnmatchedAttributesService : IVehicleUnmatchedAttributesServ
 
         return totalReset;
     }
+
+    public async Task<int> ResetUnmatchedExtractionFlagsAsync(CancellationToken cancellationToken = default)
+    {
+        var totalReset = 0;
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<LotsDbContext>();
+
+            var lots = await dbContext.Lots
+                .Where(Lot.IsActiveExpression)
+                .Where(l => l.Categories.Any(c => c.Name == VehicleCategory))
+                .Where(IsUnmatchedVehicleLotExpression())
+                .OrderBy(l => l.CreatedAt)
+                .Take(ResetBatchSize)
+                .ToListAsync(cancellationToken);
+
+            if (lots.Count == 0)
+            {
+                break;
+            }
+
+            foreach (var lot in lots)
+            {
+                var attributes = lot.Attributes != null
+                    ? new Dictionary<string, string>(lot.Attributes)
+                    : new Dictionary<string, string>();
+
+                ClearVehicleExtractionAttributes(attributes);
+                lot.Attributes = attributes.Count == 0 ? null : attributes;
+            }
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            totalReset += lots.Count;
+
+            if (lots.Count < ResetBatchSize)
+            {
+                break;
+            }
+        }
+
+        return totalReset;
+    }
+
+    private static System.Linq.Expressions.Expression<Func<Lot, bool>> IsUnmatchedVehicleLotExpression()
+    {
+        return l => l.Attributes != null
+            && EF.Functions.JsonExists(l.Attributes, "brand")
+            && (
+                !EF.Functions.JsonExists(l.Attributes, "_brand_matched")
+                || LotsDbContext.JsonbExtractPathText(l.Attributes, "_brand_matched") == "false"
+                || (
+                    EF.Functions.JsonExists(l.Attributes, "model")
+                    && (
+                        !EF.Functions.JsonExists(l.Attributes, "_model_matched")
+                        || LotsDbContext.JsonbExtractPathText(l.Attributes, "_model_matched") == "false")));
+    }
+
+    private static void ClearVehicleExtractionAttributes(Dictionary<string, string> attributes)
+    {
+        attributes.Remove("_attributes_parsed");
+        attributes.Remove("brand");
+        attributes.Remove("model");
+        attributes.Remove("year");
+        attributes.Remove("mileage");
+        attributes.Remove("brand_raw");
+        attributes.Remove("model_raw");
+        attributes.Remove("_brand_normalized");
+        attributes.Remove("_brand_matched");
+        attributes.Remove("_model_matched");
+    }
 }

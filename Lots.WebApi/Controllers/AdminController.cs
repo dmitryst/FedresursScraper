@@ -540,4 +540,26 @@ public class AdminController : ControllerBase
             ResetCount = resetCount
         });
     }
+
+    /// <summary>
+    /// Сбрасывает brand/model и флаг _attributes_parsed у неразобранных лотов,
+    /// чтобы FedresursScraper заново отправил их в DeepSeek (новый промпт).
+    /// </summary>
+    [HttpPost("vehicle-reset-unmatched-extraction")]
+    public async Task<IActionResult> ResetUnmatchedVehicleExtraction(
+        [FromServices] IVehicleUnmatchedAttributesService unmatchedService,
+        CancellationToken cancellationToken = default)
+    {
+        var resetCount = await unmatchedService.ResetUnmatchedExtractionFlagsAsync(cancellationToken);
+        _logger.LogInformation(
+            "Сброшены атрибуты DeepSeek для {Count} неразобранных лотов. Ожидается повторное извлечение в FedresursScraper.",
+            resetCount);
+
+        return Ok(new
+        {
+            Message = "Неразобранные лоты поставлены в очередь на повторное извлечение DeepSeek. "
+                + "FedresursScraper обработает их батчами (обычно в течение нескольких минут).",
+            ResetCount = resetCount
+        });
+    }
 }
