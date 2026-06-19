@@ -1,5 +1,7 @@
 using Lots.Data.Entities;
 using Lots.Application.Services.VehicleNormalization;
+using Lots.Application.Interfaces;
+using FedresursScraper.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,13 +16,16 @@ public class AdminLotsController : ControllerBase
 {
     private readonly LotsDbContext _dbContext;
     private readonly IVehicleAttributesAdminService _vehicleAttributesAdminService;
+    private readonly ILotDescriptionAlignmentService _alignmentService;
 
     public AdminLotsController(
         LotsDbContext dbContext,
-        IVehicleAttributesAdminService vehicleAttributesAdminService)
+        IVehicleAttributesAdminService vehicleAttributesAdminService,
+        ILotDescriptionAlignmentService alignmentService)
     {
         _dbContext = dbContext;
         _vehicleAttributesAdminService = vehicleAttributesAdminService;
+        _alignmentService = alignmentService;
     }
 
     private async Task<bool> IsAdminAsync()
@@ -72,7 +77,9 @@ public class AdminLotsController : ControllerBase
                 l.TradeStatus,
                 l.CreatedAt,
                 TradeNumber = l.Bidding.TradeNumber,
-                Platform = l.Bidding.Platform
+                Platform = l.Bidding.Platform,
+                BankruptMessageId = l.Bidding.BankruptMessageId,
+                ViewingProcedure = l.Bidding.ViewingProcedure
             })
             .ToListAsync();
 
@@ -95,6 +102,8 @@ public class AdminLotsController : ControllerBase
                 l.CreatedAt,
                 l.TradeNumber,
                 l.Platform,
+                BankruptMessageId = l.BankruptMessageId == Guid.Empty ? (Guid?)null : l.BankruptMessageId,
+                l.ViewingProcedure,
                 Url = $"/lot/{slug}-{l.PublicId}"
             };
         });
@@ -123,6 +132,62 @@ public class AdminLotsController : ControllerBase
 
         var count = await query.CountAsync();
         return Ok(new { count });
+    }
+
+    public class AlignPreviewRequest
+    {
+        public List<int> PublicIds { get; set; } = [];
+    }
+
+    /// <summary>
+    /// Предпросмотр выравнивания описания лота с данными Федресурса.
+    /// </summary>
+    [HttpPost("needs-description/align-preview")]
+    public async Task<IActionResult> PreviewDescriptionAlignment(
+        [FromBody] AlignPreviewRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!await IsAdminAsync()) return Forbid();
+
+        if (request.PublicIds == null || request.PublicIds.Count == 0)
+            return BadRequest(new { message = "Укажите publicIds лотов." });
+
+        try
+        {
+            var previews = await _alignmentService.PreviewAsync(request.PublicIds, cancellationToken);
+            return Ok(new { items = previews });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Применить выровненное описание после ручного подтверждения.
+    /// </summary>
+    [HttpPost("needs-description/align-apply")]
+    public async Task<IActionResult> ApplyDescriptionAlignment(
+        [FromBody] ApplyLotDescriptionAlignmentRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!await IsAdminAsync()) return Forbid();
+
+        if (request.PublicId <= 0 || string.IsNullOrWhiteSpace(request.Description))
+            return BadRequest(new { message = "Некорректные данные." });
+
+        try
+        {
+            var result = await _alignmentService.ApplyAsync(request, cancellationToken);
+            if (result == null)
+                return NotFound(new { message = "Лот не найден или не требует доработки описания." });
+
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     /// <summary>

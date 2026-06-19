@@ -525,6 +525,7 @@ public class LotsController : ControllerBase
             return NotFound(new { message = "Лот не найден." });
 
         lot.Description = request.Description;
+        lot.NeedsDescriptionReview = false;
 
         var classificationState = await _dbContext.LotClassificationStates.FirstOrDefaultAsync(s => s.LotId == lot.Id);
         if (classificationState == null)

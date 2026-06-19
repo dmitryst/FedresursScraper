@@ -8,6 +8,7 @@ using FedresursScraper.Extensions;
 using FedresursScraper.UserAds.Hubs;
 using FedresursScraper.Services;
 using Lots.Application.Extensions;
+using Lots.Application.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -30,6 +31,8 @@ builder.Services.AddScoped<ILotEvaluationService, LotEvaluationService>();
 builder.Services.AddVehicleFilterOptions(configuration);
 builder.Services.AddVehicleNormalization(configuration, registerBackfillWorker: true);
 builder.Services.AddVehicleAttributesAdmin();
+builder.Services.AddHttpClient<IParserScrapeClient, ParserScrapeClient>();
+builder.Services.AddScoped<ILotDescriptionAlignmentService, LotDescriptionAlignmentService>();
 builder.Services.AddSingleton<IBiddingDataCache, InMemoryBiddingDataCache>();
 builder.Services.AddScoped<TradeResultsImportService>();
 builder.Services.AddHttpClient<IIndexNowService, IndexNowService>();
