@@ -16,6 +16,11 @@ public class BiddingDto
     public string Platform { get; set; } = default!;
 
     /// <summary>
+    /// Номер торгов
+    /// </summary>
+    public string? TradeNumber { get; set; }
+
+    /// <summary>
     /// Идентификатор объявления торгов на сайте Федресурса
     /// </summary>
     public Guid BankruptMessageId { get; set; }

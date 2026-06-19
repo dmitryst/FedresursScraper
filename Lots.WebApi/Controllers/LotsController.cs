@@ -10,6 +10,7 @@ using Lots.Data.Entities;
 using Ardalis.Specification;
 using Lots.Data.Models;
 using Lots.Application.Services.VehicleFilters;
+using FedresursScraper.Services.Utils;
 
 
 namespace FedresursScraper.Controllers;
@@ -199,7 +200,8 @@ public class LotsController : ControllerBase
             Bidding = new BiddingDto
             {
                 Type = lot.Bidding.Type,
-                Platform = lot.Bidding.Platform,
+                Platform = PlatformDisplayName.GetDisplayName(lot.Bidding.Platform),
+                TradeNumber = lot.Bidding.TradeNumber,
                 BankruptMessageId = lot.Bidding.BankruptMessageId,
                 BidAcceptancePeriod = lot.Bidding.BidAcceptancePeriod,
                 TradePeriod = lot.Bidding.TradePeriod,
