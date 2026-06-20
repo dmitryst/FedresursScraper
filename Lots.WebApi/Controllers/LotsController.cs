@@ -209,6 +209,7 @@ public class LotsController : ControllerBase
 
             Bidding = new BiddingDto
             {
+                Id = lot.Bidding.Id,
                 Type = lot.Bidding.Type,
                 Platform = PlatformDisplayName.GetDisplayName(lot.Bidding.Platform),
                 TradeNumber = lot.Bidding.TradeNumber,

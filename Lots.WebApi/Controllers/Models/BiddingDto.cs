@@ -6,6 +6,11 @@ namespace FedresursScraper.Controllers.Models;
 public class BiddingDto
 {
     /// <summary>
+    /// Идентификатор торгов на Федресурсе
+    /// </summary>
+    public Guid Id { get; set; }
+
+    /// <summary>
     /// Вид торгов
     /// </summary>
     public string Type { get; set; } = string.Empty;
