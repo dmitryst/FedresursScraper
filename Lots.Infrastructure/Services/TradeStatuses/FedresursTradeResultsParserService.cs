@@ -18,11 +18,18 @@ public class FedresursTradeResultsParserService
 
     private const string BaseUrl = "https://fedresurs.ru/biddings";
 
+    private const string CollateralCreditorCompletionMessageType =
+        "О завершении торгов вследствие оставления конкурсным кредитором предмета залога за собой";
+
+    private const string CollateralCreditorCompletionReason =
+        "Вследствие оставления конкурсным кредитором предмета залога за собой";
+
     private static readonly string[] TargetMessageTypes =
     {
         "Торги не состоялись",
         "Результаты торгов",
-        "Отмена торгов"
+        "Отмена торгов",
+        CollateralCreditorCompletionMessageType
     };
 
     public FedresursTradeResultsParserService(
@@ -209,7 +216,7 @@ public class FedresursTradeResultsParserService
                 var card = messageCards[i];
                 var type = card.FindElement(By.CssSelector(".message-type-name")).Text.Trim();
 
-                if (!TargetMessageTypes.Contains(type)) continue;
+                if (!IsTargetMessageType(type)) continue;
 
                 var linkElement = card.FindElement(By.CssSelector(".message-info-link a.underlined"));
                 var href = linkElement.GetAttribute("href");
@@ -268,6 +275,10 @@ public class FedresursTradeResultsParserService
             else if (msg.Type == "Отмена торгов")
             {
                 hasNewResults |= ParseCancelledBiddingMessage(driver, _dbContext, bidding, msg.MessageId, msg.Date);
+            }
+            else if (IsCollateralCreditorCompletionMessage(msg.Type))
+            {
+                hasNewResults |= ParseCollateralCreditorKeepsBiddingMessage(driver, _dbContext, bidding, msg.MessageId, msg.Date);
             }
         }
 
@@ -405,6 +416,46 @@ public class FedresursTradeResultsParserService
         return processedAny;
     }
 
+    private bool ParseCollateralCreditorKeepsBiddingMessage(IWebDriver driver, LotsDbContext dbContext, Bidding bidding, Guid messageId, DateTime eventDate)
+    {
+        var component = driver.FindElements(By.CssSelector("bidding-message-biddingendbankruptcycreditor")).FirstOrDefault();
+        if (component == null) return false;
+
+        bool processedAny = false;
+        var processedLotNumbers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var item in component.FindElements(By.CssSelector(".info-item")))
+        {
+            var name = item.FindElement(By.CssSelector(".info-item-name")).Text.Trim();
+            if (!name.Contains("Лоты", StringComparison.OrdinalIgnoreCase)) continue;
+
+            var lotsValue = item.FindElement(By.CssSelector(".info-item-value")).Text.Trim();
+            foreach (var lotNumber in ParseLotNumbersFromList(lotsValue))
+            {
+                if (!processedLotNumbers.Add(lotNumber)) continue;
+
+                var result = new LotTradeResult
+                {
+                    Id = Guid.NewGuid(),
+                    BiddingId = bidding.Id,
+                    MessageId = messageId,
+                    LotNumber = lotNumber,
+                    EventType = CollateralCreditorCompletionMessageType,
+                    EventDate = DateTime.SpecifyKind(eventDate, DateTimeKind.Utc),
+                    Reason = CollateralCreditorCompletionReason,
+                    Status = "Завершенные",
+                    CreatedAt = DateTime.UtcNow,
+                    IsExportedToProd = false
+                };
+
+                dbContext.LotTradeResults.Add(result);
+                processedAny = true;
+            }
+        }
+
+        return processedAny;
+    }
+
     private bool ParseCancelledBiddingMessage(IWebDriver driver, LotsDbContext dbContext, Bidding bidding, Guid messageId, DateTime eventDate)
     {
         // Ищем блоки лотов (как в "Торги не состоялись")
@@ -471,6 +522,27 @@ public class FedresursTradeResultsParserService
         };
 
         dbContext.LotTradeResults.Add(result);
+    }
+
+    private static bool IsTargetMessageType(string type) =>
+        TargetMessageTypes.Contains(type) || IsCollateralCreditorCompletionMessage(type);
+
+    private static bool IsCollateralCreditorCompletionMessage(string type) =>
+        type.Contains("оставления конкурсным кредитором предмета залога за собой", StringComparison.OrdinalIgnoreCase);
+
+    private IEnumerable<string> ParseLotNumbersFromList(string lotsValue)
+    {
+        if (string.IsNullOrWhiteSpace(lotsValue)) yield break;
+
+        foreach (var part in lotsValue.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var normalized = NormalizeLotNumber(part);
+            if (!string.IsNullOrWhiteSpace(normalized) &&
+                !normalized.Contains("нет данных", StringComparison.OrdinalIgnoreCase))
+            {
+                yield return normalized;
+            }
+        }
     }
 
     private string? ExtractLotNumber(string headerText)
