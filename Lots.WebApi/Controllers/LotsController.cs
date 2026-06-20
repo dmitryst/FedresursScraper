@@ -3,6 +3,7 @@ using FedresursScraper.Services;
 using Lots.Data.Specifications;
 using Microsoft.EntityFrameworkCore;
 using FedresursScraper.Controllers.Models;
+using FedresursScraper.Controllers.Utils;
 using Ardalis.Specification.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
@@ -22,15 +23,18 @@ public class LotsController : ControllerBase
     private readonly ILotCopyService _lotCopyService;
     private readonly LotsDbContext _dbContext;
     private readonly IVehicleFilterOptionsCache _vehicleFilterOptionsCache;
+    private readonly bool _aiQuickEvaluationAdminOnly;
 
     public LotsController(
         ILotCopyService lotCopyService,
         LotsDbContext dbContext,
-        IVehicleFilterOptionsCache vehicleFilterOptionsCache)
+        IVehicleFilterOptionsCache vehicleFilterOptionsCache,
+        IConfiguration configuration)
     {
         _lotCopyService = lotCopyService;
         _dbContext = dbContext;
         _vehicleFilterOptionsCache = vehicleFilterOptionsCache;
+        _aiQuickEvaluationAdminOnly = configuration.GetValue("Features:AiQuickEvaluationAdminOnly", true);
     }
 
     [HttpGet("list")]
@@ -106,6 +110,12 @@ public class LotsController : ControllerBase
                 .Select(i => i.Url)
                 .ToList()
         }).ToList();
+
+        if (_aiQuickEvaluationAdminOnly)
+        {
+            var showAiEvaluation = await IsAdminAsync();
+            LotDtoAiEvaluationAccess.ApplyQuickEvaluationVisibility(lotDtos, showAiEvaluation);
+        }
 
         var result = new PaginatedResult<LotDto>(lotDtos, totalCount, page, pageSize);
 
@@ -314,6 +324,12 @@ public class LotsController : ControllerBase
             }
         }
 
+        if (_aiQuickEvaluationAdminOnly)
+        {
+            var showAiEvaluation = await IsAdminAsync();
+            LotDtoAiEvaluationAccess.ApplyQuickEvaluationVisibility(lotDto, showAiEvaluation);
+        }
+
         return Ok(lotDto);
     }
 
@@ -490,14 +506,8 @@ public class LotsController : ControllerBase
         return Ok(items);
     }
 
-    private async Task<bool> IsAdminAsync()
-    {
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
-        if (!Guid.TryParse(userIdString, out Guid userId)) return false;
-
-        var user = await _dbContext.Users.FindAsync(userId);
-        return user?.IsAdmin == true;
-    }
+    private async Task<bool> IsAdminAsync() =>
+        await AdminAccessHelper.IsAdminAsync(HttpContext, _dbContext);
 
     public class UpdateLotDescriptionRequest
     {

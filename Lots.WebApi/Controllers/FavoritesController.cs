@@ -1,5 +1,6 @@
 using Ardalis.Specification.EntityFrameworkCore;
 using FedresursScraper.Controllers.Models;
+using FedresursScraper.Controllers.Utils;
 using Lots.Data.Entities;
 using Lots.Data.Specifications;
 using Microsoft.AspNetCore.Authorization;
@@ -13,11 +14,13 @@ using System.Security.Claims;
 public class FavoritesController : ControllerBase
 {
     private readonly LotsDbContext _context;
+    private readonly bool _aiQuickEvaluationAdminOnly;
     private const int MAX_FAVORITES_PER_USER = 200; // Лимит избранных лотов
 
-    public FavoritesController(LotsDbContext context)
+    public FavoritesController(LotsDbContext context, IConfiguration configuration)
     {
         _context = context;
+        _aiQuickEvaluationAdminOnly = configuration.GetValue("Features:AiQuickEvaluationAdminOnly", true);
     }
 
     //// <summary>
@@ -114,6 +117,12 @@ public class FavoritesController : ControllerBase
             FinalPrice = l.FinalPrice
         }).ToList();
 
+        if (_aiQuickEvaluationAdminOnly)
+        {
+            var showAiEvaluation = await IsAdminAsync();
+            LotDtoAiEvaluationAccess.ApplyQuickEvaluationVisibility(lotDtos, showAiEvaluation);
+        }
+
         var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
         return Ok(new PaginatedResult<LotDto>(lotDtos, totalCount, page, pageSize));
@@ -168,6 +177,9 @@ public class FavoritesController : ControllerBase
             return Ok(new { isFavorite = true });
         }
     }
+
+    private async Task<bool> IsAdminAsync() =>
+        await AdminAccessHelper.IsAdminAsync(HttpContext, _context);
 
     private Guid? GetCurrentUserId()
     {

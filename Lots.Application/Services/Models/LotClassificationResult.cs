@@ -68,7 +68,7 @@ public class LotClassificationResult
     public decimal? MarketValueMax { get; set; }
 
     /// <summary>
-    /// Уровень уверенности модели в оценке: "low", "medium", "high".
+    /// Уровень уверенности модели в оценке: "low", "medium", "high", "not_evaluable".
     /// </summary>
     [JsonPropertyName("priceConfidence")]
     public string? PriceConfidence { get; set; }

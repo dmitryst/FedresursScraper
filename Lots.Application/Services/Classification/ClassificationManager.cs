@@ -136,6 +136,7 @@ public class ClassificationManager : IClassificationManager
                         return;
                     }
 
+                    LotPriceEvaluationRules.SanitizeClassificationResult(result, lot.StartPrice);
                     ApplySuccessfulClassification(dbContext, lot, result, lotId);
 
                     // Аудит: Успех
@@ -313,6 +314,7 @@ public class ClassificationManager : IClassificationManager
                         continue;
                     }
 
+                    LotPriceEvaluationRules.SanitizeClassificationResult(result, lot.StartPrice);
                     ApplySuccessfulClassification(dbContext, lot, result, lot.Id);
 
                     dbContext.LotAuditEvents.Add(new LotAuditEvent
@@ -366,7 +368,8 @@ public class ClassificationManager : IClassificationManager
 
         if (startPrice.HasValue)
         {
-            sb.AppendLine($"Начальная цена лота: {startPrice.Value.ToString("N2", CultureInfo.InvariantCulture)} руб.");
+            sb.AppendLine(
+                $"Справочно — начальная цена торгов (цена продавца, НЕ рыночная оценка): {startPrice.Value.ToString("N2", CultureInfo.InvariantCulture)} руб.");
         }
 
         if (infos == null || infos.Count == 0)

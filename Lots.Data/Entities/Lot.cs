@@ -89,7 +89,7 @@ public class Lot
     public decimal? MarketValueMax { get; set; }
 
     /// <summary>
-    /// Уровень уверенности модели в оценке: "low", "medium", "high".
+    /// Уровень уверенности модели в оценке: "low", "medium", "high", "not_evaluable".
     /// </summary>
     [MaxLength(20)]
     public string? PriceConfidence { get; set; }
