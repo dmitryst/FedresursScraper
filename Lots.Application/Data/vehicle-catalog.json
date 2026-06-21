@@ -577,11 +577,16 @@
           ]
         },
         {
-          "canonical": "X4XDRIVE",
+          "canonical": "X4",
           "aliases": [
+            "X 4",
             "X4 xDrive20d",
             "X4 xDrive20i"
           ]
+        },
+        {
+          "canonical": "X4XDRIVE",
+          "aliases": []
         },
         {
           "canonical": "X5",
@@ -764,6 +769,11 @@
           "canonical": "Junjie",
           "aliases": [
             "Brilliance Junjie",
+            "Brilliance M2",
+            "BRILLIANCE M2",
+            "JunJie",
+            "M2",
+            "M2 (JunJie)",
             "骏捷",
             "Zhonghua Junjie"
           ]
@@ -1375,7 +1385,10 @@
         {
           "canonical": "S21",
           "aliases": [
-            "S21 QQ6"
+            "S21 QQ6",
+            "QQ6",
+            "Chery QQ6",
+            "CHERY QQ6"
           ]
         },
         {
@@ -1386,6 +1399,9 @@
             "T11 Tiggo",
             "T11 TIGGO",
             "Tiggo T11FL",
+            "T11FL",
+            "T11 FL",
+            "Chery T11FL",
             "T11 T11FL3",
             "SUV T11",
             "SQR7246 (SUV T11)",
@@ -1908,6 +1924,16 @@
           ]
         },
         {
+          "canonical": "Magnus",
+          "aliases": [
+            "Daewoo Magnus",
+            "MAGNUS",
+            "Магнус",
+            "МАГНУС",
+            "ДЭУ Магнус"
+          ]
+        },
+        {
           "canonical": "Matiz",
           "aliases": [
             "Daewoo Matiz",
@@ -1958,7 +1984,8 @@
       "aliases": [
         "Дaihatsu",
         "Дайhatsu",
-        "ДАЙХАТСУ"
+        "ДАЙХАТСУ",
+        "Дайхатсу"
       ],
       "models": [
         {
@@ -1971,6 +1998,16 @@
           "canonical": "Materia",
           "aliases": [
             "Daihatsu Materia"
+          ]
+        },
+        {
+          "canonical": "Max",
+          "aliases": [
+            "Daihatsu Max",
+            "MAX",
+            "Макс",
+            "МАКС",
+            "Дайхатсу Макс"
           ]
         },
         {
@@ -2056,9 +2093,37 @@
     {
       "canonical": "Derways",
       "aliases": [
-        "Дервейс"
+        "Дервейс",
+        "ДЕРВЕЙС",
+        "DERWAYS"
       ],
-      "models": []
+      "models": [
+        {
+          "canonical": "CC6461KM2E",
+          "aliases": [
+            "CC 6461 KM2E",
+            "CC6461 KM2E",
+            "Derways CC6461KM2E",
+            "Дервейс CC6461KM2E",
+            "СС6461КМ2Е",
+            "СС6461KM2E"
+          ]
+        },
+        {
+          "canonical": "CC6461KM29",
+          "aliases": [
+            "CC 6461 KM29",
+            "CC6461 KM29"
+          ]
+        },
+        {
+          "canonical": "CC6461KM67",
+          "aliases": [
+            "CC 6461 KM67",
+            "CC6461 KM67"
+          ]
+        }
+      ]
     },
     {
       "canonical": "Dodge",
@@ -2156,6 +2221,9 @@
         "Aeolus",
         "Fengshen",
         "Fengshen Aeolus",
+        "Fengon",
+        "FENGON",
+        "Glory",
         "Дongfeng",
         "Донгфенг",
         "ДОНГФЭНГ",
@@ -2330,7 +2398,9 @@
           "aliases": [
             "IX5",
             "Glory IX5",
-            "DFSK ix5"
+            "DFSK ix5",
+            "Fengon IX5",
+            "FENGON IX5"
           ]
         },
         {
@@ -2937,6 +3007,18 @@
           ]
         },
         {
+          "canonical": "0A4",
+          "aliases": [
+            "FST0A4",
+            "FST 0A4",
+            "XUS FST0A4",
+            "XUSFST0A4",
+            "Нижегородец-FST0A4",
+            "Нижегородец FST0A4",
+            "Fiat Ducato FST0A4"
+          ]
+        },
+        {
           "canonical": "0E4",
           "aliases": [
             "FST0E4",
@@ -3246,7 +3328,16 @@
             "MK-GROSS",
             "JL 7152U1 МК",
             "JL 7152U1",
-            "JL7152U1"
+            "JL7152U1",
+            "JL7152U1 МК",
+            "JL7152U1 MK",
+            "JL7152U1МК",
+            "JL 7152ul mk",
+            "JL 7152ul MK",
+            "JL 7152UL MK",
+            "JL7152ul",
+            "7152U1",
+            "7152ul"
           ]
         },
         {
@@ -3973,6 +4064,15 @@
           ]
         },
         {
+          "canonical": "CR-X",
+          "aliases": [
+            "CRX",
+            "CR X",
+            "Honda CR-X",
+            "HONDA CR-X"
+          ]
+        },
+        {
           "canonical": "CR-Z",
           "aliases": []
         },
@@ -4030,6 +4130,13 @@
         {
           "canonical": "IT HYBRID",
           "aliases": []
+        },
+        {
+          "canonical": "Legend",
+          "aliases": [
+            "Honda Legend",
+            "HONDA LEGEND"
+          ]
         },
         {
           "canonical": "Life",
@@ -5275,6 +5382,7 @@
         "Ваз",
         "Lada VAZ",
         "Lada (VAZ)",
+        "Lada (ВАЗ)",
         "ВАЗ (LADA)"
       ],
       "models": [
@@ -5341,6 +5449,9 @@
             "21041-30",
             "21041-40",
             "21043",
+            "2143",
+            "ВАЗ 2143",
+            "2143 (универсал)",
             "VAZ 2104",
             "ВАЗ 2104"
           ]
@@ -5585,7 +5696,10 @@
             "Калина 111760",
             "Калина 111830",
             "Калина 111930",
-            "Калина"
+            "Калина",
+            "Kaлиha",
+            "Kaliha",
+            "Kaлиna"
           ]
         },
         {
@@ -6137,6 +6251,8 @@
       "aliases": [
         "LIVAN",
         "Li Van",
+        "Maple",
+        "MAPLE",
         "Лivan",
         "Ливан",
         "ЛИВАН"
@@ -6146,7 +6262,9 @@
           "canonical": "X3 Pro",
           "aliases": [
             "Maple X3 Pro",
+            "Maple X3Pro",
             "Livan X3 Pro",
+            "X3Pro",
             "X3PRO",
             "X3 PRO",
             "LIVAN X3PRO",
@@ -6234,6 +6352,15 @@
             "Bongo Brawny",
             "Bongo Friendee",
             "Bongo Friendy"
+          ]
+        },
+        {
+          "canonical": "BT-50",
+          "aliases": [
+            "BT50",
+            "BT 50",
+            "Mazda BT-50",
+            "MAZDA BT-50"
           ]
         },
         {
@@ -6337,6 +6464,8 @@
         "Мercedes",
         "Мерседес",
         "МЕРСЕДЕС",
+        "Мерседес Бенц",
+        "МЕРСЕДЕС БЕНЦ",
         "MB"
       ],
       "models": [
@@ -6561,6 +6690,8 @@
             "ML320",
             "ML350",
             "ML350 4MATIC",
+            "ML430",
+            "ML 430",
             "ML500",
             "М-Класс"
           ]
@@ -6614,6 +6745,17 @@
         {
           "canonical": "Sprinter",
           "aliases": []
+        },
+        {
+          "canonical": "Vito",
+          "aliases": [
+            "Mercedes-Benz Vito",
+            "MERCEDES VITO",
+            "VITO",
+            "Вито",
+            "ВИТО",
+            "638"
+          ]
         },
         {
           "canonical": "Viano",
@@ -7191,6 +7333,13 @@
           "aliases": []
         },
         {
+          "canonical": "Laurel",
+          "aliases": [
+            "Nissan Laurel",
+            "LAUREL"
+          ]
+        },
+        {
           "canonical": "LEAF",
           "aliases": []
         },
@@ -7296,6 +7445,16 @@
         {
           "canonical": "QUEST",
           "aliases": []
+        },
+        {
+          "canonical": "R'nessa",
+          "aliases": [
+            "R Nessa",
+            "R'Nessa",
+            "Rnessa",
+            "Nissan R Nessa",
+            "Nissan R'nessa"
+          ]
         },
         {
           "canonical": "Safari",
@@ -7994,6 +8153,24 @@
       "canonical": "Saturn",
       "aliases": [],
       "models": []
+    },
+    {
+      "canonical": "Scion",
+      "aliases": [
+        "SCION",
+        "Toyota Scion",
+        "TOYOTA SCION"
+      ],
+      "models": [
+        {
+          "canonical": "xA",
+          "aliases": [
+            "Scion xA",
+            "Scion XA",
+            "SCION XA"
+          ]
+        }
+      ]
     },
     {
       "canonical": "SEAT",
@@ -8903,8 +9080,16 @@
           "aliases": []
         },
         {
-          "canonical": "NADIA",
-          "aliases": []
+          "canonical": "Nadia",
+          "aliases": [
+            "NADIA",
+            "Haдиa",
+            "Hadia",
+            "Надиа",
+            "НАДИА",
+            "Toyota Nadia",
+            "Тойота Надиа"
+          ]
         },
         {
           "canonical": "Noah Hybrid",
@@ -9120,6 +9305,15 @@
         {
           "canonical": "Wish",
           "aliases": []
+        },
+        {
+          "canonical": "xA",
+          "aliases": [
+            "Scion xA",
+            "Scion XA",
+            "SCION XA",
+            "Toyota Scion xA"
+          ]
         },
         {
           "canonical": "Yaris",
@@ -10187,8 +10381,13 @@
         {
           "canonical": "Patriot",
           "aliases": [
+            "Patpiot",
+            "Пatpиot",
             "Пatriot",
-            "Патриот"
+            "Патриот",
+            "UAZ Patriot",
+            "УАЗ Patriot",
+            "УАЗ Патриот"
           ]
         },
         {

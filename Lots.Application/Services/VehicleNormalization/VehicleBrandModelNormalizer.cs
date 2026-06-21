@@ -253,6 +253,8 @@ public class VehicleBrandModelNormalizer : IVehicleBrandModelNormalizer
                 'н' => 'h',
                 'О' => 'O',
                 'о' => 'o',
+                'П' => 'P',
+                'п' => 'p',
                 'Р' => 'P',
                 'р' => 'p',
                 'С' => 'C',
