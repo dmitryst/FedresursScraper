@@ -30,7 +30,7 @@ public class CdtEnrichmentServiceTests : IDisposable
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
-        _dbContext = new LotsDbContext(options);
+        _dbContext = new TestLotsDbContext(options);
 
         _httpMessageHandlerMock = new Mock<HttpMessageHandler>();
         _httpClient = new HttpClient(_httpMessageHandlerMock.Object);
@@ -82,19 +82,17 @@ public class CdtEnrichmentServiceTests : IDisposable
           }
         }";
 
-        var html = $@"<html><body><pre style=""display:none;"">{json}</pre></body></html>";
-
-        // Mock main page request
+        // Mock public API request (primary source since Nuxt migration)
         _httpMessageHandlerMock.Protected()
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(req => req.RequestUri.ToString().Contains($"trades/{tradeNumber}")),
+                ItExpr.Is<HttpRequestMessage>(req => req.RequestUri.ToString().Contains($"Trade/public/{tradeNumber}")),
                 ItExpr.IsAny<CancellationToken>()
             )
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(html)
+                Content = new StringContent(json)
             });
 
         // Mock image download request
@@ -161,8 +159,20 @@ public class CdtEnrichmentServiceTests : IDisposable
         _dbContext.Biddings.Add(bidding);
         await _dbContext.SaveChangesAsync();
 
-        // No pre tag in html
+        // No pre tag in html; API returns 404
         var html = $@"<html><body><div>No images here</div></body></html>";
+
+        _httpMessageHandlerMock.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(req => req.RequestUri.ToString().Contains($"Trade/public/{tradeNumber}")),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.NotFound,
+                Content = new StringContent("")
+            });
 
         _httpMessageHandlerMock.Protected()
             .Setup<Task<HttpResponseMessage>>(

@@ -128,40 +128,15 @@ namespace FedresursScraper.Services
         }
 
 
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         private async Task EnrichBiddingAsync(Bidding bidding, CancellationToken ct)
         {
             var tradeId = CleanTradeNumber(bidding.TradeNumber);
-            var url = $"https://torgi.cdtrf.ru/trades/{tradeId}";
-
-            var response = await _httpClient.GetAsync(url, ct);
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new HttpRequestException($"Не удалось получить страницу {url}. Status: {response.StatusCode}");
-            }
-
-            var htmlContent = await response.Content.ReadAsStringAsync(ct);
-            var doc = new HtmlDocument();
-            doc.LoadHtml(htmlContent);
-
-            // Извлекаем JSON из тега <pre style="display:none;">
-            var preNode = doc.DocumentNode.SelectSingleNode("//pre[@style='display:none;']");
-            CdtrfTradeData tradeData = null;
-
-            if (preNode != null)
-            {
-                var jsonStr = System.Net.WebUtility.HtmlDecode(preNode.InnerText);
-                try
-                {
-                    tradeData = JsonSerializer.Deserialize<CdtrfTradeData>(jsonStr, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-                }
-                catch (JsonException ex)
-                {
-                    _logger.LogWarning(ex, "Не удалось распарсить JSON из pre тега для торгов {TradeNumber}", tradeId);
-                }
-            }
+            var tradeData = await FetchTradeDataAsync(tradeId, ct);
 
             foreach (var lot in bidding.Lots)
             {
@@ -183,6 +158,62 @@ namespace FedresursScraper.Services
                 {
                     _logger.LogWarning("Данные лота не найдены в JSON или JSON отсутствует для торгов {TradeNumber}. Парсинг завершен без изображений.", tradeId);
                 }
+            }
+        }
+
+        private async Task<CdtrfTradeData> FetchTradeDataAsync(string tradeId, CancellationToken ct)
+        {
+            // С 2026 сайт torgi.cdtrf.ru — Nuxt SPA; данные отдаёт public API
+            var apiUrl = $"https://webapi.torgi.cdtrf.ru/Trade/public/{tradeId}";
+            var apiResponse = await _httpClient.GetAsync(apiUrl, ct);
+            if (apiResponse.IsSuccessStatusCode)
+            {
+                var jsonStr = await apiResponse.Content.ReadAsStringAsync(ct);
+                try
+                {
+                    return JsonSerializer.Deserialize<CdtrfTradeData>(jsonStr, JsonOptions);
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogWarning(ex, "Не удалось распарсить JSON API для торгов {TradeNumber}", tradeId);
+                }
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "API ЦДТ вернул {StatusCode} для торгов {TradeNumber}, пробуем legacy HTML",
+                    apiResponse.StatusCode,
+                    tradeId);
+            }
+
+            // Fallback: старый формат — JSON в скрытом <pre> на странице торгов
+            var pageUrl = $"https://torgi.cdtrf.ru/trades/{tradeId}";
+            var response = await _httpClient.GetAsync(pageUrl, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(
+                    $"Не удалось получить данные торгов {tradeId}. API: {apiResponse.StatusCode}, HTML: {response.StatusCode}");
+            }
+
+            var htmlContent = await response.Content.ReadAsStringAsync(ct);
+            var doc = new HtmlDocument();
+            doc.LoadHtml(htmlContent);
+
+            var preNode = doc.DocumentNode.SelectSingleNode("//pre[@style='display:none;']");
+            if (preNode == null)
+            {
+                return null;
+            }
+
+            var legacyJson = System.Net.WebUtility.HtmlDecode(preNode.InnerText);
+            try
+            {
+                return JsonSerializer.Deserialize<CdtrfTradeData>(legacyJson, JsonOptions);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "Не удалось распарсить legacy JSON из pre тега для торгов {TradeNumber}", tradeId);
+                return null;
             }
         }
 
