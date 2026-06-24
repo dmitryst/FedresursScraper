@@ -12,6 +12,7 @@ using Ardalis.Specification;
 using Lots.Data.Models;
 using Lots.Application.Services.VehicleFilters;
 using FedresursScraper.Services.Utils;
+using Lots.Data;
 
 
 namespace FedresursScraper.Controllers;
@@ -162,6 +163,16 @@ public class LotsController : ControllerBase
             return NotFound(new { message = "Лот не найден." });
         }
 
+        var normalizedLotNumber = TradeResultsScheduleHelper.NormalizeLotNumber(lot.LotNumber);
+        var lotTradeResults = string.IsNullOrWhiteSpace(normalizedLotNumber)
+            ? []
+            : await _dbContext.LotTradeResults
+                .AsNoTracking()
+                .Where(r => r.BiddingId == lot.BiddingId && r.LotNumber == normalizedLotNumber)
+                .ToListAsync();
+
+        var tradeStatusReason = TradeResultsScheduleHelper.GetLatestReasonForLot(lot, lotTradeResults);
+
         var lotDto = new LotDto
         {
             Id = lot.Id,
@@ -171,6 +182,7 @@ public class LotsController : ControllerBase
             Step = lot.Step,
             Deposit = lot.Deposit,
             TradeStatus = lot.TradeStatus,
+            TradeStatusReason = tradeStatusReason,
             FinalPrice = lot.FinalPrice,
             WinnerName = lot.WinnerName,
             WinnerInn = lot.WinnerInn,

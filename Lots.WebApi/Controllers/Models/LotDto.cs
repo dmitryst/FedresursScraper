@@ -11,6 +11,10 @@ public class LotDto
     public decimal? Step { get; set; }
     public decimal? Deposit { get; set; }
     public string? TradeStatus { get; set; }
+    /// <summary>
+    /// Причина текущего статуса торгов (из последнего сообщения Федресурса).
+    /// </summary>
+    public string? TradeStatusReason { get; set; }
     public decimal? FinalPrice { get; set; }
     public string? WinnerName { get; set; }
     public string? WinnerInn { get; set; }

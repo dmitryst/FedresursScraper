@@ -74,7 +74,23 @@ public static class TradeResultsScheduleHelper
         return true;
     }
 
-    private static string NormalizeLotNumber(string? lotNumber)
+    public static string? GetLatestReasonForLot(Lot lot, IEnumerable<LotTradeResult> tradeResults)
+    {
+        var normalizedLotNumber = NormalizeLotNumber(lot.LotNumber);
+        if (string.IsNullOrWhiteSpace(normalizedLotNumber))
+            return null;
+
+        return tradeResults
+            .Where(r => r.BiddingId == lot.BiddingId &&
+                        string.Equals(r.LotNumber, normalizedLotNumber, StringComparison.OrdinalIgnoreCase) &&
+                        !string.IsNullOrWhiteSpace(r.Reason))
+            .OrderByDescending(r => r.EventDate)
+            .ThenByDescending(r => r.CreatedAt)
+            .Select(r => r.Reason)
+            .FirstOrDefault();
+    }
+
+    public static string NormalizeLotNumber(string? lotNumber)
     {
         if (string.IsNullOrWhiteSpace(lotNumber)) return string.Empty;
         return Regex.Replace(lotNumber.Trim(), @"(?i)\s*лот\s*№?\s*", "").Trim();
