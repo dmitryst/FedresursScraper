@@ -4,7 +4,7 @@
 -- Критерии (как в CdtEnrichmentService):
 --   • площадка «Центр дистанционных торгов»
 --   • IsEnriched = true
---   • CreatedAt после даты отсечения воркера (15.01.2026 UTC)
+--   • CreatedAt после даты отсечения воркера (18.06.2026 UTC)
 --   • у хотя бы одного лота нет фото
 --     ИЛИ (для публичного предложения) у хотя бы одного лота нет графика снижения цен
 
@@ -28,7 +28,7 @@ WITH cdt_incomplete AS (
     WHERE b."Platform" LIKE '%Центр дистанционных торгов%'
       AND COALESCE(b."IsEnriched", false) = true
       AND b."HasNoLots" = false
-      AND b."CreatedAt" > TIMESTAMPTZ '2026-01-15 00:00:00+00'
+      AND b."CreatedAt" > TIMESTAMPTZ '2026-06-18 17:00:00+00'
     GROUP BY b."Id", b."TradeNumber", b."Type", b."CreatedAt", b."EnrichedAt"
     HAVING
         COUNT(DISTINCT li."Id") = 0
