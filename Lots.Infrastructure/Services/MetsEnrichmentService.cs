@@ -2,6 +2,7 @@ using HtmlAgilityPack;
 using Lots.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -20,47 +21,40 @@ namespace FedresursScraper.Services
         private readonly ILotsFileStorageService _fileStorage;
         private readonly HttpClient _httpClient;
         private readonly ILogger<MetsEnrichmentService> _logger;
+        private readonly IOptionsMonitor<MetsEnrichmentOptions> _options;
 
         private const int BatchSize = 5;
         private const int MaxRetryCount = 3;
-        
-        // Минимальная задержка перед первым обогащением (в часах)
-        // Фото на сайте площадки могут появиться в течение нескольких часов после создания лота
-        private const int MinHoursBeforeFirstEnrichment = 3;
-        
-        // Задержка для повторных попыток обогащения лотов без фото (в часах)
-        private const int RetryDelayHoursForMissingImages = 4;
-        
-        // Максимальное количество попыток обогащения для лотов без фото
-        // Если фото не найдено N раз подряд, помечаем лот как обогащенный (даже без фото)
-        private const int MaxMissingImagesAttempts = 3;
 
         public MetsEnrichmentService(
             LotsDbContext context,
             ILotsFileStorageService fileStorage,
             HttpClient httpClient,
-            ILogger<MetsEnrichmentService> logger)
+            ILogger<MetsEnrichmentService> logger,
+            IOptionsMonitor<MetsEnrichmentOptions> options)
         {
             _context = context;
             _fileStorage = fileStorage;
             _httpClient = httpClient;
             _logger = logger;
+            _options = options;
         }
 
         public async Task<bool> ProcessPendingBiddingsAsync(CancellationToken ct)
         {
+            var enrichmentOptions = _options.CurrentValue;
+            var maxMissingImagesAttempts = enrichmentOptions.GetEffectiveMaxMissingImagesAttempts();
+
             // Дата отсечения (09.01.2026)
             // Используем UTC, так как в базе хранится UTC
             var dateThreshold = new DateTime(2026, 1, 9, 0, 0, 0, DateTimeKind.Utc);
-            
-            // Минимальное время с момента создания лота до первого обогащения
-            var minEnrichmentTime = DateTime.UtcNow.AddHours(-MinHoursBeforeFirstEnrichment);
-            
-            // Время для повторных попыток (если фото не было найдено ранее)
-            var retryTimeThreshold = DateTime.UtcNow.AddHours(-RetryDelayHoursForMissingImages);
 
-            // Выбираем торги МЭТС, которые еще не были обработаны
-            var biddings = await _context.Biddings
+            var utcNow = DateTime.UtcNow;
+            var minEnrichmentTime = utcNow.AddHours(-enrichmentOptions.MinHoursBeforeFirstEnrichment);
+            // Грубый фильтр в SQL: минимальная пауза из настроек (точная — в памяти)
+            var coarseRetryThreshold = utcNow.AddHours(-enrichmentOptions.GetMinRetryDelayHours());
+
+            var candidateBiddings = await _context.Biddings
                 .Include(b => b.Lots)
                     .ThenInclude(l => l.Images)
                 .Include(b => b.Lots)
@@ -70,23 +64,24 @@ namespace FedresursScraper.Services
                 .Include(b => b.EnrichmentState)
                 .Where(b => b.Platform.Contains("Межрегиональная Электронная Торговая Система"))
                 .Where(b => !b.IsEnriched ?? true)
-                .Where(b => b.EnrichmentState == null || 
-                    (b.EnrichmentState.RetryCount < MaxRetryCount && 
-                     b.EnrichmentState.MissingImagesAttemptCount < MaxMissingImagesAttempts))
+                .Where(b => b.EnrichmentState == null ||
+                    (b.EnrichmentState.RetryCount < MaxRetryCount &&
+                     b.EnrichmentState.MissingImagesAttemptCount < maxMissingImagesAttempts))
                 .Where(b => b.CreatedAt > dateThreshold)
-                // Фильтр по времени: либо лот создан достаточно давно для первого обогащения,
-                // либо прошло достаточно времени с последней попытки для повторного обогащения
-                .Where(b => 
-                    (b.EnrichmentState == null && b.CreatedAt <= minEnrichmentTime) || // Первое обогащение
-                    (b.EnrichmentState != null && b.EnrichmentState.LastAttemptAt.HasValue && 
-                     b.EnrichmentState.LastAttemptAt <= retryTimeThreshold) || // Повторная попытка
-                    (b.EnrichmentState != null && !b.EnrichmentState.LastAttemptAt.HasValue && 
-                     b.CreatedAt <= minEnrichmentTime)) // Первая попытка после создания EnrichmentState
-                // дебаг
-                //.Where(b => b.Id == Guid.Parse("32d7c1b5-e39d-41df-b520-ca2f317594e5"))
+                .Where(b =>
+                    (b.EnrichmentState == null && b.CreatedAt <= minEnrichmentTime) ||
+                    (b.EnrichmentState != null && b.EnrichmentState.LastAttemptAt.HasValue &&
+                     b.EnrichmentState.LastAttemptAt <= coarseRetryThreshold) ||
+                    (b.EnrichmentState != null && !b.EnrichmentState.LastAttemptAt.HasValue &&
+                     b.CreatedAt <= minEnrichmentTime))
                 .OrderByDescending(b => b.CreatedAt)
-                .Take(BatchSize)
+                .Take(BatchSize * 3)
                 .ToListAsync(ct);
+
+            var biddings = candidateBiddings
+                .Where(b => IsReadyForEnrichment(b, utcNow, enrichmentOptions))
+                .Take(BatchSize)
+                .ToList();
 
             if (!biddings.Any())
                 return false;
@@ -138,7 +133,7 @@ namespace FedresursScraper.Services
                         
                         // Если достигли максимума попыток без фото, помечаем как обогащенный
                         // (для некоторых лотов фото может вообще не быть на сайте)
-                        if (bidding.EnrichmentState.MissingImagesAttemptCount >= MaxMissingImagesAttempts)
+                        if (bidding.EnrichmentState.MissingImagesAttemptCount >= maxMissingImagesAttempts)
                         {
                             bidding.IsEnriched = true;
                             bidding.EnrichedAt = DateTime.UtcNow;
@@ -148,17 +143,20 @@ namespace FedresursScraper.Services
                                 "Фото, вероятно, отсутствуют на сайте площадки.",
                                 bidding.TradeNumber, 
                                 bidding.EnrichmentState.MissingImagesAttemptCount,
-                                MaxMissingImagesAttempts);
+                                maxMissingImagesAttempts);
                         }
                         else
                         {
+                            var nextDelayHours = enrichmentOptions.GetRetryDelayHours(
+                                bidding.EnrichmentState.MissingImagesAttemptCount);
+
                             _logger.LogWarning(
                                 "Торги {TradeNumber} обогащены частично (фото не найдено). " +
                                 "Попытка {Attempt}/{Max}. Повторная попытка через {Hours} часов.", 
                                 bidding.TradeNumber,
                                 bidding.EnrichmentState.MissingImagesAttemptCount,
-                                MaxMissingImagesAttempts,
-                                RetryDelayHoursForMissingImages);
+                                maxMissingImagesAttempts,
+                                nextDelayHours);
                         }
                     }
 
@@ -557,6 +555,32 @@ namespace FedresursScraper.Services
             }
 
             return text;
+        }
+
+        private static bool IsReadyForEnrichment(Bidding bidding, DateTime utcNow, MetsEnrichmentOptions options)
+        {
+            if (bidding.EnrichmentState == null)
+            {
+                return bidding.CreatedAt <= utcNow.AddHours(-options.MinHoursBeforeFirstEnrichment);
+            }
+
+            var lastAttempt = bidding.EnrichmentState.LastAttemptAt;
+            if (!lastAttempt.HasValue)
+            {
+                return bidding.CreatedAt <= utcNow.AddHours(-options.MinHoursBeforeFirstEnrichment);
+            }
+
+            var completedAttempts = GetCompletedAttempts(bidding.EnrichmentState);
+            var requiredDelayHours = options.GetRetryDelayHours(completedAttempts);
+            return lastAttempt.Value.AddHours(requiredDelayHours) <= utcNow;
+        }
+
+        private static int GetCompletedAttempts(EnrichmentState state)
+        {
+            if (state.MissingImagesAttemptCount > 0)
+                return state.MissingImagesAttemptCount;
+
+            return state.RetryCount;
         }
     }
 }
