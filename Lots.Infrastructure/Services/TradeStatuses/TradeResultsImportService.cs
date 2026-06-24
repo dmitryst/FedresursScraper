@@ -3,6 +3,7 @@ using Lots.Data;
 using Lots.Data.Entities;
 using Lots.Data.Dto;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace FedresursScraper.Services;
 
@@ -17,15 +18,18 @@ public class TradeResultsImportService
     private readonly LotsDbContext _dbContext;
     private readonly IIndexNowService _indexNowService;
     private readonly ILogger<TradeResultsImportService> _logger;
+    private readonly IConfiguration _configuration;
 
     public TradeResultsImportService(
         LotsDbContext dbContext,
         IIndexNowService indexNowService,
-        ILogger<TradeResultsImportService> logger)
+        ILogger<TradeResultsImportService> logger,
+        IConfiguration configuration)
     {
         _dbContext = dbContext;
         _indexNowService = indexNowService;
         _logger = logger;
+        _configuration = configuration;
     }
 
     public async Task ImportResultsAsync(List<ImportLotTradeResultDto> incomingResults, CancellationToken stoppingToken)
@@ -107,8 +111,15 @@ public class TradeResultsImportService
                 }
                 else
                 {
-                    // Если торги не завершились полностью, вычисляем дату следующего чека
-                    bidding.ScheduleNextCheck(DateTime.UtcNow);
+                    var suspendedRecheckDays = _configuration.GetValue<int>(
+                        "BackgroundServices:FedresursTradeResults:SuspendedRecheckDays", 14);
+
+                    var tradeResults = await _dbContext.LotTradeResults
+                        .Where(r => r.BiddingId == biddingId)
+                        .ToListAsync(stoppingToken);
+
+                    var useSuspendedInterval = TradeResultsScheduleHelper.ShouldUseSuspendedRecheckInterval(bidding, tradeResults);
+                    bidding.ScheduleNextCheck(DateTime.UtcNow, suspendedRecheckDays, useSuspendedInterval);
                 }
             }
         }

@@ -134,6 +134,8 @@ public class Lot
     /// Массив всех возможных конечных статусов лота.
     /// Вынесено в доменную модель согласно принципам DDD.
     /// </summary>
+    public const string SuspendedTradeStatus = "Торги приостановлены";
+
     public static readonly string[] FinalTradeStatuses =
     {
         "Завершенные",
@@ -287,6 +289,7 @@ public class Lot
             {
                 "Торги не состоялись" => "Торги не состоялись",
                 "Отмена торгов" => "Торги отменены",
+                SuspendedTradeStatus => SuspendedTradeStatus,
                 "Результаты торгов" => "Завершенные",
                 "О завершении торгов вследствие оставления конкурсным кредитором предмета залога за собой" => "Завершенные",
                 _ when dto.EventType.Contains("оставления конкурсным кредитором предмета залога за собой", StringComparison.OrdinalIgnoreCase) => "Завершенные",

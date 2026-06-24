@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using Lots.Data;
 using Lots.Data.Entities;
+using static Lots.Data.Entities.Lot;
 using Microsoft.EntityFrameworkCore;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -24,11 +25,14 @@ public class FedresursTradeResultsParserService
     private const string CollateralCreditorCompletionReason =
         "Вследствие оставления конкурсным кредитором предмета залога за собой";
 
+    private const string SuspendedBiddingMessageType = SuspendedTradeStatus;
+
     private static readonly string[] TargetMessageTypes =
     {
         "Торги не состоялись",
         "Результаты торгов",
         "Отмена торгов",
+        "Торги приостановлены",
         CollateralCreditorCompletionMessageType
     };
 
@@ -89,24 +93,7 @@ public class FedresursTradeResultsParserService
                 }
                 else
                 {
-                    // Эта логика сработает и в том случае, если hasNewResults = false
-                    bidding.ScheduleNextCheck(DateTime.UtcNow);
-
-                    if (bidding.NextStatusCheckAt.HasValue)
-                    {
-                        var scheduleUpdate = new BiddingScheduleUpdate
-                        {
-                            Id = Guid.NewGuid(),
-                            BiddingId = bidding.Id,
-                            NextStatusCheckAt = bidding.NextStatusCheckAt.Value,
-                            IsExported = false
-                        };
-
-                        _dbContext.BiddingScheduleUpdates.Add(scheduleUpdate);
-                    }
-
-                    _logger.LogInformation("Торги {Id} не завершены (новых результатов нет или закрыты не все лоты). Перепланировано на {Date}",
-                        bidding.Id, bidding.NextStatusCheckAt);
+                    await ScheduleBiddingNextCheckAsync(bidding, stoppingToken);
                 }
 
                 // Сохраняем изменения даты и статусов в БД
@@ -163,24 +150,7 @@ public class FedresursTradeResultsParserService
         }
         else
         {
-            bidding.ScheduleNextCheck(DateTime.UtcNow);
-
-            // Записываем обновление в таблицу для экспорта на прод
-            if (bidding.NextStatusCheckAt.HasValue)
-            {
-                var scheduleUpdate = new BiddingScheduleUpdate
-                {
-                    Id = Guid.NewGuid(),
-                    BiddingId = bidding.Id,
-                    NextStatusCheckAt = bidding.NextStatusCheckAt.Value,
-                    IsExported = false
-                };
-
-                _dbContext.BiddingScheduleUpdates.Add(scheduleUpdate);
-            }
-
-            _logger.LogInformation("Торги {Id} не завершены. Перепланировано на {Date}",
-                biddingId, bidding.NextStatusCheckAt);
+            await ScheduleBiddingNextCheckAsync(bidding, cancellationToken);
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -276,6 +246,10 @@ public class FedresursTradeResultsParserService
             {
                 hasNewResults |= ParseCancelledBiddingMessage(driver, _dbContext, bidding, msg.MessageId, msg.Date);
             }
+            else if (msg.Type == SuspendedBiddingMessageType)
+            {
+                hasNewResults |= ParseSuspendedBiddingMessage(driver, _dbContext, bidding, msg.MessageId, msg.Date);
+            }
             else if (IsCollateralCreditorCompletionMessage(msg.Type))
             {
                 hasNewResults |= ParseCollateralCreditorKeepsBiddingMessage(driver, _dbContext, bidding, msg.MessageId, msg.Date);
@@ -287,22 +261,11 @@ public class FedresursTradeResultsParserService
             await _dbContext.SaveChangesAsync(stoppingToken);
 
             // Проверяем, закрылись ли все активные лоты
-            var activeLots = bidding.Lots.Where(l => l.IsActive()).ToList();
-            bool allFinalized = true;
+            var tradeResults = await _dbContext.LotTradeResults
+                .Where(r => r.BiddingId == bidding.Id)
+                .ToListAsync(stoppingToken);
 
-            foreach (var lot in activeLots)
-            {
-                var normalizedNumber = NormalizeLotNumber(lot.LotNumber);
-                var resultExists = _dbContext.LotTradeResults.Any(r => r.BiddingId == bidding.Id && r.LotNumber == normalizedNumber);
-
-                if (!resultExists)
-                {
-                    allFinalized = false;
-                    break;
-                }
-            }
-
-            return allFinalized;
+            return TradeResultsScheduleHelper.AllActiveLotsHaveFinalizingResults(bidding, tradeResults);
         }
 
         return false;
@@ -456,6 +419,50 @@ public class FedresursTradeResultsParserService
         return processedAny;
     }
 
+    private bool ParseSuspendedBiddingMessage(IWebDriver driver, LotsDbContext dbContext, Bidding bidding, Guid messageId, DateTime eventDate)
+    {
+        var lotBlocks = driver.FindElements(By.XPath("//bidding-message-lot-reason/div[./div[contains(@class, 'info-header')]]"));
+        bool processedAny = false;
+
+        if (lotBlocks.Any())
+        {
+            foreach (var block in lotBlocks)
+            {
+                var headerText = block.FindElement(By.CssSelector(".info-header")).Text;
+                var lotNumber = ExtractLotNumber(headerText);
+                if (lotNumber == null) continue;
+
+                var items = block.FindElements(By.CssSelector(".info-item"));
+                var reason = items.FirstOrDefault(i => i.FindElement(By.CssSelector(".info-item-name")).Text.Contains("Причина"))?
+                                  .FindElement(By.CssSelector(".info-item-value")).Text.Trim();
+
+                AddSuspendedLotTradeResult(dbContext, bidding.Id, messageId, lotNumber, eventDate, reason);
+                processedAny = true;
+            }
+        }
+        else
+        {
+            string? reason = null;
+            try
+            {
+                var reasonNode = driver.FindElements(By.XPath("//div[contains(@class, 'info-item') and contains(., 'Причина')]//div[contains(@class, 'info-item-value')]")).FirstOrDefault();
+                reason = reasonNode?.Text.Trim();
+            }
+            catch { /* Оставляем reason = null, если структура другая */ }
+
+            var activeLots = bidding.Lots.Where(l => l.IsActive() && !string.IsNullOrWhiteSpace(l.LotNumber)).ToList();
+
+            foreach (var lot in activeLots)
+            {
+                var normalizedNumber = NormalizeLotNumber(lot.LotNumber);
+                AddSuspendedLotTradeResult(dbContext, bidding.Id, messageId, normalizedNumber, eventDate, reason);
+                processedAny = true;
+            }
+        }
+
+        return processedAny;
+    }
+
     private bool ParseCancelledBiddingMessage(IWebDriver driver, LotsDbContext dbContext, Bidding bidding, Guid messageId, DateTime eventDate)
     {
         // Ищем блоки лотов (как в "Торги не состоялись")
@@ -524,11 +531,62 @@ public class FedresursTradeResultsParserService
         dbContext.LotTradeResults.Add(result);
     }
 
+    private void AddSuspendedLotTradeResult(LotsDbContext dbContext, Guid biddingId, Guid messageId, string lotNumber, DateTime eventDate, string? reason)
+    {
+        var result = new LotTradeResult
+        {
+            Id = Guid.NewGuid(),
+            BiddingId = biddingId,
+            MessageId = messageId,
+            LotNumber = lotNumber,
+            EventType = SuspendedBiddingMessageType,
+            EventDate = DateTime.SpecifyKind(eventDate, DateTimeKind.Utc),
+            Reason = reason,
+            Status = SuspendedBiddingMessageType,
+            CreatedAt = DateTime.UtcNow,
+            IsExportedToProd = false
+        };
+
+        dbContext.LotTradeResults.Add(result);
+    }
+
     private static bool IsTargetMessageType(string type) =>
         TargetMessageTypes.Contains(type) || IsCollateralCreditorCompletionMessage(type);
 
     private static bool IsCollateralCreditorCompletionMessage(string type) =>
         type.Contains("оставления конкурсным кредитором предмета залога за собой", StringComparison.OrdinalIgnoreCase);
+
+    private async Task ScheduleBiddingNextCheckAsync(Bidding bidding, CancellationToken cancellationToken)
+    {
+        var suspendedRecheckDays = _configuration.GetValue<int>(
+            "BackgroundServices:FedresursTradeResults:SuspendedRecheckDays", 14);
+
+        var tradeResults = await _dbContext.LotTradeResults
+            .Where(r => r.BiddingId == bidding.Id)
+            .ToListAsync(cancellationToken);
+
+        var useSuspendedInterval = TradeResultsScheduleHelper.ShouldUseSuspendedRecheckInterval(bidding, tradeResults);
+        bidding.ScheduleNextCheck(DateTime.UtcNow, suspendedRecheckDays, useSuspendedInterval);
+
+        if (bidding.NextStatusCheckAt.HasValue)
+        {
+            var scheduleUpdate = new BiddingScheduleUpdate
+            {
+                Id = Guid.NewGuid(),
+                BiddingId = bidding.Id,
+                NextStatusCheckAt = bidding.NextStatusCheckAt.Value,
+                IsExported = false
+            };
+
+            _dbContext.BiddingScheduleUpdates.Add(scheduleUpdate);
+        }
+
+        _logger.LogInformation(
+            "Торги {Id} не завершены. Перепланировано на {Date}{SuspendedNote}",
+            bidding.Id,
+            bidding.NextStatusCheckAt,
+            useSuspendedInterval ? $" (интервал для приостановленных: {suspendedRecheckDays} дн.)" : string.Empty);
+    }
 
     private IEnumerable<string> ParseLotNumbersFromList(string lotsValue)
     {

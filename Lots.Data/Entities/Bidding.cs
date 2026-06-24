@@ -136,9 +136,21 @@ public class Bidding
     /// Вычисляет и устанавливает дату следующей проверки статусов торгов
     /// на основе типа торгов и их временных рамок.
     /// </summary>
-    public void ScheduleNextCheck(DateTime now)
+    public void ScheduleNextCheck(DateTime now) =>
+        ScheduleNextCheck(now, suspendedRecheckDays: 0, useSuspendedInterval: false);
+
+    /// <summary>
+    /// Планирует следующую проверку. Для приостановленных торгов можно задать отдельный интервал.
+    /// </summary>
+    public void ScheduleNextCheck(DateTime now, int suspendedRecheckDays, bool useSuspendedInterval)
     {
         var utcNow = now.Kind == DateTimeKind.Utc ? now : now.ToUniversalTime();
+
+        if (useSuspendedInterval && suspendedRecheckDays > 0)
+        {
+            NextStatusCheckAt = utcNow.AddDays(suspendedRecheckDays);
+            return;
+        }
 
         var typeStr = Type?.ToLower() ?? "";
         bool isPublicOffer = typeStr.Contains("публичное предложение");
