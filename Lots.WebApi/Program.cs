@@ -9,6 +9,7 @@ using FedresursScraper.UserAds.Hubs;
 using FedresursScraper.Services;
 using Lots.Application.Extensions;
 using Lots.Application.Interfaces;
+using Lots.Application.Services.DeepSeek;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -27,6 +28,7 @@ builder.Services.AddFileStorageServices(configuration);
 
 // Регистрация Application и Infrastructure сервисов, необходимых для WebApi
 builder.Services.AddScoped<ILotCopyService, LotCopyService>();
+builder.Services.AddDeepSeekBudgetGuard(configuration);
 builder.Services.AddScoped<ILotEvaluationService, LotEvaluationService>();
 builder.Services.AddVehicleFilterOptions(configuration);
 builder.Services.AddVehicleNormalization(configuration, registerBackfillWorker: true);

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Lots.Application.Extensions;
+using Lots.Application.Services.DeepSeek;
 using FedresursScraper.Extensions;
 using FedresursScraper.TradeStatuses;
 //using FedresursScraper.UserAds.Hubs;
@@ -40,6 +41,7 @@ builder.Services.AddTransient<ICadastralNumberExtractor, CadastralNumberExtracto
 builder.Services.AddTransient<IRosreestrService, RosreestrService>();
 builder.Services.AddScoped<ILotCopyService, LotCopyService>();
 builder.Services.AddVehicleNormalization(configuration);
+builder.Services.AddDeepSeekBudgetGuard(configuration);
 builder.Services.AddSingleton<IVehicleAttributesExtractor, VehicleAttributesExtractor>();
 
 // Регистрация фоновых сервисов
@@ -67,6 +69,7 @@ builder.Services.AddSingleton<IRosreestrQueue, RosreestrQueue>();
 builder.Services.AddSingleton<ILotClassifier>(serviceProvider =>
 {
     var logger = serviceProvider.GetRequiredService<ILogger<LotClassifier>>();
+    var budgetGuard = serviceProvider.GetRequiredService<IDeepSeekBudgetGuard>();
 
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
     string apiKey = configuration["DeepSeek:ApiKey"] ??
@@ -74,7 +77,7 @@ builder.Services.AddSingleton<ILotClassifier>(serviceProvider =>
     string apiUrl = configuration["DeepSeek:ApiUrl"] ??
         throw new InvalidOperationException("API URL для DeepSeek не найден в конфигурации (DeepSeek:ApiUrl).");
 
-    return new LotClassifier(logger, configuration, apiKey, apiUrl);
+    return new LotClassifier(logger, configuration, budgetGuard, apiKey, apiUrl);
 });
 
 builder.Services.AddSingleton<IClassificationQueue, ClassificationQueue>();

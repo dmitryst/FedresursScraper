@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using OpenAI;
 using OpenAI.Chat;
 using System.ClientModel;
+using Lots.Application.Services.DeepSeek;
 
 namespace FedresursScraper.Services;
 
@@ -22,6 +23,7 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<VehicleAttributesExtractor> _logger;
     private readonly IVehicleAttributesNormalizationService _normalizationService;
+    private readonly IDeepSeekBudgetGuard _budgetGuard;
     private readonly ChatClient _chatClient;
     private readonly string _modelName = "deepseek-chat";
     
@@ -34,11 +36,13 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
         IServiceScopeFactory scopeFactory,
         ILogger<VehicleAttributesExtractor> logger,
         IVehicleAttributesNormalizationService normalizationService,
+        IDeepSeekBudgetGuard budgetGuard,
         IConfiguration configuration)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
         _normalizationService = normalizationService;
+        _budgetGuard = budgetGuard;
 
         string apiKey = configuration["DeepSeek:ApiKey"] ?? throw new InvalidOperationException("API Key not found");
         string apiUrl = configuration["DeepSeek:ApiUrl"] ?? throw new InvalidOperationException("API URL not found");
@@ -109,6 +113,8 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
 
     private async Task ProcessBatchAsync(List<Lot> batch, LotsDbContext dbContext, CancellationToken token)
     {
+        await _budgetGuard.AcquireRequestSlotAsync("vehicle-attributes", token);
+
         TimeSpan delay;
         lock (_lockObj)
         {
@@ -167,6 +173,11 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
         try
         {
             var response = await _chatClient.CompleteChatAsync(messages, chatCompletionOptions);
+
+            if (response.Value.Usage?.TotalTokenCount is > 0)
+            {
+                await _budgetGuard.RecordTokenUsageAsync("vehicle-attributes", response.Value.Usage.TotalTokenCount, token);
+            }
 
             if (response.Value.Content == null || response.Value.Content.Count == 0)
             {
@@ -231,6 +242,22 @@ public class VehicleAttributesExtractor : IVehicleAttributesExtractor
                 "Успешно сохранены атрибуты для батча из {Count} лотов (записей в БД: {SavedCount}).",
                 batch.Count,
                 savedCount);
+        }
+        catch (CircuitBreakerOpenException)
+        {
+            throw;
+        }
+        catch (ClientResultException ex) when (ex.Status == 402)
+        {
+            await _budgetGuard.TripOnPaymentFailureAsync(token);
+            _logger.LogCritical(ex, "Баланс DeepSeek исчерпан (402) при извлечении атрибутов.");
+            throw new CircuitBreakerOpenException("Баланс DeepSeek исчерпан (402)", ex);
+        }
+        catch (ClientResultException ex) when (ex.Status == 429)
+        {
+            await _budgetGuard.TripOnRateLimitAsync(token);
+            _logger.LogWarning("Лимит запросов DeepSeek (429) при извлечении атрибутов.");
+            throw new CircuitBreakerOpenException("API Rate Limit (429)", ex);
         }
         catch (Exception ex)
         {

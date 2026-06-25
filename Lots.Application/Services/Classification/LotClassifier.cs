@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.ClientModel;
 using Azure;
 using System.Text.Json;
+using Lots.Application.Services.DeepSeek;
 
 namespace FedresursScraper.Services;
 
@@ -16,6 +17,7 @@ public class LotClassifier : ILotClassifier
 {
     private readonly ILogger<LotClassifier> _logger;
     private readonly ChatClient _chatClient;
+    private readonly IDeepSeekBudgetGuard _budgetGuard;
     private readonly string _modelName = "deepseek-chat";
     private readonly Dictionary<string, List<string>> _categoryTree;
 
@@ -25,9 +27,8 @@ public class LotClassifier : ILotClassifier
     // Белый список чистых категорий для быстрой проверки
     private readonly HashSet<string> _validCategories;
 
-    // Переменные для Circuit Breaker
-    private static DateTime _circuitOpenUntil = DateTime.MinValue;
-    private static readonly TimeSpan _cooldownPeriod = TimeSpan.FromHours(4); // Ждем 4 часа после ошибки оплаты
+    // Переменные для Circuit Breaker (legacy in-process throttle; глобальный breaker — в DeepSeekBudgetGuard)
+    private static readonly TimeSpan _cooldownPeriod = TimeSpan.FromHours(4);
 
     // Минимальный интервал между запросами
     private readonly TimeSpan _minRequestInterval;
@@ -48,9 +49,11 @@ public class LotClassifier : ILotClassifier
     public LotClassifier(
         ILogger<LotClassifier> logger,
         IConfiguration configuration,
+        IDeepSeekBudgetGuard budgetGuard,
         string apiKey, string apiUrl)
     {
         _logger = logger;
+        _budgetGuard = budgetGuard;
 
         var clientOptions = new OpenAIClientOptions
         {
@@ -132,11 +135,7 @@ public class LotClassifier : ILotClassifier
 
     public async Task<LotClassificationResult?> ClassifyLotAsync(string lotDescription, CancellationToken token)
     {
-        // Если предохранитель сработал, не делаем запрос
-        if (DateTime.UtcNow < _circuitOpenUntil)
-        {
-            throw new CircuitBreakerOpenException($"API недоступно до {_circuitOpenUntil}");
-        }
+        await _budgetGuard.AcquireRequestSlotAsync("classification", token);
 
         // THROTTLING (Ограничение скорости)
         // С использованием _nextAllowedRequestTime (алгоритм Token Bucket / Leaky Bucket в упрощенном виде):
@@ -375,6 +374,8 @@ public class LotClassifier : ILotClassifier
         {
             var response = await _chatClient.CompleteChatAsync(messages, chatCompletionOptions);
 
+            await RecordUsageAsync(response.Value.Usage, "classification", token);
+
             // защита от пустого ответа: DeepSeek может вернуть 200, но без содержимого
             if (response.Value.Content == null || response.Value.Content.Count == 0)
             {
@@ -401,19 +402,18 @@ public class LotClassifier : ILotClassifier
         }
         catch (ClientResultException ex) when (ex.Status == 402) // Ошибка оплаты
         {
-            _circuitOpenUntil = DateTime.UtcNow.Add(_cooldownPeriod);
+            await _budgetGuard.TripOnPaymentFailureAsync(token);
 
             _logger.LogCritical(ex, "Баланс DeepSeek исчерпан (402). Запросы приостановлены на {Minutes} минут.", _cooldownPeriod.TotalMinutes);
             return null;
         }
         catch (ClientResultException ex) when (ex.Status == 429) // Too Many Requests (лимит рейтов)
         {
-            // Для 429 можно паузу поменьше, например 1 минуту
-            _circuitOpenUntil = DateTime.UtcNow.AddMinutes(1);
+            await _budgetGuard.TripOnRateLimitAsync(token);
             _logger.LogWarning("Лимит запросов DeepSeek (429). Пауза 1 минута.");
 
             // Бросаем исключение, чтобы этот лот тоже стал Skipped
-            throw new CircuitBreakerOpenException($"API Rate Limit (429) до {_circuitOpenUntil}", ex);
+            throw new CircuitBreakerOpenException("API Rate Limit (429)", ex);
         }
         catch (JsonException jsonEx)
         {
@@ -455,10 +455,7 @@ public class LotClassifier : ILotClassifier
         }
 
         // Если предохранитель сработал, не делаем запрос
-        if (DateTime.UtcNow < _circuitOpenUntil)
-        {
-            throw new CircuitBreakerOpenException($"API недоступно до {_circuitOpenUntil}");
-        }
+        await _budgetGuard.AcquireRequestSlotAsync("classification-batch", token);
 
         // THROTTLING (Ограничение скорости)
         TimeSpan delay;
@@ -590,6 +587,8 @@ public class LotClassifier : ILotClassifier
         {
             var response = await _chatClient.CompleteChatAsync(messages, chatCompletionOptions);
 
+            await RecordUsageAsync(response.Value.Usage, "classification-batch", token);
+
             if (response.Value.Content == null || response.Value.Content.Count == 0)
             {
                 _logger.LogWarning("DeepSeek вернул пустой ответ (без контента) для батча лотов.");
@@ -630,15 +629,15 @@ public class LotClassifier : ILotClassifier
         }
         catch (ClientResultException ex) when (ex.Status == 402)
         {
-            _circuitOpenUntil = DateTime.UtcNow.Add(_cooldownPeriod);
+            await _budgetGuard.TripOnPaymentFailureAsync(token);
             _logger.LogCritical(ex, "Баланс DeepSeek исчерпан (402). Запросы приостановлены на {Minutes} минут.", _cooldownPeriod.TotalMinutes);
-            throw new CircuitBreakerOpenException($"Баланс DeepSeek исчерпан (402)", ex);
+            throw new CircuitBreakerOpenException("Баланс DeepSeek исчерпан (402)", ex);
         }
         catch (ClientResultException ex) when (ex.Status == 429)
         {
-            _circuitOpenUntil = DateTime.UtcNow.AddMinutes(1);
+            await _budgetGuard.TripOnRateLimitAsync(token);
             _logger.LogWarning("Лимит запросов DeepSeek (429). Пауза 1 минута.");
-            throw new CircuitBreakerOpenException($"API Rate Limit (429) до {_circuitOpenUntil}", ex);
+            throw new CircuitBreakerOpenException("API Rate Limit (429)", ex);
         }
         catch (JsonException jsonEx)
         {
@@ -695,5 +694,13 @@ public class LotClassifier : ILotClassifier
         }
 
         return cleanedList.Distinct().ToList();
+    }
+
+    private async Task RecordUsageAsync(OpenAI.Chat.ChatTokenUsage? usage, string caller, CancellationToken token)
+    {
+        if (usage?.TotalTokenCount is > 0)
+        {
+            await _budgetGuard.RecordTokenUsageAsync(caller, usage.TotalTokenCount, token);
+        }
     }
 }

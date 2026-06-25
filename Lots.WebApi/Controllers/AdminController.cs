@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Lots.Application.Services.DeepSeek;
 using Lots.Application.Services.VehicleNormalization;
 using FedresursScraper.Services;
 using FedresursScraper.Services.Models;
@@ -20,6 +21,7 @@ public class AdminController : ControllerBase
     private readonly IRosreestrQueue _rosreestrQueue;
     private readonly IRosreestrServiceClient _rosreestrClient;
     private readonly IBiddingDataCache _cache;
+    private readonly IDeepSeekBudgetGuard _deepSeekBudgetGuard;
 
     public AdminController(
         IRosreestrService rosreestrService,
@@ -28,7 +30,8 @@ public class AdminController : ControllerBase
         ILogger<AdminController> logger,
         IRosreestrQueue rosreestrQueue,
         IRosreestrServiceClient rosreestrClient,
-        IBiddingDataCache cache)
+        IBiddingDataCache cache,
+        IDeepSeekBudgetGuard deepSeekBudgetGuard)
     {
         _rosreestrService = rosreestrService;
         _classificationQueue = classificationQueue;
@@ -37,6 +40,17 @@ public class AdminController : ControllerBase
         _rosreestrQueue = rosreestrQueue;
         _rosreestrClient = rosreestrClient;
         _cache = cache;
+        _deepSeekBudgetGuard = deepSeekBudgetGuard;
+    }
+
+    /// <summary>
+    /// Текущий расход DeepSeek API и состояние бюджетного предохранителя.
+    /// </summary>
+    [HttpGet("deepseek-usage")]
+    public async Task<IActionResult> GetDeepSeekUsage([FromQuery] int days = 7)
+    {
+        var status = await _deepSeekBudgetGuard.GetUsageStatusAsync(days);
+        return Ok(status);
     }
 
     /// <summary>

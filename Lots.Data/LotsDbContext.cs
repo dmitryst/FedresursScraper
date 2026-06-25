@@ -76,6 +76,10 @@ public class LotsDbContext : DbContext
     public DbSet<DebtorKadCaseSnapshot> DebtorKadCaseSnapshots { get; set; }
     public DbSet<DebtorFsspRecord> DebtorFsspRecords { get; set; }
 
+    public DbSet<DeepSeekBudgetState> DeepSeekBudgetStates { get; set; }
+
+    public DbSet<DeepSeekCircuitBreaker> DeepSeekCircuitBreakers { get; set; }
+
     [DbFunction("jsonb_extract_path_text", "pg_catalog")]
     public static string JsonbExtractPathText(Dictionary<string, string> target, string path) => throw new NotSupportedException();
 
@@ -393,6 +397,21 @@ public class LotsDbContext : DbContext
 
             entity.HasIndex(e => new { e.LotId, e.EntityType })
                 .HasDatabaseName("IX_DebtExtractedEntities_LotId_EntityType");
+        });
+
+        modelBuilder.Entity<DeepSeekBudgetState>(entity =>
+        {
+            entity.HasKey(e => e.PeriodKey);
+            entity.Property(e => e.PeriodKey).HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<DeepSeekCircuitBreaker>(entity =>
+        {
+            entity.HasData(new DeepSeekCircuitBreaker
+            {
+                Id = 1,
+                UpdatedAt = new DateTime(2026, 6, 25, 0, 0, 0, DateTimeKind.Utc)
+            });
         });
 
         // Автоматическая настройка всех DateTime свойств для всех сущностей

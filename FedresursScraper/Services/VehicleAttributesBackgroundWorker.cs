@@ -27,6 +27,8 @@ public class VehicleAttributesBackgroundWorker : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            var delay = _checkInterval;
+
             try
             {
                 using (var scope = _serviceProvider.CreateScope())
@@ -41,13 +43,17 @@ public class VehicleAttributesBackgroundWorker : BackgroundService
                     await extractor.ExtractAttributesForActiveVehiclesAsync(stoppingToken);
                 }
             }
+            catch (CircuitBreakerOpenException ex)
+            {
+                _logger.LogWarning(ex, "Извлечение атрибутов приостановлено: сработал бюджетный предохранитель DeepSeek.");
+                delay = TimeSpan.FromMinutes(30);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка при выполнении фоновой задачи извлечения атрибутов транспортных средств.");
             }
 
-            // Ждем перед следующей проверкой
-            await Task.Delay(_checkInterval, stoppingToken);
+            await Task.Delay(delay, stoppingToken);
         }
 
         _logger.LogInformation("Фоновый воркер для извлечения атрибутов транспортных средств остановлен.");

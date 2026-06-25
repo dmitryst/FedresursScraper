@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using OpenAI;
 using OpenAI.Chat;
 using FedresursScraper.Services.Models;
+using Lots.Application.Services.DeepSeek;
+using System.ClientModel;
 
 namespace FedresursScraper.Services;
 
@@ -20,15 +22,18 @@ public class LotEvaluationService : ILotEvaluationService
     private readonly ILogger<LotEvaluationService> _logger;
     private readonly ChatClient _chatClient;
     private readonly LotsDbContext _dbContext;
+    private readonly IDeepSeekBudgetGuard _budgetGuard;
     private readonly string _modelName = "deepseek-reasoner"; // Используем R1 (reasoning)
 
     public LotEvaluationService(
         ILogger<LotEvaluationService> logger,
         IConfiguration configuration,
-        LotsDbContext dbContext)
+        LotsDbContext dbContext,
+        IDeepSeekBudgetGuard budgetGuard)
     {
         _logger = logger;
         _dbContext = dbContext;
+        _budgetGuard = budgetGuard;
 
         string apiKey = configuration["DeepSeek:ApiKey"] ?? throw new InvalidOperationException("API Key not found");
         string apiUrl = configuration["DeepSeek:ApiUrl"] ?? throw new InvalidOperationException("API URL not found");
@@ -138,9 +143,16 @@ public class LotEvaluationService : ILotEvaluationService
 
         try
         {
+            await _budgetGuard.AcquireRequestSlotAsync("lot-evaluation");
+
             // DeepSeek R1 не поддерживает response_format json_object вместе с thinking в текущей версии API (обычно),
             // поэтому просим текстом и парсим.
             var completion = await _chatClient.CompleteChatAsync(messages);
+
+            if (completion.Value.Usage?.TotalTokenCount is > 0)
+            {
+                await _budgetGuard.RecordTokenUsageAsync("lot-evaluation", completion.Value.Usage.TotalTokenCount);
+            }
 
             if (completion.Value.Content == null || completion.Value.Content.Count == 0)
             {
@@ -196,6 +208,22 @@ public class LotEvaluationService : ILotEvaluationService
             await _dbContext.SaveChangesAsync();
 
             return result;
+        }
+        catch (CircuitBreakerOpenException)
+        {
+            throw;
+        }
+        catch (ClientResultException ex) when (ex.Status == 402)
+        {
+            await _budgetGuard.TripOnPaymentFailureAsync();
+            _logger.LogCritical(ex, "Баланс DeepSeek исчерпан (402) при оценке лота {LotId}", lotId);
+            throw new CircuitBreakerOpenException("Баланс DeepSeek исчерпан (402)", ex);
+        }
+        catch (ClientResultException ex) when (ex.Status == 429)
+        {
+            await _budgetGuard.TripOnRateLimitAsync();
+            _logger.LogWarning("Лимит запросов DeepSeek (429) при оценке лота {LotId}", lotId);
+            throw new CircuitBreakerOpenException("API Rate Limit (429)", ex);
         }
         catch (Exception ex)
         {
