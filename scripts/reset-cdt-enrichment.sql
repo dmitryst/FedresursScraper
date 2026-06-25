@@ -73,7 +73,7 @@ BEGIN
     WHERE b."Platform" LIKE '%Центр дистанционных торгов%'
       AND COALESCE(b."IsEnriched", false) = true
       AND b."HasNoLots" = false
-      AND b."CreatedAt" > TIMESTAMPTZ '2026-01-15 00:00:00+00'
+      AND b."CreatedAt" > TIMESTAMPTZ '2026-06-18 17:00:00+00'
     GROUP BY b."Id", b."Type"
     HAVING
         COUNT(DISTINCT li."Id") = 0
