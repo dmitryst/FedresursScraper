@@ -8,6 +8,7 @@ using FedresursScraper.Services.Utils;
 using System.Linq;
 using System.Globalization;
 using System.Text;
+using Lots.Application.Services.DeepSeek;
 
 namespace FedresursScraper.Services;
 
@@ -21,15 +22,18 @@ public class ClassificationManager : IClassificationManager
 {
     private readonly IClassificationQueue _taskQueue;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IDeepSeekBudgetGuard _budgetGuard;
     private readonly ILogger<ClassificationManager> _logger;
 
     public ClassificationManager(
         IClassificationQueue taskQueue,
         IServiceProvider serviceProvider,
+        IDeepSeekBudgetGuard budgetGuard,
         ILogger<ClassificationManager> logger)
     {
         _taskQueue = taskQueue;
         _serviceProvider = serviceProvider;
+        _budgetGuard = budgetGuard;
         _logger = logger;
     }
 
@@ -157,24 +161,13 @@ public class ClassificationManager : IClassificationManager
             }
             catch (CircuitBreakerOpenException)
             {
-                // API DeepSeek недоступно из-за сработанного CircuitBreaker
-                dbContext.LotAuditEvents.Add(new LotAuditEvent
-                {
-                    LotId = lotId,
-                    EventType = "Classification",
-                    Status = "Skipped", // фактически попытки не было, поэтому устанавливаем специальный статус: Skipped
-                    Source = source,
-                    Timestamp = DateTime.UtcNow,
-                    Details = "Circuit Breaker: API limit/balance"
-                });
-                await dbContext.SaveChangesAsync(token);
+                await ReleaseLotsAfterCircuitBreakerAsync(
+                    dbContext,
+                    new List<Guid> { lotId },
+                    source,
+                    "Circuit Breaker: API limit/balance",
+                    token);
 
-                // При CircuitBreaker возвращаем в Pending с небольшой задержкой
-                await UpdateLotClassificationStateAsync(dbContext, new List<Guid> { lotId }, ClassificationStatus.Pending, DateTime.UtcNow.AddMinutes(5));
-
-                // притормаживаем немного
-                // это заставит поток обработки очереди "уснуть" и не брать новые задачи 
-                // следующие 5-10 секунд. Этого достаточно, чтобы не спамить базу
                 await Task.Delay(TimeSpan.FromSeconds(10), token);
             }
             catch (Exception ex)
@@ -538,9 +531,20 @@ public class ClassificationManager : IClassificationManager
     }
 
     /// <summary>
-    /// Фиксирует пропуск лотов из-за недоступности API и возвращает их в статус Pending.
+    /// Фиксирует пропуск лотов из-за недоступности API и возвращает их в очередь после закрытия circuit breaker.
+    /// Попытка не засчитывается: откатываем инкремент Attempts, сделанный при бронировании.
     /// </summary>
     private async Task MarkLotsAsSkippedAsync(LotsDbContext dbContext, List<Guid> lotIds, string source, string details)
+    {
+        await ReleaseLotsAfterCircuitBreakerAsync(dbContext, lotIds, source, details);
+    }
+
+    private async Task ReleaseLotsAfterCircuitBreakerAsync(
+        LotsDbContext dbContext,
+        List<Guid> lotIds,
+        string source,
+        string details,
+        CancellationToken cancellationToken = default)
     {
         var events = lotIds.Select(lotId => new LotAuditEvent
         {
@@ -553,9 +557,39 @@ public class ClassificationManager : IClassificationManager
         }).ToList();
 
         dbContext.LotAuditEvents.AddRange(events);
-        await dbContext.SaveChangesAsync();
-        // Возвращаем в Pending с задержкой 5 минут
-        await UpdateLotClassificationStateAsync(dbContext, lotIds, ClassificationStatus.Pending, DateTime.UtcNow.AddMinutes(5));
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        var nextAttemptAt = await GetNextAttemptAfterCircuitBreakerAsync(cancellationToken);
+
+        await dbContext.LotClassificationStates
+            .Where(s => lotIds.Contains(s.LotId))
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(state => state.Status, ClassificationStatus.Pending)
+                .SetProperty(state => state.Attempts, state => state.Attempts > 0 ? state.Attempts - 1 : 0)
+                .SetProperty(state => state.NextAttemptAt, nextAttemptAt),
+                cancellationToken);
+
+        _logger.LogInformation(
+            "Лоты ({Count}) возвращены в очередь после circuit breaker. Следующая попытка не раньше {NextAttemptAt:u}.",
+            lotIds.Count,
+            nextAttemptAt);
+    }
+
+    private async Task<DateTime> GetNextAttemptAfterCircuitBreakerAsync(CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.UtcNow;
+        var status = await _budgetGuard.GetUsageStatusAsync(recentDays: 1, cancellationToken);
+
+        if (status.CircuitBreaker.IsOpen && status.CircuitBreaker.OpenUntil.HasValue)
+        {
+            var openUntil = status.CircuitBreaker.OpenUntil.Value;
+            if (openUntil > now)
+            {
+                return openUntil.AddMinutes(1);
+            }
+        }
+
+        return now.AddMinutes(5);
     }
 
     /// <summary>
