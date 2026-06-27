@@ -727,7 +727,8 @@ public class LotsController : ControllerBase
 
         var contentType = response.Content.Headers.ContentType?.MediaType
             ?? LotPropertyDocumentHelper.GetContentType(document.Extension ?? ".bin");
-        var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+        
         var fileName = document.Title;
         if (!string.IsNullOrWhiteSpace(document.Extension) &&
             !fileName.EndsWith(document.Extension, StringComparison.OrdinalIgnoreCase))
@@ -735,7 +736,7 @@ public class LotsController : ControllerBase
             fileName += document.Extension;
         }
 
-        return File(stream, contentType, fileName);
+        return File(bytes, contentType, fileName);
     }
 
     [Authorize]
