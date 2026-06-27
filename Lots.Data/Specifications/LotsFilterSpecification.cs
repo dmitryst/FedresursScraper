@@ -52,7 +52,29 @@ public class LotsFilterSpecification : Specification<Lot>
         // Фильтр по типу торгов
         if (!string.IsNullOrWhiteSpace(biddingType) && biddingType != "Все")
         {
-            Query.Where(l => l.Bidding.Type == biddingType);
+            if (biddingType == "Открытый аукцион")
+            {
+                var auctionTypes = new[] { 
+                    "Открытый аукцион", 
+                    "Закрытый аукцион", 
+                    "Открытый конкурс", 
+                    "Закрытый конкурс", 
+                    "Открытая форма подачи предложений о цене" 
+                };
+                Query.Where(l => auctionTypes.Contains(l.Bidding.Type));
+            }
+            else if (biddingType == "Публичное предложение")
+            {
+                var publicOfferTypes = new[] { 
+                    "Публичное предложение", 
+                    "Закрытое публичное предложение" 
+                };
+                Query.Where(l => publicOfferTypes.Contains(l.Bidding.Type));
+            }
+            else
+            {
+                Query.Where(l => l.Bidding.Type == biddingType);
+            }
         }
 
         // Фильтр по начальной цене

@@ -109,10 +109,37 @@ public class LotAlertMatchingWorker : BackgroundService
 
                                 // Проверка вида торгов
                                 // Если в алерте указан конкретный тип торгов (и он не пустой), а у лота тип другой -> пропускаем
-                                if (!string.IsNullOrEmpty(alert.BiddingType) &&
-                                    !string.Equals(alert.BiddingType, lot.Bidding?.Type, StringComparison.OrdinalIgnoreCase))
+                                if (!string.IsNullOrEmpty(alert.BiddingType) && alert.BiddingType != "Все")
                                 {
-                                    continue;
+                                    if (alert.BiddingType == "Открытый аукцион")
+                                    {
+                                        var auctionTypes = new[] { 
+                                            "Открытый аукцион", 
+                                            "Закрытый аукцион", 
+                                            "Открытый конкурс", 
+                                            "Закрытый конкурс", 
+                                            "Открытая форма подачи предложений о цене" 
+                                        };
+                                        if (lot.Bidding?.Type == null || !auctionTypes.Contains(lot.Bidding.Type))
+                                        {
+                                            continue;
+                                        }
+                                    }
+                                    else if (alert.BiddingType == "Публичное предложение")
+                                    {
+                                        var publicOfferTypes = new[] { 
+                                            "Публичное предложение", 
+                                            "Закрытое публичное предложение" 
+                                        };
+                                        if (lot.Bidding?.Type == null || !publicOfferTypes.Contains(lot.Bidding.Type))
+                                        {
+                                            continue;
+                                        }
+                                    }
+                                    else if (!string.Equals(alert.BiddingType, lot.Bidding?.Type, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        continue;
+                                    }
                                 }
 
                                 // Проверка доли
