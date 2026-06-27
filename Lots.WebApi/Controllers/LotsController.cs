@@ -8,11 +8,12 @@ using Ardalis.Specification.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Lots.Data.Entities;
+using Lots.Data;
 using Ardalis.Specification;
 using Lots.Data.Models;
 using Lots.Application.Services.VehicleFilters;
 using FedresursScraper.Services.Utils;
-using Lots.Data;
+using Lots.Application.Interfaces;
 
 
 namespace FedresursScraper.Controllers;
@@ -24,17 +25,20 @@ public class LotsController : ControllerBase
     private readonly ILotCopyService _lotCopyService;
     private readonly LotsDbContext _dbContext;
     private readonly IVehicleFilterOptionsCache _vehicleFilterOptionsCache;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly bool _aiQuickEvaluationAdminOnly;
 
     public LotsController(
         ILotCopyService lotCopyService,
         LotsDbContext dbContext,
         IVehicleFilterOptionsCache vehicleFilterOptionsCache,
+        IHttpClientFactory httpClientFactory,
         IConfiguration configuration)
     {
         _lotCopyService = lotCopyService;
         _dbContext = dbContext;
         _vehicleFilterOptionsCache = vehicleFilterOptionsCache;
+        _httpClientFactory = httpClientFactory;
         _aiQuickEvaluationAdminOnly = configuration.GetValue("Features:AiQuickEvaluationAdminOnly", true);
     }
 
@@ -274,13 +278,8 @@ public class LotsController : ControllerBase
                 .ToList(),
 
             Documents = lot.Documents
-                .Select(d => new LotDocumentDto
-                {
-                    Id = d.Id,
-                    Url = d.Url,
-                    Title = d.Title,
-                    Extension = d.Extension
-                }).ToList()
+                .Select(d => MapDocumentDto(lot.PublicId, d))
+                .ToList()
         };
 
         if (!lot.IsActive())
@@ -670,6 +669,222 @@ public class LotsController : ControllerBase
         return Ok(uploadedImages);
     }
 
+    [HttpGet("{id}/documents/{documentId:guid}/download")]
+    public async Task<IActionResult> DownloadDocument(
+        string id,
+        Guid documentId,
+        CancellationToken cancellationToken)
+    {
+        Lot? lot = null;
+        if (int.TryParse(id, out int publicId))
+        {
+            lot = await _dbContext.Lots
+                .AsNoTracking()
+                .Include(l => l.Bidding)
+                .FirstOrDefaultAsync(l => l.PublicId == publicId, cancellationToken);
+        }
+        else if (Guid.TryParse(id, out Guid guidId))
+        {
+            lot = await _dbContext.Lots
+                .AsNoTracking()
+                .Include(l => l.Bidding)
+                .FirstOrDefaultAsync(l => l.Id == guidId, cancellationToken);
+        }
+
+        if (lot == null)
+            return NotFound(new { message = "Лот не найден." });
+
+        var document = await _dbContext.Documents
+            .AsNoTracking()
+            .FirstOrDefaultAsync(d => d.Id == documentId && d.LotId == lot.Id, cancellationToken);
+
+        if (document == null)
+            return NotFound(new { message = "Документ не найден." });
+
+        if (!document.IsExternal)
+        {
+            if (string.IsNullOrWhiteSpace(document.Url))
+                return NotFound(new { message = "Файл документа недоступен." });
+
+            return Redirect(document.Url);
+        }
+
+        var referer = lot.Bidding?.BankruptMessageId != null && lot.Bidding.BankruptMessageId != Guid.Empty
+            ? $"https://fedresurs.ru/bankruptmessages/{lot.Bidding.BankruptMessageId}"
+            : "https://fedresurs.ru/";
+
+        var client = _httpClientFactory.CreateClient("FedresursDownload");
+        using var request = new HttpRequestMessage(HttpMethod.Get, document.SourceUrl);
+        request.Headers.TryAddWithoutValidation("Referer", referer);
+
+        using var response = await client.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            return StatusCode((int)response.StatusCode, new { message = "Не удалось скачать документ с Федресурса." });
+
+        var contentType = response.Content.Headers.ContentType?.MediaType
+            ?? LotPropertyDocumentHelper.GetContentType(document.Extension ?? ".bin");
+        var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var fileName = document.Title;
+        if (!string.IsNullOrWhiteSpace(document.Extension) &&
+            !fileName.EndsWith(document.Extension, StringComparison.OrdinalIgnoreCase))
+        {
+            fileName += document.Extension;
+        }
+
+        return File(stream, contentType, fileName);
+    }
+
+    [Authorize]
+    [HttpPost("{id}/documents")]
+    public async Task<IActionResult> UploadDocuments(
+        string id,
+        List<IFormFile> files,
+        [FromQuery] bool extractToDescription = false,
+        [FromServices] ILotsFileStorageService storageService = null!,
+        [FromServices] Lots.Application.Services.DebtScoring.IDocumentTextExtractor textExtractor = null!,
+        [FromServices] ILotPropertyDescriptionSummarizer descriptionSummarizer = null!)
+    {
+        if (!await IsAdminAsync()) return Forbid();
+
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest(new { message = "Некорректный ID лота." });
+
+        Lot? lot = null;
+        if (int.TryParse(id, out int publicId))
+        {
+            lot = await _dbContext.Lots.Include(l => l.Documents).Include(l => l.Bidding).FirstOrDefaultAsync(l => l.PublicId == publicId);
+        }
+        else if (Guid.TryParse(id, out Guid guidId))
+        {
+            lot = await _dbContext.Lots.Include(l => l.Documents).Include(l => l.Bidding).FirstOrDefaultAsync(l => l.Id == guidId);
+        }
+
+        if (lot == null)
+            return NotFound(new { message = "Лот не найден." });
+
+        if (files == null || files.Count == 0)
+            return BadRequest(new { message = "Файлы не выбраны." });
+
+        var uploadedDocuments = new List<object>();
+        var extractedTexts = new List<string>();
+
+        foreach (var file in files)
+        {
+            if (file.Length == 0) continue;
+
+            var extension = Path.GetExtension(file.FileName);
+            if (string.IsNullOrWhiteSpace(extension) ||
+                !LotPropertyDocumentHelper.PropertyDocumentExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+            {
+                return BadRequest(new { message = $"Неподдерживаемый формат файла: {extension}" });
+            }
+
+            using var stream = file.OpenReadStream();
+            using var memory = new MemoryStream();
+            await stream.CopyToAsync(memory);
+            var bytes = memory.ToArray();
+
+            var fileName = $"lots/{lot.Id}/documents/{Guid.NewGuid()}{extension.ToLowerInvariant()}";
+            var url = await storageService.UploadAsync(
+                bytes,
+                fileName,
+                LotPropertyDocumentHelper.GetContentType(extension));
+
+            var title = Path.GetFileNameWithoutExtension(file.FileName);
+            if (string.IsNullOrWhiteSpace(title))
+                title = "Документ";
+
+            var lotDocument = new LotDocument
+            {
+                Id = Guid.NewGuid(),
+                LotId = lot.Id,
+                Url = url,
+                Title = title,
+                Extension = extension,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            _dbContext.Documents.Add(lotDocument);
+            uploadedDocuments.Add(new
+            {
+                id = lotDocument.Id,
+                downloadUrl = MapDocumentDto(lot.PublicId, lotDocument).DownloadUrl,
+                title = lotDocument.Title,
+                extension = lotDocument.Extension,
+            });
+
+            if (extractToDescription && textExtractor.CanExtract(extension))
+            {
+                var extraction = await textExtractor.ExtractAsync(bytes, extension);
+                if (extraction.Success && !string.IsNullOrWhiteSpace(extraction.Text))
+                {
+                    var rawText = extraction.Text.Trim();
+                    if (LotPropertyDocumentHelper.NeedsSummarization(rawText))
+                    {
+                        var summary = await descriptionSummarizer.SummarizeAsync(rawText);
+                        extractedTexts.Add(
+                            !string.IsNullOrWhiteSpace(summary.Summary)
+                                ? summary.Summary
+                                : LotPropertyDocumentHelper.TruncateForPreview(rawText, 2000));
+                    }
+                    else
+                    {
+                        extractedTexts.Add(rawText);
+                    }
+                }
+            }
+        }
+
+        string? mergedDescription = null;
+        if (extractToDescription && extractedTexts.Count > 0)
+        {
+            mergedDescription = LotPropertyDocumentHelper.BuildProposedDescription(lot.Description, string.Join("\n\n", extractedTexts));
+            if (!string.IsNullOrWhiteSpace(mergedDescription))
+            {
+                if (LotPropertyDocumentHelper.IsPropertyListReferral(lot.Description) && lot.Bidding != null)
+                {
+                    lot.Bidding.ViewingProcedure = LotDescriptionTextHelper.MergeViewingProcedureParts(
+                        lot.Bidding.ViewingProcedure,
+                        lot.Description);
+                }
+
+                lot.Description = mergedDescription;
+                lot.NeedsDescriptionReview = false;
+                lot.Slug = null;
+
+                var classificationState = await _dbContext.LotClassificationStates.FirstOrDefaultAsync(s => s.LotId == lot.Id);
+                if (classificationState == null)
+                {
+                    _dbContext.LotClassificationStates.Add(new LotClassificationState
+                    {
+                        LotId = lot.Id,
+                        Status = ClassificationStatus.Pending,
+                        Attempts = 0,
+                        NextAttemptAt = DateTime.UtcNow,
+                    });
+                }
+                else
+                {
+                    classificationState.Status = ClassificationStatus.Pending;
+                    classificationState.Attempts = 0;
+                    classificationState.NextAttemptAt = DateTime.UtcNow;
+                }
+            }
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        return Ok(new
+        {
+            documents = uploadedDocuments,
+            extractedDescription = mergedDescription,
+        });
+    }
+
     [Authorize]
     [HttpPost("{id}/reclassify")]
     public async Task<IActionResult> ReclassifyLot(string id)
@@ -717,4 +932,16 @@ public class LotsController : ControllerBase
 
         return Ok(new { message = "Лот поставлен в очередь на переклассификацию." });
     }
+
+    private static LotDocumentDto MapDocumentDto(int publicId, LotDocument document) =>
+        new()
+        {
+            Id = document.Id,
+            Title = document.Title,
+            Extension = document.Extension,
+            IsExternal = document.IsExternal,
+            DownloadUrl = document.IsExternal
+                ? LotDocumentLinkHelper.BuildDownloadApiPath(publicId, document.Id)
+                : document.Url ?? string.Empty,
+        };
 }

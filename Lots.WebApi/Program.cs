@@ -29,11 +29,22 @@ builder.Services.AddFileStorageServices(configuration);
 // Регистрация Application и Infrastructure сервисов, необходимых для WebApi
 builder.Services.AddScoped<ILotCopyService, LotCopyService>();
 builder.Services.AddDeepSeekBudgetGuard(configuration);
+builder.Services.AddLotPropertyDescriptionSummarizer();
 builder.Services.AddScoped<ILotEvaluationService, LotEvaluationService>();
 builder.Services.AddVehicleFilterOptions(configuration);
 builder.Services.AddVehicleNormalization(configuration, registerBackfillWorker: true);
 builder.Services.AddVehicleAttributesAdmin();
 builder.Services.AddHttpClient<IParserScrapeClient, ParserScrapeClient>();
+builder.Services.AddHttpClient("FedresursDownload", client =>
+{
+    client.DefaultRequestHeaders.TryAddWithoutValidation(
+        "User-Agent",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+    client.Timeout = TimeSpan.FromMinutes(2);
+});
+builder.Services.AddSingleton<Lots.Application.Services.DebtScoring.DocxDocumentTextExtractor>();
+builder.Services.AddSingleton<Lots.Application.Services.DebtScoring.IDocumentTextExtractor>(sp =>
+    sp.GetRequiredService<Lots.Application.Services.DebtScoring.DocxDocumentTextExtractor>());
 builder.Services.AddScoped<ILotDescriptionAlignmentService, LotDescriptionAlignmentService>();
 builder.Services.AddSingleton<IBiddingDataCache, InMemoryBiddingDataCache>();
 builder.Services.AddScoped<TradeResultsImportService>();

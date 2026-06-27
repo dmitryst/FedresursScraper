@@ -104,7 +104,7 @@ namespace FedresursScraper.Controllers
         }
 
         [HttpGet("bankruptmessages/{bankruptMessageId:guid}")]
-        [ProducesResponseType(typeof(List<LotInfo>), 200)]
+        [ProducesResponseType(typeof(BankruptMessageScrapeResult), 200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
         public async Task<IActionResult> ScrapeLotsFromBankruptMessagePageAsync(Guid bankruptMessageId)
@@ -121,9 +121,9 @@ namespace FedresursScraper.Controllers
 
             try
             {
-                var lotsInfo = await _lotsScraper.ScrapeLotsAsync(driver, bankruptMessageId);
+                var result = await _lotsScraper.ScrapeAsync(driver, bankruptMessageId);
 
-                return Ok(lotsInfo);
+                return Ok(result);
             }
             catch (Exception ex)
             {

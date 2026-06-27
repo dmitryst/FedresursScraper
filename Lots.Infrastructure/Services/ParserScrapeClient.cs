@@ -21,7 +21,7 @@ public class ParserScrapeClient : IParserScrapeClient
         _httpClient.Timeout = TimeSpan.FromMinutes(3);
     }
 
-    public async Task<IReadOnlyList<LotInfo>> GetLotsFromBankruptMessageAsync(
+    public async Task<BankruptMessageScrapeResult> GetBankruptMessageDataAsync(
         Guid bankruptMessageId,
         CancellationToken cancellationToken = default)
     {
@@ -41,7 +41,7 @@ public class ParserScrapeClient : IParserScrapeClient
                 $"Не удалось загрузить лоты с Федресурса (HTTP {(int)response.StatusCode}).");
         }
 
-        var lots = await response.Content.ReadFromJsonAsync<List<LotInfo>>(cancellationToken: cancellationToken);
-        return lots ?? [];
+        var result = await response.Content.ReadFromJsonAsync<BankruptMessageScrapeResult>(cancellationToken: cancellationToken);
+        return result ?? new BankruptMessageScrapeResult();
     }
 }

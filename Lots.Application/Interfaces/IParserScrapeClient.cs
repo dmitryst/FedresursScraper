@@ -4,7 +4,7 @@ namespace Lots.Application.Interfaces;
 
 public interface IParserScrapeClient
 {
-    Task<IReadOnlyList<LotInfo>> GetLotsFromBankruptMessageAsync(
+    Task<BankruptMessageScrapeResult> GetBankruptMessageDataAsync(
         Guid bankruptMessageId,
         CancellationToken cancellationToken = default);
 }

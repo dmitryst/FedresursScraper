@@ -62,7 +62,7 @@ public class ContractController : ControllerBase
 
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", $"Contract_{lotId}.docx");
         }
-        catch (UnauthorizedAccessException ex)
+        catch (UnauthorizedAccessException)
         {
             return Forbid();
         }

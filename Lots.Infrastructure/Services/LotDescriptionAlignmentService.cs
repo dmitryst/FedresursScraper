@@ -1,7 +1,6 @@
-using System.Text.RegularExpressions;
-using FedresursScraper.Services;
 using FedresursScraper.Services.Models;
 using Lots.Application.Interfaces;
+using Lots.Application.Services.DebtScoring;
 using Lots.Data;
 using Lots.Data.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -13,15 +12,24 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
 {
     private readonly LotsDbContext _dbContext;
     private readonly IParserScrapeClient _parserScrapeClient;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IDocumentTextExtractor _textExtractor;
+    private readonly ILotPropertyDescriptionSummarizer _descriptionSummarizer;
     private readonly ILogger<LotDescriptionAlignmentService> _logger;
 
     public LotDescriptionAlignmentService(
         LotsDbContext dbContext,
         IParserScrapeClient parserScrapeClient,
+        IHttpClientFactory httpClientFactory,
+        IDocumentTextExtractor textExtractor,
+        ILotPropertyDescriptionSummarizer descriptionSummarizer,
         ILogger<LotDescriptionAlignmentService> logger)
     {
         _dbContext = dbContext;
         _parserScrapeClient = parserScrapeClient;
+        _httpClientFactory = httpClientFactory;
+        _textExtractor = textExtractor;
+        _descriptionSummarizer = descriptionSummarizer;
         _logger = logger;
     }
 
@@ -42,7 +50,7 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
             .ToListAsync(cancellationToken);
 
         var lotsByPublicId = lots.ToDictionary(l => l.PublicId);
-        var scrapeCache = new Dictionary<Guid, IReadOnlyList<LotInfo>>();
+        var scrapeCache = new Dictionary<Guid, BankruptMessageScrapeResult>();
 
         var results = new List<LotDescriptionAlignmentPreviewDto>();
 
@@ -70,6 +78,7 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
     {
         var lot = await _dbContext.Lots
             .Include(l => l.Bidding)
+            .Include(l => l.Documents)
             .FirstOrDefaultAsync(l => l.PublicId == request.PublicId && l.NeedsDescriptionReview, cancellationToken);
 
         if (lot == null)
@@ -84,6 +93,11 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
             : request.ViewingProcedure.Trim();
         lot.Slug = null;
         lot.NeedsDescriptionReview = false;
+
+        if (request.Attachments?.Count > 0)
+        {
+            await SaveSelectedAttachmentsAsync(lot, request.Attachments, cancellationToken);
+        }
 
         var classificationState = await _dbContext.LotClassificationStates
             .FirstOrDefaultAsync(s => s.LotId == lot.Id, cancellationToken);
@@ -123,9 +137,108 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
         };
     }
 
+    private async Task BuildPreviewAsync(
+        Lot lot,
+        Dictionary<Guid, BankruptMessageScrapeResult> scrapeCache,
+        CancellationToken cancellationToken,
+        LotDescriptionAlignmentPreviewDto preview)
+    {
+        var messageId = lot.Bidding?.BankruptMessageId ?? Guid.Empty;
+        if (messageId == Guid.Empty)
+        {
+            preview.Error = "У торгов нет ссылки на объявление Федресурса (BankruptMessageId).";
+            return;
+        }
+
+        preview.FedresursUrl = $"https://fedresurs.ru/bankruptmessages/{messageId}";
+
+        try
+        {
+            if (!scrapeCache.TryGetValue(messageId, out var scrapeResult))
+            {
+                scrapeResult = await _parserScrapeClient.GetBankruptMessageDataAsync(messageId, cancellationToken);
+                scrapeCache[messageId] = scrapeResult;
+            }
+
+            var match = FindMatchingLot(scrapeResult.Lots, lot.LotNumber, lot.StartPrice);
+            if (match == null)
+            {
+                preview.Error = $"Лот не найден на странице Федресурса (номер: {lot.LotNumber ?? "—"}, цена: {lot.StartPrice}).";
+                return;
+            }
+
+            var (tableDescription, scrapedViewing) = LotDescriptionTextHelper.SplitDescriptionAndViewing(match.Description);
+            preview.TableDescription = tableDescription;
+            preview.IsReferralDescription = LotPropertyDocumentHelper.IsPropertyListReferral(tableDescription);
+
+            foreach (var attachment in scrapeResult.Attachments)
+            {
+                var attachmentPreview = await ProcessAttachmentPreviewAsync(
+                    attachment,
+                    preview.FedresursUrl,
+                    cancellationToken);
+                preview.Attachments.Add(attachmentPreview);
+            }
+
+            var documentText = LotPropertyDocumentHelper.MergeExtractedTexts(
+                preview.Attachments.Where(a => a.UseForDescription).Select(a => a.DescriptionText));
+
+            var proposedFromTable = string.IsNullOrWhiteSpace(tableDescription) ||
+                                    tableDescription.Equals("не найдено", StringComparison.OrdinalIgnoreCase)
+                ? null
+                : tableDescription.Trim();
+
+            var proposedDescription = LotPropertyDocumentHelper.BuildProposedDescription(
+                proposedFromTable,
+                documentText);
+
+            if (string.IsNullOrWhiteSpace(proposedDescription))
+            {
+                if (preview.IsReferralDescription && preview.Attachments.Count == 0)
+                {
+                    preview.Error =
+                        "Описание ссылается на внешний перечень имущества, но файлы на странице Федресурса не найдены. Загрузите документ вручную.";
+                    return;
+                }
+
+                if (preview.Attachments.Count > 0)
+                {
+                    preview.ProposedDescription = string.Empty;
+                    preview.Error =
+                        "Выберите файлы «В описание» или введите текст описания вручную.";
+                }
+                else
+                {
+                    preview.Error = "На Федресурсе не удалось получить описание имущества для этого лота.";
+                    return;
+                }
+            }
+            else
+            {
+                preview.ProposedDescription = proposedDescription;
+            }
+            preview.ProposedViewingProcedure = LotDescriptionTextHelper.MergeViewingProcedureParts(
+                lot.Bidding?.ViewingProcedure,
+                lot.Description,
+                scrapedViewing);
+
+            if (preview.IsReferralDescription && !string.IsNullOrWhiteSpace(proposedFromTable))
+            {
+                preview.ProposedViewingProcedure = LotDescriptionTextHelper.MergeViewingProcedureParts(
+                    preview.ProposedViewingProcedure,
+                    proposedFromTable);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка предпросмотра выравнивания для лота {PublicId}", lot.PublicId);
+            preview.Error = ex.Message;
+        }
+    }
+
     private async Task<LotDescriptionAlignmentPreviewDto> BuildPreviewAsync(
         Lot lot,
-        Dictionary<Guid, IReadOnlyList<LotInfo>> scrapeCache,
+        Dictionary<Guid, BankruptMessageScrapeResult> scrapeCache,
         CancellationToken cancellationToken)
     {
         var preview = new LotDescriptionAlignmentPreviewDto
@@ -138,52 +251,133 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
             CurrentViewingProcedure = lot.Bidding?.ViewingProcedure,
         };
 
-        var messageId = lot.Bidding?.BankruptMessageId ?? Guid.Empty;
-        if (messageId == Guid.Empty)
+        await BuildPreviewAsync(lot, scrapeCache, cancellationToken, preview);
+        return preview;
+    }
+
+    private async Task<AlignmentAttachmentPreviewDto> ProcessAttachmentPreviewAsync(
+        FedresursAttachmentInfo attachment,
+        string? referer,
+        CancellationToken cancellationToken)
+    {
+        var preview = new AlignmentAttachmentPreviewDto
         {
-            preview.Error = "У торгов нет ссылки на объявление Федресурса (BankruptMessageId).";
-            return preview;
+            Title = attachment.Title,
+            Url = attachment.Url,
+            Extension = attachment.Extension,
+        };
+
+        if (!_textExtractor.CanExtract(attachment.Extension))
+        {
+            preview.ExtractionError =
+                $"Формат {attachment.Extension} не поддерживается для автоматического извлечения текста.";
+        }
+        else
+        {
+            try
+            {
+                var bytes = await DownloadFileAsync(attachment.Url, referer, cancellationToken);
+
+                var extraction = await _textExtractor.ExtractAsync(bytes, attachment.Extension, cancellationToken);
+                if (!extraction.Success || string.IsNullOrWhiteSpace(extraction.Text))
+                {
+                    preview.ExtractionError = extraction.Error ?? "Не удалось извлечь текст из файла.";
+                }
+                else
+                {
+                    var rawText = extraction.Text.Trim();
+                    preview.ExtractedText = LotPropertyDocumentHelper.TruncateForPreview(rawText);
+
+                    if (LotPropertyDocumentHelper.NeedsSummarization(rawText))
+                    {
+                        var summary = await _descriptionSummarizer.SummarizeAsync(rawText, cancellationToken);
+                        if (!string.IsNullOrWhiteSpace(summary.Summary))
+                        {
+                            preview.IsSummarized = true;
+                            preview.DescriptionText = summary.Summary;
+                        }
+                        else
+                        {
+                            preview.SummarizationError = summary.Error;
+                            preview.DescriptionText = LotPropertyDocumentHelper.TruncateForPreview(rawText, 2000);
+                        }
+                    }
+                    else
+                    {
+                        preview.DescriptionText = rawText;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Не удалось обработать вложение {Url}", attachment.Url);
+                preview.ExtractionError = ex.Message;
+            }
         }
 
-        preview.FedresursUrl = $"https://fedresurs.ru/bankruptmessages/{messageId}";
-
-        try
-        {
-            if (!scrapeCache.TryGetValue(messageId, out var scrapedLots))
-            {
-                scrapedLots = await _parserScrapeClient.GetLotsFromBankruptMessageAsync(messageId, cancellationToken);
-                scrapeCache[messageId] = scrapedLots;
-            }
-
-            var match = FindMatchingLot(scrapedLots, lot.LotNumber, lot.StartPrice);
-            if (match == null)
-            {
-                preview.Error = $"Лот не найден на странице Федресурса (номер: {lot.LotNumber ?? "—"}, цена: {lot.StartPrice}).";
-                return preview;
-            }
-
-            var (scrapedDescription, scrapedViewing) = LotDescriptionTextHelper.SplitDescriptionAndViewing(match.Description);
-
-            if (string.IsNullOrWhiteSpace(scrapedDescription) ||
-                scrapedDescription.Equals("не найдено", StringComparison.OrdinalIgnoreCase))
-            {
-                preview.Error = "На Федресурсе не удалось получить описание имущества для этого лота.";
-                return preview;
-            }
-
-            preview.ProposedDescription = scrapedDescription.Trim();
-            preview.ProposedViewingProcedure = LotDescriptionTextHelper.MergeViewingProcedureParts(
-                lot.Bidding?.ViewingProcedure,
-                lot.Description,
-                scrapedViewing);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Ошибка предпросмотра выравнивания для лота {PublicId}", lot.PublicId);
-            preview.Error = ex.Message;
-        }
+        preview.SelectedForDownload = LotPropertyDocumentHelper.GetDefaultSelectedForDownload(preview.Title);
+        preview.UseForDescription = LotPropertyDocumentHelper.GetDefaultUseForDescription(
+            preview.Title,
+            !string.IsNullOrWhiteSpace(preview.DescriptionText));
 
         return preview;
+    }
+
+    private async Task SaveSelectedAttachmentsAsync(
+        Lot lot,
+        IReadOnlyList<ApplyAlignmentAttachmentRequest> attachments,
+        CancellationToken cancellationToken)
+    {
+        var existingSourceUrls = lot.Documents
+            .Where(d => !string.IsNullOrWhiteSpace(d.SourceUrl))
+            .Select(d => d.SourceUrl!)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var attachment in attachments)
+        {
+            if (string.IsNullOrWhiteSpace(attachment.SourceUrl))
+                continue;
+
+            if (!LotDocumentLinkHelper.IsFedresursDocumentUrl(attachment.SourceUrl))
+            {
+                _logger.LogWarning(
+                    "Пропущено вложение с неподдерживаемым SourceUrl для лота {PublicId}: {Url}",
+                    lot.PublicId,
+                    attachment.SourceUrl);
+                continue;
+            }
+
+            if (!existingSourceUrls.Add(attachment.SourceUrl))
+                continue;
+
+            var extension = attachment.Extension;
+            if (string.IsNullOrWhiteSpace(extension))
+                extension = LotPropertyDocumentHelper.DetectDocumentExtension(attachment.SourceUrl, attachment.Title) ?? ".bin";
+
+            _dbContext.Documents.Add(new LotDocument
+            {
+                Id = Guid.NewGuid(),
+                LotId = lot.Id,
+                SourceUrl = attachment.SourceUrl,
+                Title = string.IsNullOrWhiteSpace(attachment.Title) ? "Документ" : attachment.Title,
+                Extension = extension,
+                CreatedAt = DateTime.UtcNow,
+            });
+        }
+
+        await Task.CompletedTask;
+    }
+
+    private async Task<byte[]> DownloadFileAsync(string url, string? referer, CancellationToken cancellationToken)
+    {
+        var client = _httpClientFactory.CreateClient("FedresursDownload");
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        if (!string.IsNullOrWhiteSpace(referer))
+            request.Headers.TryAddWithoutValidation("Referer", referer);
+
+        var response = await client.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadAsByteArrayAsync(cancellationToken);
     }
 
     internal static LotInfo? FindMatchingLot(
@@ -230,7 +424,7 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
         if (string.IsNullOrWhiteSpace(lotNumber))
             return string.Empty;
 
-        return Regex.Replace(lotNumber.Trim(), @"(?i)^лот\s*№?\s*", "").Trim();
+        return System.Text.RegularExpressions.Regex.Replace(lotNumber.Trim(), @"(?i)^лот\s*№?\s*", "").Trim();
     }
 
     private static bool LotNumbersMatch(string a, string b) =>

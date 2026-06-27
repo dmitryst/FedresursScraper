@@ -13,9 +13,14 @@ namespace Lots.Data.Entities
         public Lot Lot { get; set; } = default!;
 
         /// <summary>
-        /// Ссылка на файл в S3
+        /// Ссылка на файл в S3 (для загруженных вручную документов).
         /// </summary>
-        public string Url { get; set; } = default!;
+        public string? Url { get; set; }
+
+        /// <summary>
+        /// Внешняя ссылка на документ (например, API Федресурса).
+        /// </summary>
+        public string? SourceUrl { get; set; }
 
         /// <summary>
         /// Название документа (например: "Договор купли-продажи", "План помещения")
@@ -31,5 +36,7 @@ namespace Lots.Data.Entities
         /// Дата создания записи
         /// </summary>
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public bool IsExternal => !string.IsNullOrWhiteSpace(SourceUrl);
     }
 }
