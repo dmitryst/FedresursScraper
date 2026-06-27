@@ -130,6 +130,12 @@ public class Bidding
     /// </summary>
     public bool HasNoLots { get; set; } = false;
 
+    /// <summary>
+    /// Счетчик попыток фонового сервиса проверить результаты торгов.
+    /// Позволяет отслеживать зависшие торги.
+    /// </summary>
+    public int StatusCheckAttempts { get; set; } = 0;
+
     // Domain Logic
 
     // <summary>

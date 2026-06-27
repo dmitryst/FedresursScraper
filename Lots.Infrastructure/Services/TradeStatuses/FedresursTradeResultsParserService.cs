@@ -81,6 +81,9 @@ public class FedresursTradeResultsParserService
 
             try
             {
+                // Увеличиваем счетчик попыток проверки статуса
+                bidding.StatusCheckAttempts++;
+
                 // Получаем результат: все ли лоты завершены
                 bool allFinalized = await ProcessSingleBiddingInternalAsync(driver, wait, bidding, stoppingToken);
 
@@ -139,6 +142,9 @@ public class FedresursTradeResultsParserService
 
         using var driver = _webDriverFactory.CreateDriver();
         var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(15));
+
+        // Увеличиваем счетчик попыток проверки статуса
+        bidding.StatusCheckAttempts++;
 
         bool allFinalized = await ProcessSingleBiddingInternalAsync(driver, wait, bidding, cancellationToken);
 
