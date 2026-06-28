@@ -177,6 +177,13 @@
           "aliases": []
         },
         {
+          "canonical": "90",
+          "aliases": [
+            "Audi 90",
+            "AUDI 90"
+          ]
+        },
+        {
           "canonical": "A1",
           "aliases": [
             "A1 Sportback"
@@ -259,6 +266,13 @@
           "canonical": "Q8",
           "aliases": [
             "Q8 3.0 AT"
+          ]
+        },
+        {
+          "canonical": "S4",
+          "aliases": [
+            "Audi S4",
+            "AUDI S4"
           ]
         },
         {
@@ -636,6 +650,23 @@
             "X6 xDrive30d",
             "X6 xDrive35i",
             "X6 XDRIVE40i"
+          ]
+        },
+        {
+          "canonical": "X7",
+          "aliases": [
+            "X 7",
+            "BMW X7",
+            "BMW X7 xDrive30d"
+          ]
+        },
+        {
+          "canonical": "X7XDRIVE",
+          "aliases": [
+            "X7 xDrive30d",
+            "X7 xDrive40d",
+            "X7 xDrive40i",
+            "X7 XDRIVE30D"
           ]
         }
       ]
@@ -1286,7 +1317,14 @@
         },
         {
           "canonical": "A21 (SQR7201)",
-          "aliases": []
+          "aliases": [
+            "A21",
+            "A21 (SQR 7201)",
+            "Chery A21",
+            "CHERY A21",
+            "SQR7201",
+            "SQR 7201"
+          ]
         },
         {
           "canonical": "Amulet",
@@ -1542,7 +1580,15 @@
         },
         {
           "canonical": "Blazer 3506",
-          "aliases": []
+          "aliases": [
+            "Blazer",
+            "BLAZER",
+            "Chevrolet Blazer",
+            "Blazer 3506",
+            "Блейзер",
+            "Блейзер 3506",
+            "3506"
+          ]
         },
         {
           "canonical": "C100",
@@ -1673,7 +1719,23 @@
         {
           "canonical": "Trailblazer",
           "aliases": [
-            "TrailBlazer LS"
+            "TrailBlazer LS",
+            "TrailBlazer",
+            "Chevrolet TrailBlazer",
+            "CHEVROLET TRAILBLAZER",
+            "GMT360",
+            "GMT 360",
+            "GMT-360",
+            "CMT360",
+            "CMT 360",
+            "CMT-360",
+            "SMT360",
+            "SMT 360",
+            "СMT360",
+            "СМТ360",
+            "Chevrolet GMT360",
+            "Шевроле GMT360",
+            "Шевроле СМТ360"
           ]
         },
         {
@@ -1722,6 +1784,13 @@
           "canonical": "Crossfire",
           "aliases": [
             "Chrysler Crossfire"
+          ]
+        },
+        {
+          "canonical": "Intrepid",
+          "aliases": [
+            "Chrysler Intrepid",
+            "CHRYSLER INTREPID"
           ]
         },
         {
@@ -2557,6 +2626,26 @@
           "canonical": "Vita",
           "aliases": [
             "FAW Vita"
+          ]
+        }
+      ]
+    },
+    {
+      "canonical": "Fengdu",
+      "aliases": [
+        "FENGDU",
+        "Фengdu",
+        "Фенду",
+        "ФЕНДУ"
+      ],
+      "models": [
+        {
+          "canonical": "Oting",
+          "aliases": [
+            "Otting",
+            "OTING",
+            "Fengdu Oting",
+            "FENGDU OTING"
           ]
         }
       ]
@@ -3512,6 +3601,14 @@
           "aliases": []
         },
         {
+          "canonical": "CC6460RV27",
+          "aliases": [
+            "CC 6460 RV27",
+            "CC6460 RV27",
+            "Z8PFF3"
+          ]
+        },
+        {
           "canonical": "CC6461KM29",
           "aliases": []
         },
@@ -4098,7 +4195,10 @@
             "Fit Aria",
             "Fit Hybrid",
             "Fit Shuttle",
-            "Fit Shuttle Hybrid"
+            "Fit Shuttle Hybrid",
+            "Jazz",
+            "Honda Jazz",
+            "HONDA JAZZ"
           ]
         },
         {
@@ -4392,14 +4492,16 @@
           ]
         },
         {
-          "canonical": "h-1",
+          "canonical": "H1",
           "aliases": [
-            "H-1 2.5 LWB"
+            "h-1",
+            "H-1",
+            "H-1 2.5 LWB",
+            "HYUNDAI H1",
+            "Hyundai H1",
+            "H1 Grand Starex",
+            "H1-Grand-Starex"
           ]
-        },
-        {
-          "canonical": "H1-Grand-Starex",
-          "aliases": []
         },
         {
           "canonical": "i20",
@@ -4585,6 +4687,9 @@
           "aliases": [
             "M",
             "M25",
+            "M35",
+            "M35 Elite",
+            "Infiniti M35",
             "M37",
             "Q 70"
           ]
@@ -4890,6 +4995,13 @@
             "T 8",
             "T8 PRO"
           ]
+        },
+        {
+          "canonical": "T9",
+          "aliases": [
+            "JAC T9",
+            "T 9"
+          ]
         }
       ]
     },
@@ -5179,7 +5291,10 @@
         },
         {
           "canonical": "Carnival",
-          "aliases": []
+          "aliases": [
+            "MB752",
+            "XWEMB752"
+          ]
         },
         {
           "canonical": "Ceed",
@@ -5261,7 +5376,14 @@
         },
         {
           "canonical": "Mohave",
-          "aliases": []
+          "aliases": [
+            "Borrego",
+            "BORREGO",
+            "Kia Borrego",
+            "KIA BORREGO",
+            "MOHAVE",
+            "Kia Mohave"
+          ]
         },
         {
           "canonical": "OPIRUS",
@@ -5546,6 +5668,21 @@
           ]
         },
         {
+          "canonical": "2111",
+          "aliases": [
+            "211100",
+            "211101",
+            "211102",
+            "211103",
+            "21111",
+            "LADA 2111",
+            "Samara 2111",
+            "VAZ 2111",
+            "ВАЗ 2111",
+            "ВАЗ 211102"
+          ]
+        },
+        {
           "canonical": "2112",
           "aliases": [
             "21120",
@@ -5612,6 +5749,7 @@
             "219010 (Granta)",
             "219050",
             "219059-010",
+            "219060",
             "219070 GRANTA",
             "219070 LADA GRANTA",
             "21911 Гранта",
@@ -5720,6 +5858,11 @@
             "2121 Нива",
             "21213",
             "21213 (Нива)",
+            "212130",
+            "212130 (Нива)",
+            "VAZ 212130",
+            "ВАЗ 212130",
+            "XTA212130",
             "21214 (Нива)",
             "212140",
             "212140 (4x4)",
@@ -5819,8 +5962,10 @@
             "2113",
             "21130",
             "21130 LADA SAMARA",
+            "211340",
             "211340 Samara",
             "211340 САМАРА",
+            "ВАЗ 211340",
             "2114 SAMARA",
             "21140",
             "21140 LADA SAMARA",
@@ -6002,12 +6147,15 @@
           "aliases": []
         },
         {
-          "canonical": "GX 460",
-          "aliases": []
-        },
-        {
-          "canonical": "GX460",
-          "aliases": []
+          "canonical": "GX",
+          "aliases": [
+            "GX 460",
+            "GX 470",
+            "GX460",
+            "GX470",
+            "Lexus GX",
+            "LEXUS GX"
+          ]
         },
         {
           "canonical": "IS250",
@@ -6067,6 +6215,8 @@
       "canonical": "Li Auto",
       "aliases": [
         "LI AUTO",
+        "LI",
+        "LI L7",
         "LiAuto",
         "Lixiang",
         "LIXIANG",
@@ -6087,7 +6237,9 @@
           "canonical": "L7",
           "aliases": [
             "Li L7",
-            "L 7"
+            "L 7",
+            "LI L7",
+            "-"
           ]
         },
         {
@@ -6247,6 +6399,23 @@
       ]
     },
     {
+      "canonical": "Lincoln",
+      "aliases": [
+        "LINCOLN",
+        "Линкольн",
+        "ЛИНКОЛЬН"
+      ],
+      "models": [
+        {
+          "canonical": "Navigator",
+          "aliases": [
+            "Lincoln Navigator",
+            "NAVIGATOR"
+          ]
+        }
+      ]
+    },
+    {
       "canonical": "Livan",
       "aliases": [
         "LIVAN",
@@ -6276,6 +6445,18 @@
           "canonical": "S6 Pro",
           "aliases": [
             "Livan S6 Pro"
+          ]
+        },
+        {
+          "canonical": "X6 Pro",
+          "aliases": [
+            "Livan X6 Pro",
+            "LIVAN X6 Pro",
+            "LIVAN X6 PRO",
+            "X6Pro",
+            "X6PRO",
+            "X6 PRO",
+            "LLV5C3B2"
           ]
         },
         {
@@ -6483,7 +6664,13 @@
         },
         {
           "canonical": "230CLK",
-          "aliases": []
+          "aliases": [
+            "230 CLK",
+            "CLK 230",
+            "CLK230",
+            "Mercedes-Benz 230 CLK",
+            "MERCEDES-BENZ 230 CLK"
+          ]
         },
         {
           "canonical": "400 4MATIC",
@@ -6505,7 +6692,11 @@
         },
         {
           "canonical": "A150",
-          "aliases": []
+          "aliases": [
+            "A 150",
+            "Mercedes-Benz A 150",
+            "MERCEDES-BENZ A 150"
+          ]
         },
         {
           "canonical": "AMG 4",
@@ -6577,11 +6768,16 @@
             "E 220 D 4 MATIC",
             "E 220 D 4MATIC",
             "E 240",
+            "E 250",
             "E 250 CGI",
             "E 320",
             "E 350 4MATIC",
             "E Class",
             "E-Class E 220 CDI",
+            "E-klasse",
+            "E-Klasse",
+            "E-KLASSE",
+            "E klasse",
             "E-Класс",
             "E200",
             "E200 4MATIC",
@@ -6591,6 +6787,7 @@
             "E220D 4MATIC",
             "E230",
             "E230 Classic",
+            "E250",
             "E250 CGI",
             "E280",
             "E280 4MATIC",
@@ -6638,7 +6835,20 @@
           "canonical": "GLC",
           "aliases": [
             "GLC 300 4MATIC",
-            "GLC-Class"
+            "GLC-Class",
+            "AMG GLC",
+            "AMG GLC 43",
+            "AMG GLC 63",
+            "AMG GLC 63 S",
+            "AMG GLC 63 S 4MATIC",
+            "GLC 43 AMG",
+            "GLC 63",
+            "GLC 63 AMG",
+            "GLC 63 S",
+            "GLC 63 S 4MATIC",
+            "Mercedes-Benz AMG GLC 63 S 4MATIC",
+            "MERCEDES-BENZ AMG GLC 63 S 4MATIC",
+            "Мерседес Бенц AMG GLC 63 S 4MATIC"
           ]
         },
         {
@@ -7271,8 +7481,13 @@
           "aliases": []
         },
         {
-          "canonical": "Avenir Salut X",
-          "aliases": []
+          "canonical": "Avenir",
+          "aliases": [
+            "Avenir Salut",
+            "Avenir Salut X",
+            "Nissan Avenir",
+            "NISSAN AVENIR"
+          ]
         },
         {
           "canonical": "Avensis",
@@ -7326,7 +7541,14 @@
         },
         {
           "canonical": "Lafesta",
-          "aliases": []
+          "aliases": [
+            "Laфesta",
+            "Lafesta",
+            "Nissan Lafesta",
+            "Лaфecta",
+            "Лафеста",
+            "ЛАФЕСТА"
+          ]
         },
         {
           "canonical": "Largo",
@@ -8999,9 +9221,19 @@
           "aliases": []
         },
         {
-          "canonical": "Estima",
+          "canonical": "Previa",
           "aliases": [
-            "Estima Lucida"
+            "Estima",
+            "Estima Lucida",
+            "Toyota Previa",
+            "PREVIA"
+          ]
+        },
+        {
+          "canonical": "Fortuner",
+          "aliases": [
+            "Toyota Fortuner",
+            "FORTUNER"
           ]
         },
         {
@@ -9021,6 +9253,15 @@
         {
           "canonical": "Harrier",
           "aliases": []
+        },
+        {
+          "canonical": "Hiace",
+          "aliases": [
+            "HIACE",
+            "HiAce",
+            "Toyota Hiace",
+            "TOYOTA HIACE"
+          ]
         },
         {
           "canonical": "HIACE REGIUS",
@@ -10345,6 +10586,13 @@
           "aliases": [
             "3151",
             "31519"
+          ]
+        },
+        {
+          "canonical": "315196",
+          "aliases": [
+            "UAZ 315196",
+            "УАЗ 315196"
           ]
         },
         {

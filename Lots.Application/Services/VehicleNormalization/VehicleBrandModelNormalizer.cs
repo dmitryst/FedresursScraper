@@ -93,6 +93,13 @@ public class VehicleBrandModelNormalizer : IVehicleBrandModelNormalizer
             return ("FST", fstNormalized.Model, true, fstNormalized.Matched);
         }
 
+        if (string.Equals(canonicalBrand, "Great Wall", StringComparison.OrdinalIgnoreCase)
+            && TryExtractTankSubBrandModel(model, out var tankModel))
+        {
+            var tankNormalized = NormalizeModel(tankModel, "Tank");
+            return ("Tank", tankNormalized.Model, true, tankNormalized.Matched);
+        }
+
         var normalizedModel = NormalizeModel(model, canonicalBrand);
 
         return (canonicalBrand, normalizedModel.Model, true, normalizedModel.Matched);
@@ -332,6 +339,27 @@ public class VehicleBrandModelNormalizer : IVehicleBrandModelNormalizer
         if (string.Equals(normalized, "Forthing", StringComparison.OrdinalIgnoreCase))
         {
             strippedModel = string.Empty;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryExtractTankSubBrandModel(string? model, out string? tankModel)
+    {
+        tankModel = null;
+
+        if (string.IsNullOrWhiteSpace(model))
+        {
+            return false;
+        }
+
+        var normalized = NormalizeModelLookupKey(model);
+        const string prefix = "Tank ";
+
+        if (normalized.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            tankModel = normalized;
             return true;
         }
 
