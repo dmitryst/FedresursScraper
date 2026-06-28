@@ -41,7 +41,7 @@ public class LotsListSpecification : LotsFilterSpecification
         else
         {
             // Иначе - по дате (свежие сверху)
-            Query.OrderByDescending(l => l.Bidding.CreatedAt);
+            Query.OrderByDescending(l => l.CreatedAt);
         }
 
         // Пагинация
