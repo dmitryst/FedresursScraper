@@ -94,6 +94,12 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
         lot.Slug = null;
         lot.NeedsDescriptionReview = false;
 
+        if (request.Latitude.HasValue && request.Longitude.HasValue)
+        {
+            lot.Latitude = request.Latitude.Value;
+            lot.Longitude = request.Longitude.Value;
+        }
+
         if (request.Attachments?.Count > 0)
         {
             await SaveSelectedAttachmentsAsync(lot, request.Attachments, cancellationToken);
