@@ -7,7 +7,8 @@ public class BiddingScheduleUpdate
 {
     public Guid Id { get; set; }
     public Guid BiddingId { get; set; }
-    public DateTime NextStatusCheckAt { get; set; }
+    public DateTime? NextStatusCheckAt { get; set; }
+    public int StatusCheckAttempts { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public bool IsExported { get; set; } = false;
 }

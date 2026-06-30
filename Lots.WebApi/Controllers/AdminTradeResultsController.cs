@@ -57,7 +57,8 @@ public class AdminTradeResultsController : ControllerBase
             .Select(u => new BiddingScheduleUpdateDto
             {
                 BiddingId = u.BiddingId,
-                NextStatusCheckAt = u.NextStatusCheckAt
+                NextStatusCheckAt = u.NextStatusCheckAt,
+                StatusCheckAttempts = u.StatusCheckAttempts
             })
             .ToListAsync();
 
@@ -85,7 +86,10 @@ public class AdminTradeResultsController : ControllerBase
                 // Используем ExecuteUpdate для производительности (EF Core 7+)
                 await _dbContext.Biddings
                     .Where(b => b.Id == update.BiddingId)
-                    .ExecuteUpdateAsync(s => s.SetProperty(b => b.NextStatusCheckAt, update.NextStatusCheckAt));
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(b => b.NextStatusCheckAt, update.NextStatusCheckAt)
+                        .SetProperty(b => b.StatusCheckAttempts, update.StatusCheckAttempts)
+                    );
             }
         }
 

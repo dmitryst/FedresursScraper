@@ -3,7 +3,8 @@ namespace Lots.Data.Dto;
 public class BiddingScheduleUpdateDto
 {
     public Guid BiddingId { get; set; }
-    public DateTime NextStatusCheckAt { get; set; }
+    public DateTime? NextStatusCheckAt { get; set; }
+    public int StatusCheckAttempts { get; set; }
 }
 
 public class TradeSyncBatchDto

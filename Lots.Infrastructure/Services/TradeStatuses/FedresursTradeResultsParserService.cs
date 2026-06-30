@@ -88,16 +88,26 @@ public class FedresursTradeResultsParserService
                 bool allFinalized = await ProcessSingleBiddingInternalAsync(driver, wait, bidding, stoppingToken);
 
                 // Применяем логику финализации или перепланирования
-                if (allFinalized)
-                {
-                    bidding.IsTradeStatusesFinalized = true;
-                    bidding.NextStatusCheckAt = null;
-                    _logger.LogInformation("Все лоты торгов {BiddingId} получили результаты. Торги финализированы.", bidding.Id);
-                }
-                else
-                {
-                    await ScheduleBiddingNextCheckAsync(bidding, stoppingToken);
-                }
+        if (allFinalized)
+        {
+            bidding.IsTradeStatusesFinalized = true;
+            bidding.NextStatusCheckAt = null;
+            _logger.LogInformation("Все лоты торгов {BiddingId} получили результаты. Торги финализированы.", bidding.Id);
+            
+            var scheduleUpdate = new BiddingScheduleUpdate
+            {
+                Id = Guid.NewGuid(),
+                BiddingId = bidding.Id,
+                NextStatusCheckAt = null,
+                StatusCheckAttempts = bidding.StatusCheckAttempts,
+                IsExported = false
+            };
+            _dbContext.BiddingScheduleUpdates.Add(scheduleUpdate);
+        }
+        else
+        {
+            await ScheduleBiddingNextCheckAsync(bidding, stoppingToken);
+        }
 
                 // Сохраняем изменения даты и статусов в БД
                 await _dbContext.SaveChangesAsync(stoppingToken);
@@ -153,6 +163,16 @@ public class FedresursTradeResultsParserService
             bidding.IsTradeStatusesFinalized = true;
             bidding.NextStatusCheckAt = null;
             _logger.LogInformation("Все лоты торгов {BiddingId} получили результаты. Торги финализированы.", bidding.Id);
+
+            var scheduleUpdate = new BiddingScheduleUpdate
+            {
+                Id = Guid.NewGuid(),
+                BiddingId = bidding.Id,
+                NextStatusCheckAt = null,
+                StatusCheckAttempts = bidding.StatusCheckAttempts,
+                IsExported = false
+            };
+            _dbContext.BiddingScheduleUpdates.Add(scheduleUpdate);
         }
         else
         {
@@ -574,18 +594,16 @@ public class FedresursTradeResultsParserService
         var useSuspendedInterval = TradeResultsScheduleHelper.ShouldUseSuspendedRecheckInterval(bidding, tradeResults);
         bidding.ScheduleNextCheck(DateTime.UtcNow, suspendedRecheckDays, useSuspendedInterval);
 
-        if (bidding.NextStatusCheckAt.HasValue)
+        var scheduleUpdate = new BiddingScheduleUpdate
         {
-            var scheduleUpdate = new BiddingScheduleUpdate
-            {
-                Id = Guid.NewGuid(),
-                BiddingId = bidding.Id,
-                NextStatusCheckAt = bidding.NextStatusCheckAt.Value,
-                IsExported = false
-            };
+            Id = Guid.NewGuid(),
+            BiddingId = bidding.Id,
+            NextStatusCheckAt = bidding.NextStatusCheckAt,
+            StatusCheckAttempts = bidding.StatusCheckAttempts,
+            IsExported = false
+        };
 
-            _dbContext.BiddingScheduleUpdates.Add(scheduleUpdate);
-        }
+        _dbContext.BiddingScheduleUpdates.Add(scheduleUpdate);
 
         _logger.LogInformation(
             "Торги {Id} не завершены. Перепланировано на {Date}{SuspendedNote}",

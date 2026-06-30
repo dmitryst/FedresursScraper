@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -12,9 +13,11 @@ using NpgsqlTypes;
 namespace Lots.Data.Migrations
 {
     [DbContext(typeof(LotsDbContext))]
-    partial class LotsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260630170540_AddStatusCheckAttemptsToScheduleUpdate")]
+    partial class AddStatusCheckAttemptsToScheduleUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -127,7 +130,7 @@ namespace Lots.Data.Migrations
                     b.Property<bool>("IsExported")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime?>("NextStatusCheckAt")
+                    b.Property<DateTime>("NextStatusCheckAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("StatusCheckAttempts")
