@@ -40,6 +40,7 @@ builder.Services.AddTransient<ITradeCardLotsStatusScraper, TradeCardLotsStatusSc
 builder.Services.AddTransient<ICadastralNumberExtractor, CadastralNumberExtractor>();
 builder.Services.AddTransient<IRosreestrService, RosreestrService>();
 builder.Services.AddScoped<ILotCopyService, LotCopyService>();
+builder.Services.AddLotPropertyDescriptionSummarizer();
 builder.Services.AddVehicleNormalization(configuration);
 builder.Services.AddDeepSeekBudgetGuard(configuration);
 builder.Services.AddSingleton<IVehicleAttributesExtractor, VehicleAttributesExtractor>();
