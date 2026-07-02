@@ -20,6 +20,7 @@ public static class DeepSeekServiceCollectionExtensions
     public static IServiceCollection AddLotPropertyDescriptionSummarizer(this IServiceCollection services)
     {
         services.AddSingleton<ILotPropertyDescriptionSummarizer, LotPropertyDescriptionSummarizer>();
+        services.AddSingleton<ILotDescriptionSplitter, LotDescriptionSplitter>();
         return services;
     }
 }

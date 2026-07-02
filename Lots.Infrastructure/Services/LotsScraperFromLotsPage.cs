@@ -3,6 +3,7 @@ using OpenQA.Selenium;
 using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Lots.Application.Interfaces;
 using FedresursScraper.Services.Models;
 using OpenQA.Selenium.Support.UI;
 using SeleniumExtras.WaitHelpers;
@@ -22,13 +23,16 @@ namespace FedresursScraper.Services
     {
         private readonly ILogger<LotsScraperFromLotsPage> _logger;
         private readonly ICadastralNumberExtractor _cadastralNumberExtractor;
+        private readonly ILotDescriptionSplitter _descriptionSplitter;
 
         public LotsScraperFromLotsPage(
             ILogger<LotsScraperFromLotsPage> logger,
-            ICadastralNumberExtractor cadastralNumberExtractor)
+            ICadastralNumberExtractor cadastralNumberExtractor,
+            ILotDescriptionSplitter descriptionSplitter)
         {
             _logger = logger;
             _cadastralNumberExtractor = cadastralNumberExtractor;
+            _descriptionSplitter = descriptionSplitter;
         }
 
         public async Task<List<LotInfo>> ScrapeLotsAsync(IWebDriver driver, Guid biddingId)
@@ -123,7 +127,7 @@ namespace FedresursScraper.Services
                         }
 
                         // Очистка описания (удаление "Показать еще" и порядка ознакомления)
-                        string description = CleanDescription(rawDescription);
+                        string description = await CleanDescriptionAsync(rawDescription);
 
                         // Кадастровые номера (извлекаем из описания)
                         var cadastralNumbers = _cadastralNumberExtractor.Extract(description);
@@ -162,9 +166,9 @@ namespace FedresursScraper.Services
 
         /// <summary>
         /// Очищает описание от технических фраз ("Показать еще") и блока "Порядок ознакомления".
-        /// Логика разделения заимствована из BiddingScraper.
+        /// Использует ILotDescriptionSplitter для интеллектуального разделения.
         /// </summary>
-        private string CleanDescription(string rawDesc)
+        private async Task<string> CleanDescriptionAsync(string rawDesc)
         {
             if (string.IsNullOrWhiteSpace(rawDesc)) return string.Empty;
 
@@ -175,28 +179,9 @@ namespace FedresursScraper.Services
                 rawDesc = rawDesc.Substring(0, rawDesc.Length - showMoreMarker.Length).Trim();
             }
 
-            // Логика из BiddingScraper: ищем маркеры начала порядка ознакомления
-
-            // Маркер 1: "Порядок ознакомления с имуществом должника:"
-            string marker1 = "Порядок ознакомления с имуществом должника:";
-            int idx1 = rawDesc.IndexOf(marker1, StringComparison.OrdinalIgnoreCase);
-
-            if (idx1 >= 0)
-            {
-                return rawDesc.Substring(0, idx1).Trim();
-            }
-
-            // Маркер 2: "С имуществом можно ознакомиться"
-            string marker2 = "С имуществом можно ознакомиться";
-            int idx2 = rawDesc.IndexOf(marker2, StringComparison.OrdinalIgnoreCase);
-
-            if (idx2 >= 0)
-            {
-                return rawDesc.Substring(0, idx2).Trim();
-            }
-
-            // Если маркеры не найдены, возвращаем текст (уже без "Показать еще")
-            return rawDesc;
+            // Интеллектуальное разделение (Regex + LLM)
+            var splitResult = await _descriptionSplitter.SplitAsync(rawDesc);
+            return splitResult.Description;
         }
 
         /// <summary>

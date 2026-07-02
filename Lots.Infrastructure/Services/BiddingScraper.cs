@@ -14,13 +14,17 @@ namespace FedresursScraper.Services
     public class BiddingScraper : IBiddingScraper
     {
         private readonly ILogger<IBiddingScraper> _logger;
+        private readonly Lots.Application.Interfaces.ILotDescriptionSplitter _descriptionSplitter;
 
-        public BiddingScraper(ILogger<IBiddingScraper> logger)
+        public BiddingScraper(
+            ILogger<IBiddingScraper> logger,
+            Lots.Application.Interfaces.ILotDescriptionSplitter descriptionSplitter)
         {
             _logger = logger;
+            _descriptionSplitter = descriptionSplitter;
         }
 
-        public Task<BiddingInfo> ScrapeBiddingInfoAsync(IWebDriver driver, Guid biddingId)
+        public async Task<BiddingInfo> ScrapeBiddingInfoAsync(IWebDriver driver, Guid biddingId)
         {
             var url = $"https://fedresurs.ru/biddings/{biddingId}";
 
@@ -45,13 +49,13 @@ namespace FedresursScraper.Services
             var resultsDateRaw = ParseSimpleField(driver, "Дата объявления результатов");
             DateTime? resultsDate = ParseDateTime(resultsDateRaw);
 
-            var (_, viewingProcedure) = ParseAndSplitDescription(driver);
+            var (_, viewingProcedure) = await ParseAndSplitDescriptionAsync(driver);
 
             var debtorInfo = ParseSubjectBlock(driver, "Должник");
             var managerInfo = ParseSubjectBlock(driver, "Арбитражный управляющий");
             var legalCaseInfo = ParseLegalCase(driver);
 
-            return Task.FromResult(new BiddingInfo
+            return new BiddingInfo
             {
                 Id = biddingId,
                 AnnouncedAt = announcementDate,
@@ -80,7 +84,7 @@ namespace FedresursScraper.Services
                 LegalCaseNumber = legalCaseInfo.Number,
 
                 ViewingProcedure = viewingProcedure,
-            });
+            };
         }
 
         private record LegalCaseParseResult(Guid? Id, string? Number);
@@ -264,7 +268,7 @@ namespace FedresursScraper.Services
             return null;
         }
 
-        private (string description, string viewingProcedure) ParseAndSplitDescription(IWebDriver driver)
+        private async Task<(string description, string viewingProcedure)> ParseAndSplitDescriptionAsync(IWebDriver driver)
         {
             // Описание объекта
             string description = "не найдено";
@@ -290,44 +294,14 @@ namespace FedresursScraper.Services
             }
             catch { }
 
-            // Порядок ознакомления с имуществом должника – гибкая логика по двум маркерам
-            var viewingProcedure = "";
-            string rawDesc = description;
-            try
+            // Порядок ознакомления с имуществом должника – интеллектуальное разделение
+            if (description == "не найдено")
             {
-                // Маркер 1: "Порядок ознакомления с имуществом должника:"
-                string marker1 = "Порядок ознакомления с имуществом должника:";
-                int idx1 = rawDesc.IndexOf(marker1, StringComparison.OrdinalIgnoreCase);
-                if (idx1 >= 0)
-                {
-                    description = rawDesc.Substring(0, idx1).Trim();
-                    int afterStart = idx1 + marker1.Length;
-                    if (afterStart <= rawDesc.Length)
-                    {
-                        viewingProcedure = rawDesc.Substring(afterStart).Trim();
-                    }
-                    viewingProcedure = viewingProcedure.TrimStart(new[] { ':', '.', ',', ' ' });
-                }
-                else
-                {
-                    // Маркер 2: "С имуществом можно ознакомиться"
-                    string marker2 = "С имуществом можно ознакомиться";
-                    int idx2 = rawDesc.IndexOf(marker2, StringComparison.OrdinalIgnoreCase);
-                    if (idx2 >= 0)
-                    {
-                        description = rawDesc.Substring(0, idx2).Trim();
-                        viewingProcedure = rawDesc.Substring(idx2).Trim();
-                    }
-                    else
-                    {
-                        // Если ни один маркер нет, описание целиком, viewingProcedure пустое
-                        viewingProcedure = "";
-                    }
-                }
+                return (description, "");
             }
-            catch { }
 
-            return (description, viewingProcedure);
+            var splitResult = await _descriptionSplitter.SplitAsync(description);
+            return (splitResult.Description, splitResult.ViewingProcedure);
         }
     }
 }

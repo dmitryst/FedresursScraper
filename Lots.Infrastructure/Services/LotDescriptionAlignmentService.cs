@@ -15,6 +15,7 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IDocumentTextExtractor _textExtractor;
     private readonly ILotPropertyDescriptionSummarizer _descriptionSummarizer;
+    private readonly ILotDescriptionSplitter _descriptionSplitter;
     private readonly ILogger<LotDescriptionAlignmentService> _logger;
 
     public LotDescriptionAlignmentService(
@@ -23,6 +24,7 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
         IHttpClientFactory httpClientFactory,
         IDocumentTextExtractor textExtractor,
         ILotPropertyDescriptionSummarizer descriptionSummarizer,
+        ILotDescriptionSplitter descriptionSplitter,
         ILogger<LotDescriptionAlignmentService> logger)
     {
         _dbContext = dbContext;
@@ -30,6 +32,7 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
         _httpClientFactory = httpClientFactory;
         _textExtractor = textExtractor;
         _descriptionSummarizer = descriptionSummarizer;
+        _descriptionSplitter = descriptionSplitter;
         _logger = logger;
     }
 
@@ -173,7 +176,9 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
                 return;
             }
 
-            var (tableDescription, scrapedViewing) = LotDescriptionTextHelper.SplitDescriptionAndViewing(match.Description);
+            var splitResult = await _descriptionSplitter.SplitAsync(match.Description, cancellationToken);
+            var tableDescription = splitResult.Description;
+            var scrapedViewing = splitResult.ViewingProcedure;
             preview.TableDescription = tableDescription;
             preview.IsReferralDescription = LotPropertyDocumentHelper.IsPropertyListReferral(tableDescription);
 
