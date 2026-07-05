@@ -177,6 +177,44 @@ public class LotsController : ControllerBase
 
         var tradeStatusReason = TradeResultsScheduleHelper.GetLatestReasonForLot(lot, lotTradeResults);
 
+        var evaluation = await _dbContext.LotEvaluations
+            .AsNoTracking()
+            .Where(e => e.LotId == lot.Id)
+            .OrderByDescending(e => e.CreatedAt)
+            .FirstOrDefaultAsync();
+
+        string? reasoningText = null;
+        bool isReasoningTextTeaser = false;
+
+        if (evaluation != null && !string.IsNullOrWhiteSpace(evaluation.ReasoningText))
+        {
+            if (!lot.IsActive())
+            {
+                // Лот в архиве - отдаем полный текст для SEO
+                reasoningText = evaluation.ReasoningText;
+                isReasoningTextTeaser = false;
+            }
+            else
+            {
+                // Лот активен - отдаем тизер (70% текста)
+                int totalLength = evaluation.ReasoningText.Length;
+                int teaserLength = (int)(totalLength * 0.7);
+                
+                // Чтобы не обрезать на полуслове, найдем ближайший пробел или перенос строки
+                // после отметки в 70% (или до нее, если текст короткий)
+                if (teaserLength < totalLength)
+                {
+                    reasoningText = evaluation.ReasoningText.Substring(0, teaserLength) + "...";
+                    isReasoningTextTeaser = true;
+                }
+                else
+                {
+                    reasoningText = evaluation.ReasoningText;
+                    isReasoningTextTeaser = false;
+                }
+            }
+        }
+
         var lotDto = new LotDto
         {
             Id = lot.Id,
@@ -205,6 +243,9 @@ public class LotsController : ControllerBase
             MarketValueMax = lot.MarketValueMax,
             PriceConfidence = lot.PriceConfidence,
             InvestmentSummary = lot.InvestmentSummary,
+            ReasoningText = reasoningText,
+            IsReasoningTextTeaser = isReasoningTextTeaser,
+            LiquidityScore = evaluation?.LiquidityScore,
             Attributes = lot.Attributes,
             NeedsDescriptionReview = lot.NeedsDescriptionReview,
 

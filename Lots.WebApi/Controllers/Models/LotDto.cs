@@ -65,6 +65,21 @@ public class LotDto
     public string? InvestmentSummary { get; set; }
 
     /// <summary>
+    /// Детальный анализ (Deep Evaluation)
+    /// </summary>
+    public string? ReasoningText { get; set; }
+
+    /// <summary>
+    /// Является ли ReasoningText тизером (обрезанным текстом)
+    /// </summary>
+    public bool IsReasoningTextTeaser { get; set; }
+
+    /// <summary>
+    /// Оценка ликвидности (из Deep Evaluation)
+    /// </summary>
+    public int? LiquidityScore { get; set; }
+
+    /// <summary>
     /// Данные из Росреестра по конкретному кадастровому номеру
     /// </summary>
     public List<CadastralItemDto>? CadastralInfos { get; set; }
