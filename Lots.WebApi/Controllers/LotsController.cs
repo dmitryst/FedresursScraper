@@ -167,13 +167,16 @@ public class LotsController : ControllerBase
             return NotFound(new { message = "Лот не найден." });
         }
 
-        // Увеличиваем счетчик просмотров (асинхронно, без отслеживания изменений всего объекта)
-        await _dbContext.Lots
-            .Where(l => l.Id == lot.Id)
-            .ExecuteUpdateAsync(s => s.SetProperty(l => l.ViewCount, l => l.ViewCount + 1));
+        // Увеличиваем счетчик просмотров только для обычных пользователей
+        if (!await IsAdminAsync())
+        {
+            await _dbContext.Lots
+                .Where(l => l.Id == lot.Id)
+                .ExecuteUpdateAsync(s => s.SetProperty(l => l.ViewCount, l => l.ViewCount + 1));
 
-        // Обновляем значение в памяти, чтобы вернуть актуальное
-        lot.ViewCount++;
+            // Обновляем значение в памяти, чтобы вернуть актуальное
+            lot.ViewCount++;
+        }
 
         var normalizedLotNumber = TradeResultsScheduleHelper.NormalizeLotNumber(lot.LotNumber);
         var lotTradeResults = string.IsNullOrWhiteSpace(normalizedLotNumber)
