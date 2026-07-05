@@ -528,6 +528,28 @@ public class LotsController : ControllerBase
         return Ok(ids);
     }
 
+    [HttpGet("popular")]
+    public async Task<IActionResult> GetPopularLots([FromQuery] int limit = 20)
+    {
+        var popularLots = await _dbContext.Lots
+            .AsNoTracking()
+            .Where(Lot.IsActiveExpression)
+            .OrderByDescending(l => l.ViewCount)
+            .Take(limit)
+            .Select(l => new
+            {
+                l.Id,
+                l.PublicId,
+                l.Title,
+                l.Slug,
+                l.ViewCount,
+                HasEvaluation = _dbContext.LotEvaluations.Any(e => e.LotId == l.Id)
+            })
+            .ToListAsync();
+
+        return Ok(popularLots);
+    }
+
     [HttpGet("sitemap-data")]
     public async Task<IActionResult> GetSitemapData(
     [FromQuery] int page = 1,

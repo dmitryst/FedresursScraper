@@ -93,7 +93,7 @@ namespace FedresursScraper.Controllers
             // Отправляем URL в IndexNow
             try
             {
-                var slug = lot.Slug ?? SlugHelper.GenerateSlug(lot.Title ?? lot.Description ?? "lot");
+                var slug = lot.GetOrGenerateSlug();
                 var url = $"https://s-lot.ru/lot/{slug}-{lot.PublicId}";
                 await indexNowService.SubmitUrlAsync(url);
             }
