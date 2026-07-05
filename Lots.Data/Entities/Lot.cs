@@ -125,6 +125,11 @@ public class Lot
     /// </summary>
     public Dictionary<string, string>? Attributes { get; set; } = new();
 
+    /// <summary>
+    /// Количество просмотров лота на сайте
+    /// </summary>
+    public int ViewCount { get; set; }
+
     // Техническое поле для хранения поискового индекса
     public NpgsqlTsVector SearchVector { get; set; } = default!;
 
