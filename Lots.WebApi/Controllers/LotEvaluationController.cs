@@ -43,7 +43,7 @@ namespace FedresursScraper.Controllers
         /// </summary>
         [Authorize]
         [HttpPut("{id}/evaluation/manual")]
-        public async Task<IActionResult> UpdateManualEvaluation(string id, [FromBody] UpdateManualEvaluationRequest request)
+        public async Task<IActionResult> UpdateManualEvaluation(string id, [FromBody] UpdateManualEvaluationRequest request, [FromServices] IIndexNowService indexNowService)
         {
             if (!await IsAdminAsync()) return Forbid();
 
@@ -89,6 +89,20 @@ namespace FedresursScraper.Controllers
             lot.InvestmentSummary = evaluation.InvestmentSummary;
 
             await _dbContext.SaveChangesAsync();
+
+            // Отправляем URL в IndexNow
+            try
+            {
+                var slug = lot.Slug ?? SlugHelper.GenerateSlug(lot.Title ?? lot.Description ?? "lot");
+                var url = $"https://s-lot.ru/lot/{slug}-{lot.PublicId}";
+                await indexNowService.SubmitUrlAsync(url);
+            }
+            catch (Exception ex)
+            {
+                // Логируем ошибку, но не прерываем выполнение запроса
+                var logger = HttpContext.RequestServices.GetService<ILogger<LotEvaluationController>>();
+                logger?.LogError(ex, "Ошибка при отправке URL в IndexNow для лота {LotId}", lotId);
+            }
 
             return Ok(new { message = "Оценка успешно обновлена" });
         }
