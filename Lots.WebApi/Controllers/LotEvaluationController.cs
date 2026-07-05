@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Lots.Data.Entities;
+using FedresursScraper.Controllers.Utils;
 
 namespace FedresursScraper.Controllers
 {
@@ -24,6 +25,72 @@ namespace FedresursScraper.Controllers
             _evaluationService = evaluationService;
             _dbContext = dbContext;
             _scopeFactory = scopeFactory;
+        }
+
+        private async Task<bool> IsAdminAsync() =>
+            await AdminAccessHelper.IsAdminAsync(HttpContext, _dbContext);
+
+        public class UpdateManualEvaluationRequest
+        {
+            public decimal? EstimatedPrice { get; set; }
+            public int? LiquidityScore { get; set; }
+            public string? InvestmentSummary { get; set; }
+            public string? ReasoningText { get; set; }
+        }
+
+        /// <summary>
+        /// Ручное обновление или создание оценки администратором
+        /// </summary>
+        [Authorize]
+        [HttpPut("{id}/evaluation/manual")]
+        public async Task<IActionResult> UpdateManualEvaluation(string id, [FromBody] UpdateManualEvaluationRequest request)
+        {
+            if (!await IsAdminAsync()) return Forbid();
+
+            var lotId = await ResolveLotId(id);
+            if (lotId == Guid.Empty)
+            {
+                return BadRequest("Invalid ID");
+            }
+
+            var lot = await _dbContext.Lots.FirstOrDefaultAsync(l => l.Id == lotId);
+            if (lot == null)
+            {
+                return NotFound("Лот не найден");
+            }
+
+            var evaluation = await _dbContext.LotEvaluations
+                .Where(e => e.LotId == lotId)
+                .OrderByDescending(e => e.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (evaluation == null)
+            {
+                evaluation = new LotEvaluation
+                {
+                    LotId = lotId,
+                    ModelName = "manual",
+                    CreatedAt = DateTime.UtcNow
+                };
+                _dbContext.LotEvaluations.Add(evaluation);
+            }
+            else
+            {
+                evaluation.CreatedAt = DateTime.UtcNow; // Обновляем время, чтобы это была самая свежая оценка
+                evaluation.ModelName = "manual";
+            }
+
+            evaluation.EstimatedPrice = request.EstimatedPrice ?? evaluation.EstimatedPrice;
+            evaluation.LiquidityScore = request.LiquidityScore ?? evaluation.LiquidityScore;
+            evaluation.InvestmentSummary = request.InvestmentSummary ?? evaluation.InvestmentSummary;
+            evaluation.ReasoningText = request.ReasoningText ?? evaluation.ReasoningText;
+
+            // Также обновляем InvestmentSummary в самом лоте, так как оно дублируется
+            lot.InvestmentSummary = evaluation.InvestmentSummary;
+
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new { message = "Оценка успешно обновлена" });
         }
 
         /// <summary>

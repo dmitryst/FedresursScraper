@@ -56,6 +56,8 @@ BRAND_REDIRECT: dict[str, str] = {
     "кo": "КО",
     "сеаз": "SEAZ",
     "бagem": "BAW",
+    "tagaz": "Vortex",
+    "тaгaz": "Vortex",
 }
 
 # New brands: normalized key -> canonical display name
@@ -109,9 +111,6 @@ NEW_BRAND_CANONICAL: dict[str, str] = {
 }
 
 LADA_KEYWORDS: dict[str, str] = {
-    "samara": "Samara",
-    "самara": "Samara",
-    "самara": "Samara",
     "priora": "Priora",
     "приора": "Priora",
     "kalina": "Kalina",
@@ -120,12 +119,26 @@ LADA_KEYWORDS: dict[str, str] = {
     "granta": "Granta",
     "гранта": "Granta",
     "vesta": "Vesta",
-    "niva": "Niva",
-    "4x4": "Niva",
-    "4х4": "Niva",
+    "искра": "Iskra",
+    "iskra": "Iskra",
+    "aura": "Aura",
+    "azimut": "Azimut",
     "largus": "Largus",
+    "niva legend": "Niva Legend",
+    "niva travel": "Niva Travel",
+    "niva": "Niva",
+    "4x4": "Niva Legend",
+    "4х4": "Niva Legend",
     "xray": "XRAY",
     "x-ray": "XRAY",
+    "x-cross 5": "X-cross 5",
+    "xcross 5": "X-cross 5",
+    "oka": "1111 Ока",
+    "ока": "1111 Ока",
+    "надежда": "2120",
+    "samara": "2114",
+    "самara": "2114",
+    "самara": "2114",
 }
 
 BMW_SERIES: dict[str, str] = {
@@ -280,27 +293,39 @@ def resolve_lada_model(model_raw: str) -> tuple[str, str | None]:
         prefix3 = code[:3]
 
         if prefix4 in {"2114", "2115", "2113"} or code.startswith("2114") or code.startswith("2115"):
-            return "Samara", raw
+            if prefix4 == "2113" or code.startswith("2113"):
+                return "2113", raw
+            if prefix4 == "2115" or code.startswith("2115"):
+                return "2115", raw
+            return "2114", raw
         if prefix4 == "2112" or code.startswith("2112"):
             return "2112", raw
+        if prefix4 == "2111" or code.startswith("2111"):
+            return "2111", raw
         if prefix4 == "2110" or code.startswith("2110"):
             return "2110", raw
-        if prefix4 == "2111" or code.startswith("2111"):
-            return "1111", raw
-        if code.startswith("1117") or code.startswith("1118") or code.startswith("1119") or code.startswith("111"):
-            if "1111" in code[:4]:
-                return "1111", raw
+        if code.startswith("1111") or (code.startswith("111") and "1111" in code[:4]):
+            return "1111 Ока", raw
+        if code.startswith("1117") or code.startswith("1118") or code.startswith("1119"):
             return "Kalina", raw
         if code.startswith("217"):
             return "Priora", raw
         if code.startswith("219"):
             return "Granta", raw
-        if code.startswith("2121") or code.startswith("2123") or code.startswith("2131"):
-            return "Niva", raw
-        if code.startswith("21214") or code.startswith("212140"):
-            return "21214", raw
-        if code.startswith("21213"):
-            return "21213", raw
+        if code.startswith("2131"):
+            return "2131 (4x4)", raw
+        if code.startswith("2121"):
+            return "2121 (4x4)", raw
+        if code.startswith("2123"):
+            return "2123", raw
+        if code.startswith("2129") or code.startswith("2124"):
+            return "2129", raw
+        if code.startswith("2329"):
+            return "2329", raw
+        if code.startswith("2328"):
+            return "2328", raw
+        if code.startswith("21214") or code.startswith("212140") or code.startswith("21213"):
+            return "Niva Legend", raw
         if len(code) >= 4:
             return code[:4] if len(code) > 4 else code, raw
 

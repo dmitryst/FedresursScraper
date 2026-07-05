@@ -213,6 +213,11 @@ POST /api/admin/extract-vehicle-attributes
 1. Отредактировать `Lots.Application/Data/vehicle-catalog.json`
 2. Собрать и задеплоить **WebApi** (и **Scraper**, если менялась логика extractor)
 3. `POST /api/admin/vehicle-reset-normalization`
+
+```bash
+kubectl exec deployment/web-api-deployment -- bash -c 'apt-get update -qq && apt-get install -y -qq curl && curl -s -X POST http://localhost:8080/api/admin/vehicle-reset-normalization -H "X-Admin-Api-Key: $AdminSettings__ApiKey"'
+```
+
 4. Дождаться worker'а или перезапустить pod
 5. Проверить: `GET /api/admin/vehicle-unmatched-brands` и `vehicle-unmatched-models`
 
