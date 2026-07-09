@@ -54,6 +54,7 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
 
         var lotsByPublicId = lots.ToDictionary(l => l.PublicId);
         var scrapeCache = new Dictionary<Guid, BankruptMessageScrapeResult>();
+        var attachmentPreviewCache = new Dictionary<string, AlignmentAttachmentPreviewDto>(StringComparer.OrdinalIgnoreCase);
 
         var results = new List<LotDescriptionAlignmentPreviewDto>();
 
@@ -69,7 +70,7 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
                 continue;
             }
 
-            results.Add(await BuildPreviewAsync(lot, scrapeCache, cancellationToken));
+            results.Add(await BuildPreviewAsync(lot, scrapeCache, attachmentPreviewCache, cancellationToken));
         }
 
         return results;
@@ -149,6 +150,7 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
     private async Task BuildPreviewAsync(
         Lot lot,
         Dictionary<Guid, BankruptMessageScrapeResult> scrapeCache,
+        Dictionary<string, AlignmentAttachmentPreviewDto> attachmentPreviewCache,
         CancellationToken cancellationToken,
         LotDescriptionAlignmentPreviewDto preview)
     {
@@ -184,10 +186,14 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
 
             foreach (var attachment in scrapeResult.Attachments)
             {
-                var attachmentPreview = await ProcessAttachmentPreviewAsync(
-                    attachment,
-                    preview.FedresursUrl,
-                    cancellationToken);
+                if (!attachmentPreviewCache.TryGetValue(attachment.Url, out var attachmentPreview))
+                {
+                    attachmentPreview = await ProcessAttachmentPreviewAsync(
+                        attachment,
+                        preview.FedresursUrl,
+                        cancellationToken);
+                    attachmentPreviewCache[attachment.Url] = attachmentPreview;
+                }
                 preview.Attachments.Add(attachmentPreview);
             }
 
@@ -250,6 +256,7 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
     private async Task<LotDescriptionAlignmentPreviewDto> BuildPreviewAsync(
         Lot lot,
         Dictionary<Guid, BankruptMessageScrapeResult> scrapeCache,
+        Dictionary<string, AlignmentAttachmentPreviewDto> attachmentPreviewCache,
         CancellationToken cancellationToken)
     {
         var preview = new LotDescriptionAlignmentPreviewDto
@@ -262,7 +269,7 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
             CurrentViewingProcedure = lot.Bidding?.ViewingProcedure,
         };
 
-        await BuildPreviewAsync(lot, scrapeCache, cancellationToken, preview);
+        await BuildPreviewAsync(lot, scrapeCache, attachmentPreviewCache, cancellationToken, preview);
         return preview;
     }
 
