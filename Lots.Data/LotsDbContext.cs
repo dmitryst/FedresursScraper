@@ -22,6 +22,7 @@ public class LotsDbContext : DbContext
     public DbSet<LotCadastralNumber> LotCadastralNumbers { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Favorite> Favorites { get; set; }
+    public DbSet<LotVote> LotVotes { get; set; }
     public DbSet<UserLotContractPermission> UserLotContractPermissions { get; set; }
     public DbSet<LotAuditEvent> LotAuditEvents { get; set; }
     public DbSet<LotClassificationAnalysis> LotClassificationAnalysis { get; set; }
@@ -346,6 +347,12 @@ public class LotsDbContext : DbContext
                 .WithOne(p => p.BankruptcyCheck)
                 .HasForeignKey<DebtorBankruptcyCheck>(e => e.LotId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<LotVote>(entity =>
+        {
+            entity.HasIndex(e => new { e.LotId, e.UserId })
+                  .IsUnique();
         });
 
         modelBuilder.Entity<DebtorKadCaseSnapshot>(entity =>

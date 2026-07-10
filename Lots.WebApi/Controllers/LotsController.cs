@@ -86,6 +86,8 @@ public class LotsController : ControllerBase
             Deposit = l.Deposit,
             Title = l.Title ?? l.Description,
             Slug = l.Slug,
+            ViewCount = l.ViewCount,
+            VotesCount = l.VotesCount,
             Description = l.Description,
             ViewingProcedure = l.ViewingProcedure,
             CreatedAt = l.CreatedAt,
@@ -242,6 +244,7 @@ public class LotsController : ControllerBase
             Title = lot.Title,
             Slug = lot.Slug,
             ViewCount = lot.ViewCount,
+            VotesCount = lot.VotesCount,
             Description = lot.Description,
             ViewingProcedure = lot.ViewingProcedure,
             CreatedAt = lot.CreatedAt,
@@ -546,7 +549,8 @@ public class LotsController : ControllerBase
         var popularLots = await _dbContext.Lots
             .AsNoTracking()
             .Where(Lot.IsActiveExpression)
-            .OrderByDescending(l => l.ViewCount)
+            .OrderByDescending(l => l.VotesCount)
+            .ThenByDescending(l => l.ViewCount)
             .Take(limit)
             .Select(l => new
             {
@@ -555,6 +559,7 @@ public class LotsController : ControllerBase
                 l.Title,
                 l.Slug,
                 l.ViewCount,
+                l.VotesCount,
                 HasEvaluation = _dbContext.LotEvaluations.Any(e => e.LotId == l.Id)
             })
             .ToListAsync();

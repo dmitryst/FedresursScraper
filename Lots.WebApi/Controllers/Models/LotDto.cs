@@ -21,6 +21,7 @@ public class LotDto
     public string? Title { get; set; }
     public string? Slug { get; set; }
     public int ViewCount { get; set; }
+    public int VotesCount { get; set; }
     public string? Description { get; set; }
     public string? ViewingProcedure { get; set; }
     public DateTime CreatedAt { get; set; }

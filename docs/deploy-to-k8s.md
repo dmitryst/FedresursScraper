@@ -29,7 +29,7 @@ cd /b/Projects/parser
 ```
 2. Запустить скрипт сборки образа:
 ```bash
-./build-webapi.sh 1.0.25
+./build-webapi.sh 1.0.27
 ```
 3. Перейти в директорию k8s
 ```bash

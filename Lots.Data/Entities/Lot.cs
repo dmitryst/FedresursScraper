@@ -130,6 +130,11 @@ public class Lot
     /// </summary>
     public int ViewCount { get; set; }
 
+    /// <summary>
+    /// Количество голосов пользователей за разбор лота
+    /// </summary>
+    public int VotesCount { get; set; }
+
     // Техническое поле для хранения поискового индекса
     public NpgsqlTsVector SearchVector { get; set; } = default!;
 
