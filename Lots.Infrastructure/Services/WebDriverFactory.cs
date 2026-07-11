@@ -32,10 +32,11 @@ namespace FedresursScraper.Services
                 options.AddArgument("--headless=new");
                 options.AddArgument("--no-sandbox");            // Критически важный флаг для запуска от root в Docker
                 options.AddArgument("--disable-dev-shm-usage"); // Предотвращает проблемы с общей памятью /dev/shm в Docker
-                options.AddArgument("--remote-debugging-port=9222");
+                // Не фиксируем remote-debugging-port: каталог Альфалот и enrichment
+                // (и другие Selenium-воркеры) часто работают параллельно — один порт = падение сессии.
                 options.AddArgument("--disable-application-cache");
-                options.AddArgument("--disk-cache-size=1"); 
-                // Внимание: в headless режиме Chrome может создать реальную папку "/dev/null" в текущей директории, 
+                options.AddArgument("--disk-cache-size=1");
+                // Внимание: в headless режиме Chrome может создать реальную папку "/dev/null" в текущей директории,
                 // но размер кэша всё равно будет 1 байт, так что это безопасно.
                 options.AddArgument("--disk-cache-dir=/dev/null"); 
 #endif
