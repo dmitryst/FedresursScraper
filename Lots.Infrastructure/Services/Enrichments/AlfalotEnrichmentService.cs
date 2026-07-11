@@ -83,20 +83,13 @@ public class AlfalotEnrichmentService : IAlfalotEnrichmentService
         if (!biddings.Any())
             return false;
 
-        using var driver = _webDriverFactory.CreateDriver();
-        driver.Manage().Timeouts().PageLoad = pageTimeout;
-        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
-
-        AlfalotSeleniumNavigator.OpenAndWait(
-            driver,
-            AlfalotHtmlParser.PurchasesAllUrl,
-            "tr.gridRow, tr.gridAltRow",
-            wafTimeout);
-
-        using var httpClient = CreateAuthedHttpClient(driver);
+        IWebDriver? driver = null;
+        HttpClient? httpClient = null;
 
         try
         {
+            (driver, httpClient) = CreateBrowserSession(pageTimeout, wafTimeout);
+
             foreach (var bidding in biddings)
             {
                 if (ct.IsCancellationRequested)
@@ -124,6 +117,55 @@ public class AlfalotEnrichmentService : IAlfalotEnrichmentService
                         result.AlreadyEnriched,
                         bidding.IsEnriched == true);
                 }
+                catch (Exception ex) when (IsDeadBrowserSession(ex))
+                {
+                    // Не жжём RetryCount: это падение Chrome, а не ошибка страницы лота.
+                    _logger.LogWarning(
+                        ex,
+                        "Chrome-сессия Альфалот умерла на торгах {TradeNumber}. Пересоздаём браузер и повторяем.",
+                        bidding.TradeNumber);
+
+                    DisposeBrowserSession(ref driver, ref httpClient);
+
+                    try
+                    {
+                        (driver, httpClient) = CreateBrowserSession(pageTimeout, wafTimeout);
+
+                        var result = await EnrichBiddingAsync(
+                            bidding,
+                            driver,
+                            httpClient,
+                            wafTimeout,
+                            forceReenrich: false,
+                            ct);
+
+                        ApplyBiddingEnrichmentStatus(bidding, result, options);
+                        await _context.SaveChangesAsync(ct);
+
+                        _logger.LogInformation(
+                            "Альфалот {TradeNumber}: после пересоздания сессии обогащено лотов {Enriched}, без связки {NoLink}, торги IsEnriched={BiddingEnriched}",
+                            bidding.TradeNumber,
+                            result.EnrichedLots,
+                            result.SkippedNoLink,
+                            bidding.IsEnriched == true);
+                    }
+                    catch (Exception retryEx)
+                    {
+                        if (IsDeadBrowserSession(retryEx))
+                        {
+                            _logger.LogError(
+                                retryEx,
+                                "Chrome снова упал на {TradeNumber} — прерываем пачку, чтобы не крутить мёртвую сессию.",
+                                bidding.TradeNumber);
+                            DisposeBrowserSession(ref driver, ref httpClient);
+                            break;
+                        }
+
+                        HandleError(bidding, retryEx);
+                        await _context.SaveChangesAsync(ct);
+                        _logger.LogError(retryEx, "Ошибка при обогащении торгов Альфалот {TradeNumber}", bidding.TradeNumber);
+                    }
+                }
                 catch (Exception ex)
                 {
                     HandleError(bidding, ex);
@@ -139,10 +181,62 @@ public class AlfalotEnrichmentService : IAlfalotEnrichmentService
         }
         finally
         {
-            try { driver.Quit(); } catch { /* ignore */ }
+            DisposeBrowserSession(ref driver, ref httpClient);
         }
 
         return true;
+    }
+
+    private (IWebDriver Driver, HttpClient HttpClient) CreateBrowserSession(TimeSpan pageTimeout, TimeSpan wafTimeout)
+    {
+        var driver = _webDriverFactory.CreateDriver();
+        driver.Manage().Timeouts().PageLoad = pageTimeout;
+        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
+
+        AlfalotSeleniumNavigator.OpenAndWait(
+            driver,
+            AlfalotHtmlParser.PurchasesAllUrl,
+            "tr.gridRow, tr.gridAltRow",
+            wafTimeout);
+
+        return (driver, CreateAuthedHttpClient(driver));
+    }
+
+    private static void DisposeBrowserSession(ref IWebDriver? driver, ref HttpClient? httpClient)
+    {
+        if (httpClient != null)
+        {
+            try { httpClient.Dispose(); } catch { /* ignore */ }
+            httpClient = null;
+        }
+
+        if (driver != null)
+        {
+            try { driver.Quit(); } catch { /* ignore */ }
+            try { driver.Dispose(); } catch { /* ignore */ }
+            driver = null;
+        }
+    }
+
+    private static bool IsDeadBrowserSession(Exception ex)
+    {
+        for (Exception? e = ex; e != null; e = e.InnerException)
+        {
+            if (e is not WebDriverException)
+                continue;
+
+            var msg = e.Message ?? string.Empty;
+            if (msg.Contains("invalid session id", StringComparison.OrdinalIgnoreCase)
+                || msg.Contains("session deleted", StringComparison.OrdinalIgnoreCase)
+                || msg.Contains("disconnected", StringComparison.OrdinalIgnoreCase)
+                || msg.Contains("chrome not reachable", StringComparison.OrdinalIgnoreCase)
+                || msg.Contains("not connected to DevTools", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public async Task EnrichByTradeNumberAsync(string tradeNumber, CancellationToken ct)
