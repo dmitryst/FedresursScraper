@@ -14,9 +14,17 @@ public interface IAlfalotCatalogIndexerService
 
 /// <summary>
 /// Индексация каталога Альфалот через Selenium (обход InProtect WAF).
+/// Инкрементально: идём от новых к старым и останавливаемся, когда страница
+/// уже целиком известна. Периодически — полный проход до MaxPages.
 /// </summary>
 public class AlfalotCatalogIndexerService : IAlfalotCatalogIndexerService
 {
+    /// <summary>
+    /// Общий для scoped-инстансов. После рестарта null → первый проход инкрементальный,
+    /// таймер полного обхода стартует с этого момента.
+    /// </summary>
+    private static DateTime? _lastFullRescanUtc;
+
     private readonly LotsDbContext _context;
     private readonly IWebDriverFactory _webDriverFactory;
     private readonly ILogger<AlfalotCatalogIndexerService> _logger;
@@ -40,13 +48,25 @@ public class AlfalotCatalogIndexerService : IAlfalotCatalogIndexerService
         // Порог «давности»: лоты, у которых прием заявок закончился раньше этой даты, не индексируем.
         var oldestAllowedApplicationsEnd = DateTime.UtcNow.AddDays(-Math.Abs(options.CatalogMaxPastDays));
         var upserted = 0;
+        var inserted = 0;
         var consecutiveOldPages = 0;
+        var consecutivePagesWithoutNew = 0;
         var pageTimeout = options.GetPageLoadTimeout();
         var wafTimeout = options.GetWafWaitTimeout();
+        var stopAfterPagesWithoutNew = Math.Max(1, options.CatalogStopAfterPagesWithoutNew);
+        var fullRescanHours = Math.Max(1, options.CatalogFullRescanIntervalHours);
+        // Рестарт не форсирует full: только по интервалу. Null после старта — заводим таймер.
+        if (!_lastFullRescanUtc.HasValue)
+            _lastFullRescanUtc = DateTime.UtcNow;
+
+        var forceFullRescan =
+            DateTime.UtcNow - _lastFullRescanUtc.Value >= TimeSpan.FromHours(fullRescanHours);
 
         _logger.LogInformation(
-            "Старт индексации каталога Альфалот (Selenium). MaxPages={MaxPages}, MaxPastDays={Days}, OldestAllowedEnd={Oldest:u}",
+            "Старт индексации каталога Альфалот (Selenium). Mode={Mode}, MaxPages={MaxPages}, StopAfterNoNew={StopAfter}, MaxPastDays={Days}, OldestAllowedEnd={Oldest:u}",
+            forceFullRescan ? "full" : "incremental",
             options.CatalogMaxPages,
+            stopAfterPagesWithoutNew,
             options.CatalogMaxPastDays,
             oldestAllowedApplicationsEnd);
 
@@ -85,6 +105,7 @@ public class AlfalotCatalogIndexerService : IAlfalotCatalogIndexerService
                 }
 
                 var pageUpserts = 0;
+                var pageInserted = 0;
                 var pageSkippedOld = 0;
 
                 foreach (var row in rows)
@@ -99,15 +120,21 @@ public class AlfalotCatalogIndexerService : IAlfalotCatalogIndexerService
                         continue;
                     }
 
-                    await UpsertLinkAsync(row, ct);
+                    var isNew = await UpsertLinkAsync(row, ct);
                     pageUpserts++;
                     upserted++;
+                    if (isNew)
+                    {
+                        pageInserted++;
+                        inserted++;
+                    }
                 }
 
                 _logger.LogInformation(
-                    "Альфалот каталог стр.{Page}: сохранено {Saved}, пропущено устаревших {Old}, всего строк {Total}",
+                    "Альфалот каталог стр.{Page}: новых {New}, обновлено {Updated}, пропущено устаревших {Old}, всего строк {Total}",
                     currentPage,
-                    pageUpserts,
+                    pageInserted,
+                    pageUpserts - pageInserted,
                     pageSkippedOld,
                     rows.Count);
 
@@ -123,6 +150,25 @@ public class AlfalotCatalogIndexerService : IAlfalotCatalogIndexerService
                 else
                 {
                     consecutiveOldPages = 0;
+                }
+
+                // Инкрементальный режим: каталог от новых к старым — как только страница
+                // без новых вставок, дальше только уже известное.
+                if (!forceFullRescan && pageUpserts > 0 && pageInserted == 0)
+                {
+                    consecutivePagesWithoutNew++;
+                    if (consecutivePagesWithoutNew >= stopAfterPagesWithoutNew)
+                    {
+                        _logger.LogInformation(
+                            "Страница {Page} без новых записей — ранний выход (инкрементальный обход).",
+                            currentPage);
+                        await _context.SaveChangesAsync(ct);
+                        break;
+                    }
+                }
+                else
+                {
+                    consecutivePagesWithoutNew = 0;
                 }
 
                 await _context.SaveChangesAsync(ct);
@@ -153,11 +199,19 @@ public class AlfalotCatalogIndexerService : IAlfalotCatalogIndexerService
             try { driver.Quit(); } catch { /* ignore */ }
         }
 
-        _logger.LogInformation("Индексация каталога Альфалот завершена. Upsert={Count}", upserted);
+        if (forceFullRescan)
+            _lastFullRescanUtc = DateTime.UtcNow;
+
+        _logger.LogInformation(
+            "Индексация каталога Альфалот завершена. Upsert={Count}, New={New}, Mode={Mode}",
+            upserted,
+            inserted,
+            forceFullRescan ? "full" : "incremental");
         return upserted;
     }
 
-    private async Task UpsertLinkAsync(AlfalotHtmlParser.CatalogRow row, CancellationToken ct)
+    /// <returns>true, если добавлена новая запись; false при обновлении существующей.</returns>
+    private async Task<bool> UpsertLinkAsync(AlfalotHtmlParser.CatalogRow row, CancellationToken ct)
     {
         var tradeNorm = AlfalotHtmlParser.NormalizeTradeNumber(row.TradeNumber);
         var lotNorm = AlfalotHtmlParser.NormalizeLotNumber(row.LotNumber);
@@ -184,7 +238,7 @@ public class AlfalotCatalogIndexerService : IAlfalotCatalogIndexerService
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             });
-            return;
+            return true;
         }
 
         existing.TradeNumber = row.TradeNumber;
@@ -195,5 +249,6 @@ public class AlfalotCatalogIndexerService : IAlfalotCatalogIndexerService
         existing.ApplicationsEndAt = row.ApplicationsEndAt ?? existing.ApplicationsEndAt;
         existing.EventAt = row.EventAt ?? existing.EventAt;
         existing.UpdatedAt = DateTime.UtcNow;
+        return false;
     }
 }

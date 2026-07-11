@@ -27,6 +27,19 @@ public class AlfalotEnrichmentOptions
     public int CatalogMaxPages { get; set; } = 20;
 
     /// <summary>
+    /// Сколько страниц подряд без новых вставок — останавливаем инкрементальный обход.
+    /// Каталог идёт от новых к старым: после появления ~20 лотов хватает 1–2 страниц.
+    /// </summary>
+    public int CatalogStopAfterPagesWithoutNew { get; set; } = 1;
+
+    /// <summary>
+    /// Раз в столько часов делаем полный проход до CatalogMaxPages (без early-stop),
+    /// чтобы подтянуть пропуски после сбоев на середине обхода.
+    /// Рестарт сервиса full-rescan не запускает.
+    /// </summary>
+    public int CatalogFullRescanIntervalHours { get; set; } = 24;
+
+    /// <summary>
     /// Сколько дней «назад» ещё считаем лот актуальным для индексации.
     /// </summary>
     public int CatalogMaxPastDays { get; set; } = 14;
