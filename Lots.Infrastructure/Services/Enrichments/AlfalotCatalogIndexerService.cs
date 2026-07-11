@@ -132,12 +132,20 @@ public class AlfalotCatalogIndexerService : IAlfalotCatalogIndexerService
                 _logger.LogDebug("Пауза перед следующей страницей каталога: {DelayMs} мс", delayMs);
                 await Task.Delay(delayMs, ct);
 
+                _logger.LogInformation("Переход на страницу каталога {NextPage}...", nextPage);
                 var moved = AlfalotSeleniumNavigator.TryGoToCatalogPage(driver, nextPage, wafTimeout);
                 if (!moved)
                 {
-                    _logger.LogInformation("Достигнут конец пагинации каталога Альфалот на странице {Page}.", currentPage);
+                    var stayedOn = AlfalotSeleniumNavigator.ReadCurrentCatalogPage(driver);
+                    _logger.LogInformation(
+                        "Пагинация каталога Альфалот остановилась после стр.{Page} (сейчас={Current}).",
+                        currentPage,
+                        stayedOn);
                     break;
                 }
+
+                var landedOn = AlfalotSeleniumNavigator.ReadCurrentCatalogPage(driver);
+                _logger.LogInformation("После пагинации текущая страница каталога: {Page}", landedOn);
             }
         }
         finally

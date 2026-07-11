@@ -251,9 +251,10 @@ public static class AlfalotHtmlParser
 
     public static int? ExtractCurrentPageNumber(string html)
     {
+        // Активная страница в pager — <span>N</span> (не ссылка). Перед ней может быть <span>Страницы:</span>.
         var match = Regex.Match(
             html,
-            @"class=['""]pager['""][\s\S]*?<span>(\d+)</span>",
+            @"class=['""]pager['""][\s\S]*?<span>\s*(\d+)\s*</span>",
             RegexOptions.IgnoreCase);
 
         if (match.Success && int.TryParse(match.Groups[1].Value, out var page))
