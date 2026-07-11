@@ -70,6 +70,18 @@ public static class DependencyInjectionExtensions
         services.AddHostedService<CdtEnrichmentWorker>();
 
 
+        // === Альфалот ===
+        // HTML через Selenium (InProtect WAF), регистрация scoped + hosted workers
+        services.Configure<AlfalotEnrichmentOptions>(
+            configuration.GetSection("AlfalotEnrichment"));
+
+        services.AddScoped<IAlfalotCatalogIndexerService, AlfalotCatalogIndexerService>();
+        services.AddScoped<IAlfalotEnrichmentService, AlfalotEnrichmentService>();
+
+        services.AddHostedService<AlfalotCatalogIndexerWorker>();
+        services.AddHostedService<AlfalotEnrichmentWorker>();
+
+
         // === РАД ===
         services.AddHttpClient<RadParserService>(client =>
         {

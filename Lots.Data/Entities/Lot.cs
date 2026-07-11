@@ -59,6 +59,16 @@ public class Lot
     public Bidding Bidding { get; set; } = default!;
 
     /// <summary>
+    /// Лот был обогащен данными с площадки (фото, график и т.п.).
+    /// </summary>
+    public bool? IsEnriched { get; set; }
+
+    /// <summary>
+    /// Дата обогащения лота с площадки.
+    /// </summary>
+    public DateTime? EnrichedAt { get; set; }
+
+    /// <summary>
     /// Код региона местонахождения имущества (первые две цифры ИНН должника)
     /// </summary>
     public string? PropertyRegionCode { get; set; }

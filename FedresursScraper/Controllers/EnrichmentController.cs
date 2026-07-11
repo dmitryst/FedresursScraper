@@ -12,18 +12,43 @@ namespace FedresursScraper.Controllers
         private readonly LotsDbContext _context;
         private readonly ICdtEnrichmentService _cdtService;
         private readonly IMetsEnrichmentService _metsService;
+        private readonly IAlfalotEnrichmentService _alfalotService;
+        private readonly IAlfalotCatalogIndexerService _alfalotCatalogIndexer;
         private readonly ILogger<EnrichmentController> _logger;
 
         public EnrichmentController(
             LotsDbContext context,
             ICdtEnrichmentService cdtService,
             IMetsEnrichmentService metsService,
+            IAlfalotEnrichmentService alfalotService,
+            IAlfalotCatalogIndexerService alfalotCatalogIndexer,
             ILogger<EnrichmentController> logger)
         {
             _context = context;
             _cdtService = cdtService;
             _metsService = metsService;
+            _alfalotService = alfalotService;
+            _alfalotCatalogIndexer = alfalotCatalogIndexer;
             _logger = logger;
+        }
+
+        /// <summary>
+        /// Ручной запуск индексации каталога Альфалот (purchases-all → AlfalotLotLinks).
+        /// </summary>
+        [HttpPost("alfalot/catalog")]
+        public async Task<IActionResult> IndexAlfalotCatalog(CancellationToken ct)
+        {
+            try
+            {
+                _logger.LogInformation("Ручной запуск индексации каталога Альфалот");
+                var upserted = await _alfalotCatalogIndexer.IndexCatalogAsync(ct);
+                return Ok(new { message = "Индексация каталога Альфалот завершена.", upserted });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка индексации каталога Альфалот");
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         [HttpPost("{tradeNumber}")]
@@ -58,6 +83,12 @@ namespace FedresursScraper.Controllers
                     await _cdtService.EnrichByTradeNumberAsync(tradeNumber, ct);
                     return Ok(new { message = $"Торги {tradeNumber} (ЦДТ) успешно обогащены." });
                 }
+                else if (IsAlfalot(bidding.Platform))
+                {
+                    _logger.LogInformation("Запуск ручного обогащения Альфалот для {TradeNumber}", tradeNumber);
+                    await _alfalotService.EnrichByTradeNumberAsync(tradeNumber, ct);
+                    return Ok(new { message = $"Торги {tradeNumber} (Альфалот) успешно обогащены." });
+                }
                 else
                 {
                     return BadRequest($"Платформа '{bidding.Platform}' пока не поддерживается сервисом обогащения.");
@@ -85,6 +116,12 @@ namespace FedresursScraper.Controllers
         {
             return !string.IsNullOrEmpty(platform) && 
                 platform.Contains("Центр дистанционных торгов");
+        }
+
+        private bool IsAlfalot(string platform)
+        {
+            return !string.IsNullOrEmpty(platform) &&
+                platform.Contains(AlfalotEnrichmentService.PlatformMarker, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
