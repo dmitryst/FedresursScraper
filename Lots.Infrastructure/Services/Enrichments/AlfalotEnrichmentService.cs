@@ -109,21 +109,16 @@ public class AlfalotEnrichmentService : IAlfalotEnrichmentService
 
                     await _context.SaveChangesAsync(ct);
 
-                    _logger.LogInformation(
-                        "Альфалот {TradeNumber}: обогащено лотов {Enriched}, без связки {NoLink}, уже было {Already}, торги IsEnriched={BiddingEnriched}",
-                        bidding.TradeNumber,
-                        result.EnrichedLots,
-                        result.SkippedNoLink,
-                        result.AlreadyEnriched,
-                        bidding.IsEnriched == true);
+                    LogBiddingEnrichmentSummary(bidding, result, afterSessionRecreate: false);
                 }
                 catch (Exception ex) when (IsDeadBrowserSession(ex))
                 {
                     // Не жжём RetryCount: это падение Chrome, а не ошибка страницы лота.
                     _logger.LogWarning(
                         ex,
-                        "Chrome-сессия Альфалот умерла на торгах {TradeNumber}. Пересоздаём браузер и повторяем.",
-                        bidding.TradeNumber);
+                        "Chrome-сессия Альфалот умерла на торгах {TradeNumber} (PublicIds={PublicIds}). Пересоздаём браузер и повторяем.",
+                        bidding.TradeNumber,
+                        FormatLotPublicIds(bidding));
 
                     DisposeBrowserSession(ref driver, ref httpClient);
 
@@ -142,12 +137,7 @@ public class AlfalotEnrichmentService : IAlfalotEnrichmentService
                         ApplyBiddingEnrichmentStatus(bidding, result, options);
                         await _context.SaveChangesAsync(ct);
 
-                        _logger.LogInformation(
-                            "Альфалот {TradeNumber}: после пересоздания сессии обогащено лотов {Enriched}, без связки {NoLink}, торги IsEnriched={BiddingEnriched}",
-                            bidding.TradeNumber,
-                            result.EnrichedLots,
-                            result.SkippedNoLink,
-                            bidding.IsEnriched == true);
+                        LogBiddingEnrichmentSummary(bidding, result, afterSessionRecreate: true);
                     }
                     catch (Exception retryEx)
                     {
@@ -155,15 +145,20 @@ public class AlfalotEnrichmentService : IAlfalotEnrichmentService
                         {
                             _logger.LogError(
                                 retryEx,
-                                "Chrome снова упал на {TradeNumber} — прерываем пачку, чтобы не крутить мёртвую сессию.",
-                                bidding.TradeNumber);
+                                "Chrome снова упал на {TradeNumber} (PublicIds={PublicIds}) — прерываем пачку, чтобы не крутить мёртвую сессию.",
+                                bidding.TradeNumber,
+                                FormatLotPublicIds(bidding));
                             DisposeBrowserSession(ref driver, ref httpClient);
                             break;
                         }
 
                         HandleError(bidding, retryEx);
                         await _context.SaveChangesAsync(ct);
-                        _logger.LogError(retryEx, "Ошибка при обогащении торгов Альфалот {TradeNumber}", bidding.TradeNumber);
+                        _logger.LogError(
+                            retryEx,
+                            "Ошибка при обогащении торгов Альфалот {TradeNumber} (PublicIds={PublicIds})",
+                            bidding.TradeNumber,
+                            FormatLotPublicIds(bidding));
                     }
                 }
                 catch (Exception ex)
@@ -171,7 +166,11 @@ public class AlfalotEnrichmentService : IAlfalotEnrichmentService
                     HandleError(bidding, ex);
                     await _context.SaveChangesAsync(ct);
 
-                    _logger.LogError(ex, "Ошибка при обогащении торгов Альфалот {TradeNumber}", bidding.TradeNumber);
+                    _logger.LogError(
+                        ex,
+                        "Ошибка при обогащении торгов Альфалот {TradeNumber} (PublicIds={PublicIds})",
+                        bidding.TradeNumber,
+                        FormatLotPublicIds(bidding));
                 }
 
                 var delayMs = options.GetActionDelayMs();
@@ -287,18 +286,53 @@ public class AlfalotEnrichmentService : IAlfalotEnrichmentService
 
             await _context.SaveChangesAsync(ct);
 
-            _logger.LogInformation(
-                "Ручное обогащение Альфалот {TradeNumber}: обогащено {Enriched}, без связки {NoLink}, торги IsEnriched={BiddingEnriched}",
-                tradeNumber,
-                result.EnrichedLots,
-                result.SkippedNoLink,
-                bidding.IsEnriched == true);
+            LogBiddingEnrichmentSummary(bidding, result, afterSessionRecreate: false, manual: true);
         }
         finally
         {
             try { driver.Quit(); } catch { /* ignore */ }
         }
     }
+
+    private void LogBiddingEnrichmentSummary(
+        Bidding bidding,
+        EnrichBiddingResult result,
+        bool afterSessionRecreate,
+        bool manual = false)
+    {
+        var prefix = manual
+            ? "Ручное обогащение Альфалот"
+            : afterSessionRecreate
+                ? "Альфалот (после пересоздания сессии)"
+                : "Альфалот";
+
+        if (bidding.Lots.Count == 0)
+        {
+            _logger.LogWarning(
+                "{Prefix} {TradeNumber}: в БД нет лотов (Lots=0, HasNoLots={HasNoLots}) — нечего обогащать, IsEnriched={BiddingEnriched}",
+                prefix,
+                bidding.TradeNumber,
+                bidding.HasNoLots,
+                bidding.IsEnriched == true);
+            return;
+        }
+
+        _logger.LogInformation(
+            "{Prefix} {TradeNumber}: лотов в БД {LotsCount}, PublicIds=[{PublicIds}], обогащено {Enriched}, без связки {NoLink}, уже было {Already}, торги IsEnriched={BiddingEnriched}",
+            prefix,
+            bidding.TradeNumber,
+            bidding.Lots.Count,
+            FormatLotPublicIds(bidding),
+            result.EnrichedLots,
+            result.SkippedNoLink,
+            result.AlreadyEnriched,
+            bidding.IsEnriched == true);
+    }
+
+    private static string FormatLotPublicIds(Bidding bidding) =>
+        bidding.Lots.Count == 0
+            ? "-"
+            : string.Join(",", bidding.Lots.Select(l => l.PublicId));
 
     private async Task<EnrichBiddingResult> EnrichBiddingAsync(
         Bidding bidding,
@@ -417,9 +451,10 @@ public class AlfalotEnrichmentService : IAlfalotEnrichmentService
                 bidding.EnrichedAt = DateTime.UtcNow;
 
                 _logger.LogWarning(
-                    "Альфалот {TradeNumber}: прекращаем ожидание связки после {Attempts} попыток. " +
+                    "Альфалот {TradeNumber} (PublicIds={PublicIds}): прекращаем ожидание связки после {Attempts} попыток. " +
                     "Необогащённых лотов: {NoLink}.",
                     bidding.TradeNumber,
+                    FormatLotPublicIds(bidding),
                     bidding.EnrichmentState.MissingImagesAttemptCount,
                     result.SkippedNoLink);
             }
