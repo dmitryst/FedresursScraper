@@ -21,12 +21,17 @@ public static class DependencyInjectionExtensions
         dataSourceBuilder.EnableDynamicJson();
         var dataSource = dataSourceBuilder.Build();
 
-        services.AddDbContext<LotsDbContext>(options =>
+        void Configure(DbContextOptionsBuilder options)
         {
             options.UseNpgsql(dataSource);
             options.ConfigureWarnings(warnings =>
                 warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
-        });
+        }
+
+        // Scoped DbContext для обычных запросов + scoped factory для параллельных
+        // (factory не может быть singleton: DbContextOptions от AddDbContext — scoped)
+        services.AddDbContext<LotsDbContext>(Configure);
+        services.AddDbContextFactory<LotsDbContext>(Configure, ServiceLifetime.Scoped);
 
         return services;
     }

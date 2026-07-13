@@ -24,6 +24,7 @@ public class LotsController : ControllerBase
 {
     private readonly ILotCopyService _lotCopyService;
     private readonly LotsDbContext _dbContext;
+    private readonly IDbContextFactory<LotsDbContext> _dbContextFactory;
     private readonly IVehicleFilterOptionsCache _vehicleFilterOptionsCache;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly bool _aiQuickEvaluationAdminOnly;
@@ -31,12 +32,14 @@ public class LotsController : ControllerBase
     public LotsController(
         ILotCopyService lotCopyService,
         LotsDbContext dbContext,
+        IDbContextFactory<LotsDbContext> dbContextFactory,
         IVehicleFilterOptionsCache vehicleFilterOptionsCache,
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration)
     {
         _lotCopyService = lotCopyService;
         _dbContext = dbContext;
+        _dbContextFactory = dbContextFactory;
         _vehicleFilterOptionsCache = vehicleFilterOptionsCache;
         _httpClientFactory = httpClientFactory;
         _aiQuickEvaluationAdminOnly = configuration.GetValue("Features:AiQuickEvaluationAdminOnly", true);
@@ -72,9 +75,16 @@ public class LotsController : ControllerBase
         var filterSpec = new LotsFilterSpecification(
             categories, searchQuery, biddingType, priceFrom, priceTo, isSharedOwnership, regions, onlyActive, dynamicFilters);
 
-        var totalCount = await _dbContext.Lots.WithSpecification(filterSpec).CountAsync();
+        // Два отдельных DbContext: один контекст нельзя использовать параллельно
+        await using var countContext = await _dbContextFactory.CreateDbContextAsync();
+        await using var listContext = await _dbContextFactory.CreateDbContextAsync();
 
-        var lots = await _dbContext.Lots.WithSpecification(spec).ToListAsync();
+        var countTask = countContext.Lots.WithSpecification(filterSpec).CountAsync();
+        var listTask = listContext.Lots.WithSpecification(spec).ToListAsync();
+        await Task.WhenAll(countTask, listTask);
+
+        var totalCount = await countTask;
+        var lots = await listTask;
 
         var lotDtos = lots.Select(l => new LotDto
         {
