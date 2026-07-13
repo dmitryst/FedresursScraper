@@ -31,16 +31,17 @@ public class LotsListSpecification : LotsFilterSpecification
             .Include(l => l.Images);
 
         // Сортировка
-        if (!string.IsNullOrWhiteSpace(searchQuery))
+        if (!string.IsNullOrWhiteSpace(searchQuery) &&
+            !IsCadastralSearchQuery(searchQuery))
         {
-            // Если есть поиск - сортируем по релевантности
+            // Если есть текстовый поиск - сортируем по релевантности
             Query.OrderByDescending(l =>
                 l.SearchVector.Rank(EF.Functions.WebSearchToTsQuery("russian_h", searchQuery))
             );
         }
         else
         {
-            // Иначе - по дате (свежие сверху)
+            // Кадастр / без поиска — по дате (свежие сверху)
             Query.OrderByDescending(l => l.CreatedAt);
         }
 

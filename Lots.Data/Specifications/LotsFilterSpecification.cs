@@ -26,21 +26,34 @@ public class LotsFilterSpecification : Specification<Lot>
             // Очищаем запрос от мусора для поиска по кадастру (оставляем только цифры)
             var cleanSearchQuery = new string(searchQuery.Where(char.IsDigit).ToArray());
 
-            // Подготавливаем строку для ILike, чтобы искать все слова (в том же порядке, игнорируя знаки препинания между ними)
-            var words = searchQuery.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-            var ilikeQuery = "%" + string.Join("%", words) + "%";
+            // Полный кадастровый номер: только цифры и разделители, достаточно цифр для B-tree lookup.
+            // Equality попадает в IX_LotCadastralNumbers_CleanCadastralNumber; Contains/ILIKE '%…%' — нет.
+            if (IsCadastralSearchQuery(searchQuery, cleanSearchQuery))
+            {
+                Query.Where(l =>
+                    l.CadastralNumbers.Any(cn => cn.CleanCadastralNumber == cleanSearchQuery));
+            }
+            else
+            {
+                // FTS по SearchVector уже покрыт GIN (IX_Lots_SearchVector).
+                // ILIKE '%…%' без trigram-индекса часто заставляет Postgres seq-scan'ить всю таблицу
+                // даже при OR с быстрым FTS — поэтому для кириллицы оставляем только FTS.
+                // ILIKE нужен для латиницы (BMW, Toyota…), которую russian_h может не токенизировать.
+                if (ContainsLatinLetter(searchQuery))
+                {
+                    var words = searchQuery.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    var ilikeQuery = "%" + string.Join("%", words) + "%";
 
-            Query.Where(l =>
-                // Поиск по заголовку и описанию (FTS), используем Hunspell словарь
-                l.SearchVector.Matches(EF.Functions.WebSearchToTsQuery("russian_h", searchQuery)) ||
-
-                // Поиск по вхождению слов в Title (помогает находить английские слова, которые игнорирует russian_h)
-                EF.Functions.ILike(l.Title ?? "", ilikeQuery) ||
-
-                // Поиск по кадастровым номерам (если в запросе есть цифры)
-                (cleanSearchQuery.Length > 12 &&
-                 l.CadastralNumbers.Any(cn => cn.CleanCadastralNumber.Contains(cleanSearchQuery)))
-            );
+                    Query.Where(l =>
+                        l.SearchVector.Matches(EF.Functions.WebSearchToTsQuery("russian_h", searchQuery)) ||
+                        EF.Functions.ILike(l.Title ?? "", ilikeQuery));
+                }
+                else
+                {
+                    Query.Where(l =>
+                        l.SearchVector.Matches(EF.Functions.WebSearchToTsQuery("russian_h", searchQuery)));
+                }
+            }
         }
 
         // Фильтр по категориям
@@ -164,4 +177,20 @@ public class LotsFilterSpecification : Specification<Lot>
             }
         }
     }
+
+    /// <summary>
+    /// Запрос вида кадастрового номера (например 50:17:0000000:38629) —
+    /// ищем точным совпадением CleanCadastralNumber, чтобы сработал B-tree индекс.
+    /// </summary>
+    internal static bool IsCadastralSearchQuery(string searchQuery, string? cleanSearchQuery = null)
+    {
+        cleanSearchQuery ??= new string(searchQuery.Where(char.IsDigit).ToArray());
+        if (cleanSearchQuery.Length <= 12)
+            return false;
+
+        return searchQuery.All(c => char.IsDigit(c) || c is ':' or '-' or ' ' or '\t');
+    }
+
+    private static bool ContainsLatinLetter(string value) =>
+        value.Any(c => c is (>= 'A' and <= 'Z') or (>= 'a' and <= 'z'));
 }
