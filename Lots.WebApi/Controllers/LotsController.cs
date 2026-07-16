@@ -914,17 +914,23 @@ public class LotsController : ControllerBase
                 if (extraction.Success && !string.IsNullOrWhiteSpace(extraction.Text))
                 {
                     var rawText = extraction.Text.Trim();
-                    if (LotPropertyDocumentHelper.NeedsSummarization(rawText))
+                    var documentType = LotPropertyDocumentHelper.DetermineDocumentType(title, rawText);
+
+                    // Контракты и неизвестные типы не обобщаем и не подмешиваем в описание автоматически.
+                    if (documentType == PropertyDocumentType.PropertyList)
                     {
-                        var summary = await descriptionSummarizer.SummarizeAsync(rawText);
-                        extractedTexts.Add(
-                            !string.IsNullOrWhiteSpace(summary.Summary)
-                                ? summary.Summary
-                                : LotPropertyDocumentHelper.TruncateForPreview(rawText, 2000));
-                    }
-                    else
-                    {
-                        extractedTexts.Add(rawText);
+                        if (LotPropertyDocumentHelper.ShouldSummarizeForDescription(documentType, rawText))
+                        {
+                            var summary = await descriptionSummarizer.SummarizeAsync(rawText);
+                            extractedTexts.Add(
+                                !string.IsNullOrWhiteSpace(summary.Summary)
+                                    ? summary.Summary
+                                    : LotPropertyDocumentHelper.TruncateForPreview(rawText, 2000));
+                        }
+                        else
+                        {
+                            extractedTexts.Add(rawText);
+                        }
                     }
                 }
             }

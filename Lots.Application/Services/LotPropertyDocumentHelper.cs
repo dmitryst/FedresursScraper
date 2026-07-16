@@ -2,9 +2,26 @@ using FedresursScraper.Services.Models;
 
 namespace FedresursScraper.Services;
 
+/// <summary>
+/// Тип вложения с точки зрения извлечения и обобщения описания имущества.
+/// </summary>
+public enum PropertyDocumentType
+{
+    /// <summary>ДКП, задаток, оферта и прочие юр. шаблоны — не обобщать.</summary>
+    ContractOrTemplate,
+
+    /// <summary>Перечень / состав / описание имущества — кандидат в описание.</summary>
+    PropertyList,
+
+    /// <summary>Тип не удалось надёжно определить.</summary>
+    Unknown,
+}
+
 public static class LotPropertyDocumentHelper
 {
     public static readonly string[] PropertyDocumentExtensions = [".docx", ".doc", ".pdf", ".xlsx", ".xls", ".rtf", ".rar", ".zip"];
+
+    public const int DocumentTypeContentSampleMaxChars = 2500;
 
     private static readonly string[] JunkAttachmentKeywords =
     [
@@ -32,9 +49,43 @@ public static class LotPropertyDocumentHelper
         "задат",
         "купли-продаж",
         "купли продаж",
+        "дкп",
         "оферт",
         "положение о торгах",
         "извещение",
+    ];
+
+    private static readonly string[] ContractContentKeywords =
+    [
+        "договор купли-продажи",
+        "договор о задатке",
+        "соглашение о задатке",
+        "настоящий договор",
+        "предмет договора",
+        "стороны договора",
+        "существенные условия",
+        "задаток составляет",
+        "обеспечительный платеж",
+        "права и обязанности сторон",
+        "порядок расчетов",
+        "порядок расчётов",
+    ];
+
+    private static readonly string[] PropertyListContentKeywords =
+    [
+        "перечень имущества",
+        "состав лота",
+        "описание имущества",
+        "описание лота",
+        "наименование имущества",
+        "наименование объекта",
+        "характеристика имущества",
+        "инвентарн",
+        "инв. №",
+        "инв №",
+        "балансовая стоимость",
+        "рыночная стоимость",
+        "кадастров",
     ];
 
     public static bool IsContractOrTemplateAttachment(string? title)
@@ -45,6 +96,79 @@ public static class LotPropertyDocumentHelper
         return ExcludedAttachmentKeywords.Any(k =>
             title.Contains(k, StringComparison.OrdinalIgnoreCase));
     }
+
+    /// <summary>Определяет тип документа по названию файла.</summary>
+    public static PropertyDocumentType DetermineDocumentTypeByTitle(string? title)
+    {
+        if (IsContractOrTemplateAttachment(title))
+            return PropertyDocumentType.ContractOrTemplate;
+
+        if (IsPropertyDocumentAttachment(title))
+            return PropertyDocumentType.PropertyList;
+
+        return PropertyDocumentType.Unknown;
+    }
+
+    /// <summary>
+    /// Определяет тип документа по началу извлечённого текста (без LLM).
+    /// Если есть признаки и договора, и перечня — считается договором.
+    /// </summary>
+    public static PropertyDocumentType DetermineDocumentTypeByContent(
+        string? text,
+        int maxChars = DocumentTypeContentSampleMaxChars)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return PropertyDocumentType.Unknown;
+
+        var sample = text.Length <= maxChars ? text : text[..maxChars];
+
+        var looksLikeContract = ContractContentKeywords.Any(k =>
+            sample.Contains(k, StringComparison.OrdinalIgnoreCase));
+        if (looksLikeContract)
+            return PropertyDocumentType.ContractOrTemplate;
+
+        var looksLikePropertyList = PropertyListContentKeywords.Any(k =>
+            sample.Contains(k, StringComparison.OrdinalIgnoreCase));
+        if (looksLikePropertyList)
+            return PropertyDocumentType.PropertyList;
+
+        return PropertyDocumentType.Unknown;
+    }
+
+    /// <summary>
+    /// Определяет тип документа: сначала по названию файла,
+    /// при неизвестном названии — по содержимому (если текст передан).
+    /// </summary>
+    public static PropertyDocumentType DetermineDocumentType(string? title, string? content = null)
+    {
+        var byTitle = DetermineDocumentTypeByTitle(title);
+        if (byTitle != PropertyDocumentType.Unknown)
+            return byTitle;
+
+        return DetermineDocumentTypeByContent(content);
+    }
+
+    public static bool ShouldExtractTextForDescription(PropertyDocumentType titleType) =>
+        titleType != PropertyDocumentType.ContractOrTemplate;
+
+    public static bool ShouldSummarizeForDescription(PropertyDocumentType documentType, string? rawText) =>
+        documentType == PropertyDocumentType.PropertyList && NeedsSummarization(rawText);
+
+    public static string ToApiValue(PropertyDocumentType documentType) => documentType switch
+    {
+        PropertyDocumentType.ContractOrTemplate => "contractOrTemplate",
+        PropertyDocumentType.PropertyList => "propertyList",
+        _ => "unknown",
+    };
+
+    public static string? GetDocumentTypeNote(PropertyDocumentType documentType) => documentType switch
+    {
+        PropertyDocumentType.ContractOrTemplate =>
+            "Юридический шаблон (ДКП/задаток/оферта) — обобщение ИИ не выполнялось.",
+        PropertyDocumentType.Unknown =>
+            "Тип документа не определён — текст не обобщался автоматически.",
+        _ => null,
+    };
 
     public static bool IsJunkAttachment(string? title, string? url)
     {
@@ -102,12 +226,16 @@ public static class LotPropertyDocumentHelper
     }
 
     public static bool GetDefaultSelectedForDownload(string? title) =>
-        !IsContractOrTemplateAttachment(title);
+        GetDefaultSelectedForDownload(DetermineDocumentTypeByTitle(title));
+
+    public static bool GetDefaultSelectedForDownload(PropertyDocumentType documentType) =>
+        documentType != PropertyDocumentType.ContractOrTemplate;
 
     public static bool GetDefaultUseForDescription(string? title, bool hasExtractedText) =>
-        hasExtractedText
-        && IsPropertyDocumentAttachment(title)
-        && !IsContractOrTemplateAttachment(title);
+        GetDefaultUseForDescription(DetermineDocumentTypeByTitle(title), hasExtractedText);
+
+    public static bool GetDefaultUseForDescription(PropertyDocumentType documentType, bool hasExtractedText) =>
+        hasExtractedText && documentType == PropertyDocumentType.PropertyList;
 
     public const int SummarizeThresholdChars = 1500;
     public const int SummarizeThresholdLines = 25;

@@ -285,60 +285,95 @@ public class LotDescriptionAlignmentService : ILotDescriptionAlignmentService
             Extension = attachment.Extension,
         };
 
+        var titleType = LotPropertyDocumentHelper.DetermineDocumentTypeByTitle(attachment.Title);
+
+        // ДКП / задаток / оферта — не качаем и не зовём ИИ.
+        if (!LotPropertyDocumentHelper.ShouldExtractTextForDescription(titleType))
+        {
+            ApplyDocumentTypeDefaults(preview, PropertyDocumentType.ContractOrTemplate, hasDescriptionText: false);
+            return preview;
+        }
+
         if (!_textExtractor.CanExtract(attachment.Extension))
         {
             preview.ExtractionError =
                 $"Формат {attachment.Extension} не поддерживается для автоматического извлечения текста.";
+            ApplyDocumentTypeDefaults(preview, titleType, hasDescriptionText: false);
+            return preview;
         }
-        else
-        {
-            try
-            {
-                var bytes = await DownloadFileAsync(attachment.Url, referer, cancellationToken);
 
-                var extraction = await _textExtractor.ExtractAsync(bytes, attachment.Extension, cancellationToken);
-                if (!extraction.Success || string.IsNullOrWhiteSpace(extraction.Text))
+        try
+        {
+            var bytes = await DownloadFileAsync(attachment.Url, referer, cancellationToken);
+
+            var extraction = await _textExtractor.ExtractAsync(bytes, attachment.Extension, cancellationToken);
+            if (!extraction.Success || string.IsNullOrWhiteSpace(extraction.Text))
+            {
+                preview.ExtractionError = extraction.Error ?? "Не удалось извлечь текст из файла.";
+                ApplyDocumentTypeDefaults(preview, titleType, hasDescriptionText: false);
+                return preview;
+            }
+
+            var rawText = extraction.Text.Trim();
+            preview.ExtractedText = LotPropertyDocumentHelper.TruncateForPreview(rawText);
+
+            // Title уже PropertyList → оставляем; Unknown уточняем по содержимому.
+            var documentType = LotPropertyDocumentHelper.DetermineDocumentType(attachment.Title, rawText);
+
+            if (documentType == PropertyDocumentType.ContractOrTemplate)
+            {
+                ApplyDocumentTypeDefaults(preview, documentType, hasDescriptionText: false);
+                return preview;
+            }
+
+            if (LotPropertyDocumentHelper.ShouldSummarizeForDescription(documentType, rawText))
+            {
+                var summary = await _descriptionSummarizer.SummarizeAsync(rawText, cancellationToken);
+                if (!string.IsNullOrWhiteSpace(summary.Summary))
                 {
-                    preview.ExtractionError = extraction.Error ?? "Не удалось извлечь текст из файла.";
+                    preview.IsSummarized = true;
+                    preview.DescriptionText = summary.Summary;
                 }
                 else
                 {
-                    var rawText = extraction.Text.Trim();
-                    preview.ExtractedText = LotPropertyDocumentHelper.TruncateForPreview(rawText);
-
-                    if (LotPropertyDocumentHelper.NeedsSummarization(rawText))
-                    {
-                        var summary = await _descriptionSummarizer.SummarizeAsync(rawText, cancellationToken);
-                        if (!string.IsNullOrWhiteSpace(summary.Summary))
-                        {
-                            preview.IsSummarized = true;
-                            preview.DescriptionText = summary.Summary;
-                        }
-                        else
-                        {
-                            preview.SummarizationError = summary.Error;
-                            preview.DescriptionText = LotPropertyDocumentHelper.TruncateForPreview(rawText, 2000);
-                        }
-                    }
-                    else
-                    {
-                        preview.DescriptionText = rawText;
-                    }
+                    preview.SummarizationError = summary.Error;
+                    preview.DescriptionText = LotPropertyDocumentHelper.TruncateForPreview(rawText, 2000);
                 }
             }
-            catch (Exception ex)
+            else if (documentType == PropertyDocumentType.PropertyList)
             {
-                _logger.LogWarning(ex, "Не удалось обработать вложение {Url}", attachment.Url);
-                preview.ExtractionError = ex.Message;
+                preview.DescriptionText = rawText;
             }
+            else
+            {
+                // Unknown: превью сырого текста без ИИ; в описание по умолчанию не идёт.
+                preview.DescriptionText = LotPropertyDocumentHelper.TruncateForPreview(rawText, 2000);
+            }
+
+            ApplyDocumentTypeDefaults(
+                preview,
+                documentType,
+                hasDescriptionText: !string.IsNullOrWhiteSpace(preview.DescriptionText));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Не удалось обработать вложение {Url}", attachment.Url);
+            preview.ExtractionError = ex.Message;
+            ApplyDocumentTypeDefaults(preview, titleType, hasDescriptionText: false);
         }
 
-        preview.SelectedForDownload = LotPropertyDocumentHelper.GetDefaultSelectedForDownload(preview.Title);
-        preview.UseForDescription = LotPropertyDocumentHelper.GetDefaultUseForDescription(
-            preview.Title,
-            !string.IsNullOrWhiteSpace(preview.DescriptionText));
-
         return preview;
+    }
+
+    private static void ApplyDocumentTypeDefaults(
+        AlignmentAttachmentPreviewDto preview,
+        PropertyDocumentType documentType,
+        bool hasDescriptionText)
+    {
+        preview.DocumentType = LotPropertyDocumentHelper.ToApiValue(documentType);
+        preview.DocumentTypeNote = LotPropertyDocumentHelper.GetDocumentTypeNote(documentType);
+        preview.SelectedForDownload = LotPropertyDocumentHelper.GetDefaultSelectedForDownload(documentType);
+        preview.UseForDescription = LotPropertyDocumentHelper.GetDefaultUseForDescription(documentType, hasDescriptionText);
     }
 
     private async Task SaveSelectedAttachmentsAsync(

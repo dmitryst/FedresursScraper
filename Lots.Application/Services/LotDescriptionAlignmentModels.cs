@@ -11,6 +11,12 @@ public class AlignmentAttachmentPreviewDto
     public string? SummarizationError { get; set; }
     public string? ExtractionError { get; set; }
 
+    /// <summary>contractOrTemplate | propertyList | unknown</summary>
+    public string? DocumentType { get; set; }
+
+    /// <summary>Пояснение, почему текст не обобщался / не извлечён.</summary>
+    public string? DocumentTypeNote { get; set; }
+
     /// <summary>Прикрепить файл к лоту при применении.</summary>
     public bool SelectedForDownload { get; set; }
 
