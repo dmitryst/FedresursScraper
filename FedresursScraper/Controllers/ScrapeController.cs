@@ -242,8 +242,7 @@ namespace FedresursScraper.Controllers
             {
                 _logger.LogInformation("Начинаем парсинг ссылок РАД со страницы {Page}", page);
 
-                // Базовый URL с добавлением параметра page
-                string targetUrl = $"index.php?dispatch=categories.view&category_id=9876&features_hash=172-186359_174-31371-31357&filter_fields[is_archive]=false&page={page}";
+                var targetUrl = FedresursScraper.Services.Enrichments.RadHtmlParser.BuildCatalogPageUrl(page);
 
                 var urls = await _radParserService.GetLotUrlsFromCatalogAsync(targetUrl);
 

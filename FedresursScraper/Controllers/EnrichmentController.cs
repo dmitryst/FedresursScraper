@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Lots.Data;
 using FedresursScraper.Services;
+using FedresursScraper.Services.Enrichments;
 
 namespace FedresursScraper.Controllers
 {
@@ -14,6 +15,8 @@ namespace FedresursScraper.Controllers
         private readonly IMetsEnrichmentService _metsService;
         private readonly IAlfalotEnrichmentService _alfalotService;
         private readonly IAlfalotCatalogIndexerService _alfalotCatalogIndexer;
+        private readonly IRadEnrichmentService _radService;
+        private readonly IRadCatalogIndexerService _radCatalogIndexer;
         private readonly ILogger<EnrichmentController> _logger;
 
         public EnrichmentController(
@@ -22,6 +25,8 @@ namespace FedresursScraper.Controllers
             IMetsEnrichmentService metsService,
             IAlfalotEnrichmentService alfalotService,
             IAlfalotCatalogIndexerService alfalotCatalogIndexer,
+            IRadEnrichmentService radService,
+            IRadCatalogIndexerService radCatalogIndexer,
             ILogger<EnrichmentController> logger)
         {
             _context = context;
@@ -29,6 +34,8 @@ namespace FedresursScraper.Controllers
             _metsService = metsService;
             _alfalotService = alfalotService;
             _alfalotCatalogIndexer = alfalotCatalogIndexer;
+            _radService = radService;
+            _radCatalogIndexer = radCatalogIndexer;
             _logger = logger;
         }
 
@@ -49,6 +56,126 @@ namespace FedresursScraper.Controllers
                 _logger.LogError(ex, "Ошибка индексации каталога Альфалот");
                 return StatusCode(500, new { error = ex.Message });
             }
+        }
+
+        /// <summary>
+        /// Торги из AlfalotLotLinks, которых нет в Biddings (по нормализованному номеру).
+        /// Помогает проверить, не пропускает ли парсер ленты Федресурса.
+        /// </summary>
+        [HttpGet("alfalot/orphan-links")]
+        public async Task<IActionResult> GetAlfalotOrphanLinks(
+            [FromQuery] int take = 100,
+            CancellationToken ct = default)
+        {
+            take = Math.Clamp(take, 1, 1000);
+
+            var linkGroups = await _context.AlfalotLotLinks
+                .AsNoTracking()
+                .GroupBy(x => x.TradeNumberNormalized)
+                .Select(g => new
+                {
+                    TradeNumberNormalized = g.Key,
+                    TradeNumber = g.Min(x => x.TradeNumber)!,
+                    LotLinksCount = g.Count(),
+                    LastUpdatedAt = g.Max(x => x.UpdatedAt)
+                })
+                .ToListAsync(ct);
+
+            var biddingTradeNumbers = await _context.Biddings
+                .AsNoTracking()
+                .Select(b => b.TradeNumber)
+                .ToListAsync(ct);
+
+            var existingNorms = biddingTradeNumbers
+                .Select(AlfalotHtmlParser.NormalizeTradeNumber)
+                .Where(n => !string.IsNullOrEmpty(n))
+                .ToHashSet(StringComparer.Ordinal);
+
+            var orphans = linkGroups
+                .Where(g => !existingNorms.Contains(g.TradeNumberNormalized))
+                .OrderByDescending(g => g.LastUpdatedAt)
+                .ToList();
+
+            var totalMissing = orphans.Count;
+            var sample = orphans.Take(take).ToList();
+
+            return Ok(new
+            {
+                alfalotDistinctTrades = linkGroups.Count,
+                totalMissing,
+                sampleTake = take,
+                truncated = totalMissing > take,
+                items = sample
+            });
+        }
+
+        /// <summary>
+        /// Ручной запуск индексации каталога РАД (имущество должников → RadLotLinks).
+        /// </summary>
+        [HttpPost("rad/catalog")]
+        public async Task<IActionResult> IndexRadCatalog(CancellationToken ct)
+        {
+            try
+            {
+                _logger.LogInformation("Ручной запуск индексации каталога РАД");
+                var upserted = await _radCatalogIndexer.IndexCatalogAsync(ct);
+                return Ok(new { message = "Индексация каталога РАД завершена.", upserted });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка индексации каталога РАД");
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Связки RadLotLinks без соответствующих Biddings (по нормализованному ЕФРСБ id).
+        /// </summary>
+        [HttpGet("rad/orphan-links")]
+        public async Task<IActionResult> GetRadOrphanLinks(
+            [FromQuery] int take = 100,
+            CancellationToken ct = default)
+        {
+            take = Math.Clamp(take, 1, 1000);
+
+            var linkGroups = await _context.RadLotLinks
+                .AsNoTracking()
+                .GroupBy(x => x.EfrsbLotIdNormalized)
+                .Select(g => new
+                {
+                    EfrsbLotIdNormalized = g.Key,
+                    EfrsbLotId = g.Min(x => x.EfrsbLotId)!,
+                    LotLinksCount = g.Count(),
+                    LastUpdatedAt = g.Max(x => x.UpdatedAt)
+                })
+                .ToListAsync(ct);
+
+            var biddingTradeNumbers = await _context.Biddings
+                .AsNoTracking()
+                .Select(b => b.TradeNumber)
+                .ToListAsync(ct);
+
+            var existingNorms = biddingTradeNumbers
+                .Select(RadHtmlParser.NormalizeEfrsbLotId)
+                .Where(n => !string.IsNullOrEmpty(n))
+                .ToHashSet(StringComparer.Ordinal);
+
+            var orphans = linkGroups
+                .Where(g => !existingNorms.Contains(g.EfrsbLotIdNormalized))
+                .OrderByDescending(g => g.LastUpdatedAt)
+                .ToList();
+
+            var totalMissing = orphans.Count;
+            var sample = orphans.Take(take).ToList();
+
+            return Ok(new
+            {
+                radDistinctTrades = linkGroups.Count,
+                totalMissing,
+                sampleTake = take,
+                truncated = totalMissing > take,
+                items = sample
+            });
         }
 
         [HttpPost("{tradeNumber}")]
@@ -89,6 +216,12 @@ namespace FedresursScraper.Controllers
                     await _alfalotService.EnrichByTradeNumberAsync(tradeNumber, ct);
                     return Ok(new { message = $"Торги {tradeNumber} (Альфалот) успешно обогащены." });
                 }
+                else if (IsRad(bidding.Platform))
+                {
+                    _logger.LogInformation("Запуск ручного обогащения РАД для {TradeNumber}", tradeNumber);
+                    await _radService.EnrichByTradeNumberAsync(tradeNumber, ct);
+                    return Ok(new { message = $"Торги {tradeNumber} (РАД) успешно обогащены." });
+                }
                 else
                 {
                     return BadRequest($"Платформа '{bidding.Platform}' пока не поддерживается сервисом обогащения.");
@@ -122,6 +255,12 @@ namespace FedresursScraper.Controllers
         {
             return !string.IsNullOrEmpty(platform) &&
                 platform.Contains(AlfalotEnrichmentService.PlatformMarker, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsRad(string platform)
+        {
+            return !string.IsNullOrEmpty(platform) &&
+                platform.Contains(RadEnrichmentService.PlatformMarker, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

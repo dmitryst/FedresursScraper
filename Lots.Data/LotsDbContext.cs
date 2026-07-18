@@ -68,6 +68,11 @@ public class LotsDbContext : DbContext
     /// </summary>
     public DbSet<AlfalotLotLink> AlfalotLotLinks { get; set; }
 
+    /// <summary>
+    /// Справочник ссылок РАД (идентификатор ЕФРСБ + лот → URL).
+    /// </summary>
+    public DbSet<RadLotLink> RadLotLinks { get; set; }
+
     public DbSet<UserAd> UserAds { get; set; }
     public DbSet<UserAdImage> UserAdImages { get; set; }
     public DbSet<UserAdChatRoom> ChatRooms { get; set; }
@@ -429,6 +434,30 @@ public class LotsDbContext : DbContext
 
             entity.HasIndex(e => e.UpdatedAt)
                 .HasDatabaseName("IX_AlfalotLotLinks_UpdatedAt");
+        });
+
+        modelBuilder.Entity<RadLotLink>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.EfrsbLotId).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.EfrsbLotIdNormalized).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.LotNumber).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.LotNumberNormalized).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.LotCode).HasMaxLength(64);
+            entity.Property(e => e.LotUrl).HasMaxLength(1024).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(256);
+
+            entity.HasIndex(e => new { e.EfrsbLotIdNormalized, e.LotNumberNormalized })
+                .IsUnique()
+                .HasDatabaseName("IX_RadLotLinks_EfrsbLotNormalized");
+
+            entity.HasIndex(e => e.ProductId)
+                .IsUnique()
+                .HasDatabaseName("IX_RadLotLinks_ProductId");
+
+            entity.HasIndex(e => e.UpdatedAt)
+                .HasDatabaseName("IX_RadLotLinks_UpdatedAt");
         });
 
         modelBuilder.Entity<DeepSeekBudgetState>(entity =>
