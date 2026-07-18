@@ -94,6 +94,8 @@ public class LotsController : ControllerBase
             StartPrice = l.StartPrice,
             Step = l.Step,
             Deposit = l.Deposit,
+            TradeStatus = l.TradeStatus,
+            FinalPrice = l.FinalPrice,
             Title = l.Title ?? l.Description,
             Slug = l.Slug,
             ViewCount = l.ViewCount,
@@ -121,7 +123,15 @@ public class LotsController : ControllerBase
                 Name = c.Name
             }).ToList(),
             Attributes = l.Attributes,
-
+            PriceSchedules = l.PriceSchedules
+                .OrderBy(ps => ps.StartDate)
+                .Select((ps, index) => new PriceScheduleDto
+                {
+                    Number = index + 1,
+                    StartDate = ps.StartDate,
+                    EndDate = ps.EndDate,
+                    Price = ps.Price
+                }),
             Images = l.Images
                 .OrderBy(i => i.Order)
                 .Select(i => i.Url)

@@ -28,7 +28,8 @@ public class LotsListSpecification : LotsFilterSpecification
         Query
             .Include(l => l.Bidding)
             .Include(l => l.Categories)
-            .Include(l => l.Images);
+            .Include(l => l.Images)
+            .Include(l => l.PriceSchedules);
 
         // Сортировка
         if (!string.IsNullOrWhiteSpace(searchQuery) &&
