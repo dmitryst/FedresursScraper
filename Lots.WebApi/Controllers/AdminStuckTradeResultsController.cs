@@ -53,7 +53,8 @@ public class AdminStuckTradeResultsController : ControllerBase
     public async Task<IActionResult> GetStuckBiddings(
         [FromQuery] int minAttempts = 5,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 30)
+        [FromQuery] int pageSize = 30,
+        [FromQuery] string? platform = null)
     {
         if (!await IsAdminAsync()) return Forbid();
 
@@ -61,9 +62,22 @@ public class AdminStuckTradeResultsController : ControllerBase
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, 100);
 
-        var query = _dbContext.Biddings
+        var baseQuery = _dbContext.Biddings
             .AsNoTracking()
             .Where(b => !b.IsTradeStatusesFinalized && b.StatusCheckAttempts >= minAttempts);
+
+        var platformOptions = await baseQuery
+            .GroupBy(b => b.Platform)
+            .Select(g => new { Platform = g.Key, Count = g.Count() })
+            .OrderByDescending(x => x.Count)
+            .ThenBy(x => x.Platform)
+            .ToListAsync();
+
+        var query = baseQuery;
+        if (!string.IsNullOrWhiteSpace(platform))
+        {
+            query = query.Where(b => b.Platform == platform);
+        }
 
         var totalCount = await query.CountAsync();
 
@@ -116,7 +130,14 @@ public class AdminStuckTradeResultsController : ControllerBase
             page,
             pageSize,
             totalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
-            minAttempts
+            minAttempts,
+            platform,
+            platforms = platformOptions.Select(p => new
+            {
+                value = p.Platform,
+                label = PlatformDisplayName.GetDisplayName(p.Platform),
+                count = p.Count
+            })
         });
     }
 
