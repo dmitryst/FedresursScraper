@@ -49,6 +49,13 @@ builder.Services.AddScoped<ILotDescriptionAlignmentService, LotDescriptionAlignm
 builder.Services.AddSingleton<IBiddingDataCache, InMemoryBiddingDataCache>();
 builder.Services.AddScoped<TradeResultsImportService>();
 builder.Services.AddHttpClient<IIndexNowService, IndexNowService>();
+builder.Services.AddHttpClient<ICdtTradeStatusScraper, CdtTradeStatusScraper>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.TryAddWithoutValidation(
+        "User-Agent",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+});
 
 builder.Services.AddScoped<Lots.Application.Services.ContractGenerationService>();
 

@@ -21,6 +21,7 @@ public class AdminStuckTradeResultsController : ControllerBase
 {
     private readonly LotsDbContext _dbContext;
     private readonly IIndexNowService _indexNowService;
+    private readonly ICdtTradeStatusScraper _cdtTradeStatusScraper;
 
     private static readonly HashSet<string> AllowedResultKinds = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -32,10 +33,12 @@ public class AdminStuckTradeResultsController : ControllerBase
 
     public AdminStuckTradeResultsController(
         LotsDbContext dbContext,
-        IIndexNowService indexNowService)
+        IIndexNowService indexNowService,
+        ICdtTradeStatusScraper cdtTradeStatusScraper)
     {
         _dbContext = dbContext;
         _indexNowService = indexNowService;
+        _cdtTradeStatusScraper = cdtTradeStatusScraper;
     }
 
     private async Task<bool> IsAdminAsync()
@@ -152,6 +155,319 @@ public class AdminStuckTradeResultsController : ControllerBase
             .CountAsync(b => !b.IsTradeStatusesFinalized && b.StatusCheckAttempts >= minAttempts);
 
         return Ok(new { count, minAttempts });
+    }
+
+    public class PreviewPlatformStatusRequest
+    {
+        public List<Guid> BiddingIds { get; set; } = [];
+    }
+
+    public class PlatformStatusLotDto
+    {
+        public Guid LotId { get; set; }
+        public string? LotNumber { get; set; }
+        public int PublicId { get; set; }
+        public string? PlatformStatus { get; set; }
+        public bool IsFinal { get; set; }
+    }
+
+    public class PlatformStatusPreviewDto
+    {
+        public Guid BiddingId { get; set; }
+        public string? TradeNumber { get; set; }
+        public string? PlatformKind { get; set; }
+        public string? PlatformLabel { get; set; }
+        public string? PlatformStatus { get; set; }
+        public bool IsFinal { get; set; }
+        public string? SuggestedResultKind { get; set; }
+        public string? Source { get; set; }
+        public string? Error { get; set; }
+        public List<PlatformStatusLotDto> Lots { get; set; } = [];
+    }
+
+    /// <summary>
+    /// Массово подтягивает статусы с площадки для выбранных торгов (без записи в БД).
+    /// ЦДТ — live-парсинг страницы торгов; Альфалот/РАД — статус из каталожных связей.
+    /// </summary>
+    [HttpPost("preview-platform-status")]
+    public async Task<IActionResult> PreviewPlatformStatus(
+        [FromBody] PreviewPlatformStatusRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!await IsAdminAsync()) return Forbid();
+
+        var biddingIds = (request?.BiddingIds ?? [])
+            .Where(id => id != Guid.Empty)
+            .Distinct()
+            .Take(50)
+            .ToList();
+
+        if (biddingIds.Count == 0)
+            return BadRequest(new { message = "Выберите хотя бы одни торги." });
+
+        var biddings = await _dbContext.Biddings
+            .AsNoTracking()
+            .Include(b => b.Lots)
+            .Where(b => biddingIds.Contains(b.Id))
+            .ToListAsync(cancellationToken);
+
+        var byId = biddings.ToDictionary(b => b.Id);
+        using var gate = new SemaphoreSlim(3);
+
+        var tasks = biddingIds.Select(async biddingId =>
+        {
+            if (!byId.TryGetValue(biddingId, out var bidding))
+            {
+                return new PlatformStatusPreviewDto
+                {
+                    BiddingId = biddingId,
+                    Error = "Торги не найдены."
+                };
+            }
+
+            var kind = DetectPlatformKind(bidding.Platform);
+            try
+            {
+                return kind switch
+                {
+                    "cdt" => await PreviewCdtStatusAsync(bidding, gate, cancellationToken),
+                    "alfalot" => await PreviewAlfalotStatusAsync(bidding, cancellationToken),
+                    "rad" => await PreviewRadStatusAsync(bidding, cancellationToken),
+                    "mets" => UnsupportedPreview(bidding, "mets", "МЭТС",
+                        "Для МЭТС live-проверка статуса пока не реализована."),
+                    _ => UnsupportedPreview(bidding, kind, PlatformDisplayName.GetDisplayName(bidding.Platform),
+                        "Площадка не поддерживается для проверки статуса.")
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PlatformStatusPreviewDto
+                {
+                    BiddingId = bidding.Id,
+                    TradeNumber = bidding.TradeNumber,
+                    PlatformKind = kind,
+                    PlatformLabel = PlatformDisplayName.GetDisplayName(bidding.Platform),
+                    Error = ex.Message
+                };
+            }
+        });
+
+        var results = await Task.WhenAll(tasks);
+        var byResultId = results.ToDictionary(r => r.BiddingId);
+        var items = biddingIds
+            .Where(id => byResultId.ContainsKey(id))
+            .Select(id => byResultId[id])
+            .ToList();
+
+        return Ok(new { items });
+    }
+
+    private static PlatformStatusPreviewDto UnsupportedPreview(
+        Bidding bidding,
+        string? kind,
+        string? label,
+        string error) =>
+        new()
+        {
+            BiddingId = bidding.Id,
+            TradeNumber = bidding.TradeNumber,
+            PlatformKind = kind,
+            PlatformLabel = label,
+            Error = error
+        };
+
+    private async Task<PlatformStatusPreviewDto> PreviewCdtStatusAsync(
+        Bidding bidding,
+        SemaphoreSlim gate,
+        CancellationToken cancellationToken)
+    {
+        await gate.WaitAsync(cancellationToken);
+        try
+        {
+            var status = await _cdtTradeStatusScraper.GetTradeStatusAsync(
+                bidding.TradeNumber,
+                cancellationToken);
+
+            var isFinal = IsFinalForAdminPreview(status);
+            return new PlatformStatusPreviewDto
+            {
+                BiddingId = bidding.Id,
+                TradeNumber = bidding.TradeNumber,
+                PlatformKind = "cdt",
+                PlatformLabel = "ЦДТ",
+                PlatformStatus = status,
+                IsFinal = isFinal,
+                SuggestedResultKind = SuggestResultKind(status),
+                Source = "live",
+                Error = status == null ? "Не удалось получить статус со страницы ЦДТ." : null,
+                Lots = bidding.Lots
+                    .OrderBy(l => NormalizeLotNumber(l.LotNumber))
+                    .Select(l => new PlatformStatusLotDto
+                    {
+                        LotId = l.Id,
+                        LotNumber = l.LotNumber,
+                        PublicId = l.PublicId,
+                        PlatformStatus = status,
+                        IsFinal = isFinal
+                    })
+                    .ToList()
+            };
+        }
+        finally
+        {
+            gate.Release();
+            await Task.Delay(200, cancellationToken);
+        }
+    }
+
+    private async Task<PlatformStatusPreviewDto> PreviewAlfalotStatusAsync(
+        Bidding bidding,
+        CancellationToken cancellationToken)
+    {
+        var tradeNorm = AlfalotHtmlParser.NormalizeTradeNumber(bidding.TradeNumber);
+        var links = await _dbContext.AlfalotLotLinks
+            .AsNoTracking()
+            .Where(x => x.TradeNumberNormalized == tradeNorm)
+            .Select(x => new { x.LotNumberNormalized, x.Status })
+            .ToListAsync(cancellationToken);
+
+        return BuildCatalogPreview(
+            bidding,
+            "alfalot",
+            "Альфалот",
+            links.Select(x => (x.LotNumberNormalized, x.Status)).ToList(),
+            "В индексе Альфалот нет статуса для этих лотов.");
+    }
+
+    private async Task<PlatformStatusPreviewDto> PreviewRadStatusAsync(
+        Bidding bidding,
+        CancellationToken cancellationToken)
+    {
+        var tradeNorm = AlfalotHtmlParser.NormalizeTradeNumber(bidding.TradeNumber);
+        var links = await _dbContext.RadLotLinks
+            .AsNoTracking()
+            .Where(x => x.EfrsbLotIdNormalized == tradeNorm)
+            .Select(x => new { x.LotNumberNormalized, x.Status })
+            .ToListAsync(cancellationToken);
+
+        return BuildCatalogPreview(
+            bidding,
+            "rad",
+            "РАД",
+            links.Select(x => (x.LotNumberNormalized, x.Status)).ToList(),
+            "В индексе РАД нет статуса для этих лотов.");
+    }
+
+    private static PlatformStatusPreviewDto BuildCatalogPreview(
+        Bidding bidding,
+        string kind,
+        string label,
+        List<(string LotNumberNormalized, string? Status)> links,
+        string missingError)
+    {
+        var lotStatuses = bidding.Lots
+            .OrderBy(l => NormalizeLotNumber(l.LotNumber))
+            .Select(l =>
+            {
+                var lotNorm = AlfalotHtmlParser.NormalizeLotNumber(l.LotNumber);
+                var status = links.FirstOrDefault(x => x.LotNumberNormalized == lotNorm).Status;
+                return new PlatformStatusLotDto
+                {
+                    LotId = l.Id,
+                    LotNumber = l.LotNumber,
+                    PublicId = l.PublicId,
+                    PlatformStatus = status,
+                    IsFinal = IsFinalForAdminPreview(status)
+                };
+            })
+            .ToList();
+
+        var distinct = lotStatuses
+            .Select(x => x.PlatformStatus)
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Cast<string>()
+            .ToList();
+
+        var platformStatus = distinct.Count switch
+        {
+            0 => null,
+            1 => distinct[0],
+            _ => string.Join(" / ", distinct)
+        };
+
+        var anyStatus = distinct.Count > 0;
+        var allFinal = lotStatuses.Count > 0 && lotStatuses.All(x => x.IsFinal);
+
+        return new PlatformStatusPreviewDto
+        {
+            BiddingId = bidding.Id,
+            TradeNumber = bidding.TradeNumber,
+            PlatformKind = kind,
+            PlatformLabel = label,
+            PlatformStatus = platformStatus,
+            IsFinal = allFinal && anyStatus,
+            SuggestedResultKind = distinct.Count == 1 ? SuggestResultKind(distinct[0]) : null,
+            Source = "catalog",
+            Error = !anyStatus ? missingError : null,
+            Lots = lotStatuses
+        };
+    }
+
+    private static string? DetectPlatformKind(string? platform)
+    {
+        if (string.IsNullOrWhiteSpace(platform)) return null;
+        if (platform.Contains("Межрегиональная Электронная Торговая Система", StringComparison.OrdinalIgnoreCase)
+            || platform.Contains("МЭТС", StringComparison.OrdinalIgnoreCase))
+            return "mets";
+        if (platform.Contains("Центр дистанционных торгов", StringComparison.OrdinalIgnoreCase))
+            return "cdt";
+        if (platform.Contains("Альфалот", StringComparison.OrdinalIgnoreCase))
+            return "alfalot";
+        if (platform.Contains("Российский аукционный дом", StringComparison.OrdinalIgnoreCase))
+            return "rad";
+        return null;
+    }
+
+    private static bool IsFinalForAdminPreview(string? status)
+    {
+        if (string.IsNullOrWhiteSpace(status)) return false;
+
+        if (Lot.FinalTradeStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
+            return true;
+
+        if (status.Contains("приостанов", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        if (status.Contains("не состоял", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (status.Contains("отменен", StringComparison.OrdinalIgnoreCase)
+            || status.Contains("отменён", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (status.Contains("завершен", StringComparison.OrdinalIgnoreCase)
+            || status.Contains("окончен", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (status.Contains("аннулир", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    }
+
+    private static string? SuggestResultKind(string? status)
+    {
+        if (string.IsNullOrWhiteSpace(status)) return null;
+
+        if (status.Contains("не состоял", StringComparison.OrdinalIgnoreCase))
+            return "not_held";
+        if (status.Contains("отменен", StringComparison.OrdinalIgnoreCase)
+            || status.Contains("отменён", StringComparison.OrdinalIgnoreCase))
+            return "cancelled";
+        if (status.Contains("завершен", StringComparison.OrdinalIgnoreCase)
+            || status.Contains("окончен", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(status, "Завершенные", StringComparison.OrdinalIgnoreCase))
+            return "completed";
+
+        return null;
     }
 
     /// <summary>
